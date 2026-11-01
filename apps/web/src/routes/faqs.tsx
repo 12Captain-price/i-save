@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 import { PageShell } from "@/components/site/PageShell";
+import { ContactLines } from "@/components/site/ContactLines";
 
 export const Route = createFileRoute("/faqs")({
   component: FaqsPage,
@@ -7,7 +9,7 @@ export const Route = createFileRoute("/faqs")({
 
 // Only things the organisation has already decided are answered here. Anything still waiting
 // for the owner (withdrawals, interest, penalties) says so instead of guessing.
-const FAQS: Array<[string, string]> = [
+const FAQS: Array<[string, ReactNode]> = [
   [
     "Who can join?",
     "You can apply online, or ask the office to register you. You need a valid email address; the office can help you create one. You also confirm your age and accept the terms when you apply.",
@@ -96,10 +98,7 @@ const FAQS: Array<[string, string]> = [
     "What if I think someone else used my account?",
     "Contact the office straight away. Staff can check your records and every action on them is logged.",
   ],
-  [
-    "Where is the office?",
-    "The address and phone numbers are on the Contact page.",
-  ],
+  ["Where is the office, and how do I reach it?", <ContactLines />],
 ];
 
 function FaqsPage() {
@@ -118,7 +117,7 @@ function FaqsPage() {
             <summary className="cursor-pointer list-none font-semibold marker:content-none">
               {question}
             </summary>
-            <p className="mt-3 text-sm text-muted-foreground">{answer}</p>
+            <div className="mt-3 text-sm text-muted-foreground">{answer}</div>
           </details>
         ))}
       </div>

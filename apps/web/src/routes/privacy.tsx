@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { LegalPage } from "@/components/site/LegalPage";
+import { ContactLines } from "@/components/site/ContactLines";
 
 export const Route = createFileRoute("/privacy")({
   component: PrivacyPage,
@@ -94,13 +95,16 @@ function PrivacyPage() {
         {
           heading: "Contact",
           body: (
-            <p>
-              For privacy questions, use the details on the{" "}
-              <Link to="/contact" className="underline underline-offset-4">
-                Contact page
-              </Link>
-              .
-            </p>
+            <>
+              <p>
+                For privacy questions, use the details on the{" "}
+                <Link to="/contact" className="underline underline-offset-4">
+                  Contact page
+                </Link>
+                .
+              </p>
+              <ContactLines />
+            </>
           ),
         },
       ]}
