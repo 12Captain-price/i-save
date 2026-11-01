@@ -215,6 +215,7 @@ export const AUDIT_ACTION_OPTIONS: { value: string; label: string }[] = [
   { value: "ledger.reversed", label: "Payment reversed" },
   { value: "office_payment.recorded", label: "Office payment recorded" },
   { value: "payment.confirmed", label: "Payment confirmed" },
+  { value: "member.registered_in_office", label: "Registered in the office" },
   { value: "id.viewed", label: "ID number viewed" },
   { value: "id.sighted", label: "ID sighted" },
   { value: "daily_report.signed_off", label: "Daily report signed off" },

@@ -255,6 +255,7 @@ const AUDIT_ACTION_LABEL: Record<string, string> = {
   "payment.failed": "Payment failed",
   "payment.cancelled": "Payment cancelled",
   "plan.enrolled": "Plan chosen",
+  "member.registered_in_office": "Registered in the office",
   "id.sighted": "ID sighted",
   "id.viewed": "ID number viewed",
   "daily_report.signed_off": "Daily report signed off",

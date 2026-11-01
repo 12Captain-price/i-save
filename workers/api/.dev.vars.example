@@ -1,0 +1,2 @@
+# Copy to .dev.vars (git-ignored) for pnpm dev:worker. Never commit the real key.
+SUPABASE_SERVICE_ROLE_KEY=paste-the-secret-key-here

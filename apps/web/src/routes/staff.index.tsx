@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { StatusPill } from "@/components/staff/StatusPill";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { inputClass } from "@/components/ui/field";
 import { useMemberSearch, type MemberFilter } from "@/lib/staff";
 import { formatDate, staffErrorMessage } from "@/lib/staff-utils";
@@ -34,6 +34,14 @@ function MemberSearchPage() {
         Find a member by name, member number, phone or email. Open a member to
         check their ID and record a payment.
       </p>
+      <div className="mt-5">
+        <Link
+          to="/staff/register"
+          className={buttonVariants({ variant: "outline" })}
+        >
+          Register an applicant
+        </Link>
+      </div>
 
       <form
         onSubmit={onSubmit}

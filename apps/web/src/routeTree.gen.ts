@@ -27,6 +27,7 @@ import { Route as StaffIndexRouteImport } from './routes/staff.index'
 import { Route as StaffAuditRouteImport } from './routes/staff.audit'
 import { Route as StaffLedgerRouteImport } from './routes/staff.ledger'
 import { Route as StaffPlansRouteImport } from './routes/staff.plans'
+import { Route as StaffRegisterRouteImport } from './routes/staff.register'
 import { Route as StaffReportRouteImport } from './routes/staff.report'
 import { Route as StaffMembersMemberIdRouteImport } from './routes/staff.members.$memberId'
 import { Route as StaffReceiptsReceiptNumberRouteImport } from './routes/staff.receipts.$receiptNumber'
@@ -121,6 +122,11 @@ const StaffPlansRoute = StaffPlansRouteImport.update({
   path: '/plans',
   getParentRoute: () => StaffRoute,
 } as any)
+const StaffRegisterRoute = StaffRegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => StaffRoute,
+} as any)
 const StaffReportRoute = StaffReportRouteImport.update({
   id: '/report',
   path: '/report',
@@ -156,6 +162,7 @@ export interface FileRoutesByFullPath {
   '/staff/audit': typeof StaffAuditRoute
   '/staff/ledger': typeof StaffLedgerRoute
   '/staff/plans': typeof StaffPlansRoute
+  '/staff/register': typeof StaffRegisterRoute
   '/staff/report': typeof StaffReportRoute
   '/staff/': typeof StaffIndexRoute
   '/staff/members/$memberId': typeof StaffMembersMemberIdRoute
@@ -178,6 +185,7 @@ export interface FileRoutesByTo {
   '/staff/audit': typeof StaffAuditRoute
   '/staff/ledger': typeof StaffLedgerRoute
   '/staff/plans': typeof StaffPlansRoute
+  '/staff/register': typeof StaffRegisterRoute
   '/staff/report': typeof StaffReportRoute
   '/staff': typeof StaffIndexRoute
   '/staff/members/$memberId': typeof StaffMembersMemberIdRoute
@@ -202,6 +210,7 @@ export interface FileRoutesById {
   '/staff/audit': typeof StaffAuditRoute
   '/staff/ledger': typeof StaffLedgerRoute
   '/staff/plans': typeof StaffPlansRoute
+  '/staff/register': typeof StaffRegisterRoute
   '/staff/report': typeof StaffReportRoute
   '/staff/': typeof StaffIndexRoute
   '/staff/members/$memberId': typeof StaffMembersMemberIdRoute
@@ -227,6 +236,7 @@ export interface FileRouteTypes {
     | '/staff/audit'
     | '/staff/ledger'
     | '/staff/plans'
+    | '/staff/register'
     | '/staff/report'
     | '/staff/'
     | '/staff/members/$memberId'
@@ -249,6 +259,7 @@ export interface FileRouteTypes {
     | '/staff/audit'
     | '/staff/ledger'
     | '/staff/plans'
+    | '/staff/register'
     | '/staff/report'
     | '/staff'
     | '/staff/members/$memberId'
@@ -272,6 +283,7 @@ export interface FileRouteTypes {
     | '/staff/audit'
     | '/staff/ledger'
     | '/staff/plans'
+    | '/staff/register'
     | '/staff/report'
     | '/staff/'
     | '/staff/members/$memberId'
@@ -423,6 +435,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffPlansRouteImport
       parentRoute: typeof StaffRoute
     }
+    '/staff/register': {
+      id: '/staff/register'
+      path: '/register'
+      fullPath: '/staff/register'
+      preLoaderRoute: typeof StaffRegisterRouteImport
+      parentRoute: typeof StaffRoute
+    }
     '/staff/report': {
       id: '/staff/report'
       path: '/report'
@@ -451,6 +470,7 @@ interface StaffRouteChildren {
   StaffAuditRoute: typeof StaffAuditRoute
   StaffLedgerRoute: typeof StaffLedgerRoute
   StaffPlansRoute: typeof StaffPlansRoute
+  StaffRegisterRoute: typeof StaffRegisterRoute
   StaffReportRoute: typeof StaffReportRoute
   StaffIndexRoute: typeof StaffIndexRoute
   StaffMembersMemberIdRoute: typeof StaffMembersMemberIdRoute
@@ -461,6 +481,7 @@ const StaffRouteChildren: StaffRouteChildren = {
   StaffAuditRoute: StaffAuditRoute,
   StaffLedgerRoute: StaffLedgerRoute,
   StaffPlansRoute: StaffPlansRoute,
+  StaffRegisterRoute: StaffRegisterRoute,
   StaffReportRoute: StaffReportRoute,
   StaffIndexRoute: StaffIndexRoute,
   StaffMembersMemberIdRoute: StaffMembersMemberIdRoute,

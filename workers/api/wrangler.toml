@@ -1,0 +1,13 @@
+name = "isave-api"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+# Public settings. Secrets are NOT kept here: set the service role key with
+#   pnpm --filter @isave/api exec wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+[vars]
+# Project URL from Supabase -> Project Settings -> API (no trailing slash).
+SUPABASE_URL = "https://vbxqvccdadtpzrykizna.supabase.co"
+# Where the web app runs. Comma-separate to allow more than one (e.g. local dev and live).
+ALLOWED_ORIGIN = "http://localhost:5173"
+# Where the emailed set-password link sends the member. Must be on Supabase's redirect allow-list.
+APP_URL = "http://localhost:5173"

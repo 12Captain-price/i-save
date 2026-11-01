@@ -9,3 +9,7 @@ dist/
 .vscode/
 .idea/
 .tanstack/
+
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
