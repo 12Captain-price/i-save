@@ -56,6 +56,50 @@ const FAQS: Array<[string, string]> = [
     "Is my information private?",
     "A member can only see their own records. Staff access is limited to staff roles, and staff actions are recorded in an audit log.",
   ],
+  [
+    "What savings plans are there?",
+    "The organisation offers five categories: Asset, Holiday, Emergency, Retrenchment and Education. A plan is only open to join once the organisation has approved its amount and terms, so you may see some still being prepared.",
+  ],
+  [
+    "How often do I contribute?",
+    "Weekly, at the office. Each contribution is recorded by staff and gets its own numbered receipt.",
+  ],
+  [
+    "How do I log in, and what if I forget my password?",
+    "Log in with your email address and password. If you forget it, use “Forgot password” on the login page and we email you a link to set a new one. If the office registered you, you set your first password from the link in your welcome email.",
+  ],
+  [
+    "I do not have an email address. Can I still join?",
+    "Yes. An email address is needed for your login and messages, so the office will help you create one when you register.",
+  ],
+  [
+    "How will I hear from you?",
+    "Messages about your account appear in your account and are sent to your email. WhatsApp messages are only sent if you opt in separately. WhatsApp is never used to log in.",
+  ],
+  [
+    "Do I pay online or by mobile money?",
+    "Not yet. Payments are made at the office. Mobile money (EcoCash) is planned for later, and we will tell members before it starts.",
+  ],
+  [
+    "What happens if I miss a payment?",
+    "The rules for late or missed payments are still waiting for the organisation’s decision. They will be published before they apply. Nothing is charged for lateness today.",
+  ],
+  [
+    "Can I change or leave my plan?",
+    "Plan terms are fixed once approved, so you know what you agreed to. Rules for changing or leaving a plan, and for withdrawals, are waiting for the organisation’s approval. Please ask the office if you need to discuss your situation.",
+  ],
+  [
+    "Which currency is used?",
+    "US dollars for now. Any change will be announced before it applies.",
+  ],
+  [
+    "What if I think someone else used my account?",
+    "Contact the office straight away. Staff can check your records and every action on them is logged.",
+  ],
+  [
+    "Where is the office?",
+    "The address and phone numbers are on the Contact page.",
+  ],
 ];
 
 function FaqsPage() {
