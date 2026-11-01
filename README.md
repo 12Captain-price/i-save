@@ -77,15 +77,18 @@ Tables: `profiles`, `user_roles`, `system_settings`, `savings_plans`, `savings_p
 
 Views: `member_balances`, `payment_verification_queue`.
 
-**Migration 002 (to write):**
+**Migration 002 (done, tested on local Postgres 16):** `002_office_payments.sql`
 
-- `record_office_payment(member, purpose, method, receipt_no, evidence_note)`: staff take cash or bank payment and confirm in one step
-- Receipt numbers (sequence plus a `receipts` record), so every payment has a receipt
-- Profile fields: `national_id`, `id_sighted_by`, `id_sighted_at`, `registered_via` (online or staff), `category_interest`, `age_confirmed_at`, `terms_accepted_at`
-- Unique index on phone number, so one person cannot register twice
-- Controlled viewing of the national ID (staff only, each view written to the audit log)
-- `enabled_currencies` setting (USD only until ZiG is approved)
-- Daily report view: payments recorded per staff member
+- `record_office_payment(member, purpose, method, receipt_no, idempotency_key, ...)`: staff take cash or bank money and confirm it in one step, through the same `confirm_payment()` as every other path. Paper receipt numbers can only be used once.
+- Receipts: one numbered receipt (`RCT-00000001`) per confirmed payment, append-only, plus the `member_receipts` view (reversed receipts stay on record and show as reversed).
+- Profile fields: `registered_via`, `category_interest`, `age_confirmed_at`, `terms_accepted_at`, `id_sighted_by`, `id_sighted_at`. Members cannot edit the verification fields.
+- National ID is kept in a locked table (`member_identity`), not on the profile. Staff read it through `get_member_national_id()`, and every look is audit-logged. The number itself is never written to the audit log.
+- `mark_id_sighted()`: staff record the ID number from the physical document. An account cannot go from pending to active until this is done (setting `require_id_sighted_before_activation`).
+- One person, one account: unique phone number and unique national ID.
+- `enabled_currencies` setting (USD only), enforced on every new payment.
+- `staff_daily_report` view (Zimbabwe calendar day) and `sign_off_daily_report()`: an admin signs off another staff member's day. Nobody can sign off their own.
+
+Tests: `supabase/tests/` (run with `run_local.sh` against a throwaway local Postgres, never against Supabase).
 
 ---
 
@@ -286,7 +289,7 @@ These are proposals, not decisions, and they are business-rule suggestions, not 
 
 **Highest risk:** items 3 and 12. Ask the owner to confirm both in writing.
 
-**Effect on the build:** items 1, 5 and 6 decide what gets switched on in the demo. Items 2, 4, 7, 10 and 11 stay switched off or placeholder. Item 8 may need the "finance cannot confirm own payment" rule in the schema relaxed in migration 002 if the office has a single staff member.
+**Effect on the build:** items 1, 5 and 6 decide what gets switched on in the demo. Items 2, 4, 7, 10 and 11 stay switched off or placeholder. Item 8 needs no schema change: the database already lets one staff member record and confirm a payment for a member in a single step. It only stops staff paying their own fees. The control is the daily report plus a sign-off by a different admin.
 
 ---
 
