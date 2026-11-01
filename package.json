@@ -1,0 +1,25 @@
+{
+  "name": "isave",
+  "version": "0.1.0",
+  "private": true,
+  "description": "iSave member savings application (prototype)",
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @isave/web dev",
+    "dev:worker": "pnpm --filter @isave/api dev",
+    "build": "pnpm --filter @isave/web build",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "lint": "pnpm -r --if-present lint",
+    "test": "pnpm -r --if-present test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "pnpm typecheck && pnpm lint && pnpm test"
+  },
+  "devDependencies": {
+    "prettier": "^3.7.3",
+    "typescript": "^5.8.3"
+  }
+}
