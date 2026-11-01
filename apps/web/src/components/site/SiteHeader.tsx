@@ -3,11 +3,13 @@ import { Menu, X } from "lucide-react";
 import { Logo } from "./Logo";
 import { NAV } from "./nav";
 import { buttonVariants } from "@/components/ui/button";
+import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
+  const { session } = useAuth();
 
   useEffect(() => {
     if (!open) return;
@@ -40,18 +42,35 @@ export function SiteHeader() {
           </ul>
         </nav>
         <div className="hidden items-center gap-6 lg:flex">
-          <a href="/login" className="text-sm font-semibold hover:text-primary">
-            Log in
-          </a>
-          <a
-            href="/apply"
-            className={cn(
-              buttonVariants({ size: "sm" }),
-              "px-5 py-2.5 text-sm",
-            )}
-          >
-            Apply for membership
-          </a>
+          {session ? (
+            <a
+              href="/account"
+              className={cn(
+                buttonVariants({ size: "sm" }),
+                "px-5 py-2.5 text-sm",
+              )}
+            >
+              My account
+            </a>
+          ) : (
+            <>
+              <a
+                href="/login"
+                className="text-sm font-semibold hover:text-primary"
+              >
+                Log in
+              </a>
+              <a
+                href="/apply"
+                className={cn(
+                  buttonVariants({ size: "sm" }),
+                  "px-5 py-2.5 text-sm",
+                )}
+              >
+                Apply for membership
+              </a>
+            </>
+          )}
         </div>
         <button
           ref={trigger}
@@ -85,15 +104,23 @@ export function SiteHeader() {
             ))}
           </ul>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <a
-              href="/login"
-              className={cn(buttonVariants({ variant: "outline" }))}
-            >
-              Log in
-            </a>
-            <a href="/apply" className={cn(buttonVariants())}>
-              Apply for membership
-            </a>
+            {session ? (
+              <a href="/account" className={cn(buttonVariants())}>
+                My account
+              </a>
+            ) : (
+              <>
+                <a
+                  href="/login"
+                  className={cn(buttonVariants({ variant: "outline" }))}
+                >
+                  Log in
+                </a>
+                <a href="/apply" className={cn(buttonVariants())}>
+                  Apply for membership
+                </a>
+              </>
+            )}
           </div>
         </nav>
       )}
