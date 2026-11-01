@@ -18,9 +18,15 @@ import { Route as FeesRouteImport } from './routes/fees'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as PlansRouteImport } from './routes/plans'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as StaffRouteImport } from './routes/staff'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as StaffIndexRouteImport } from './routes/staff.index'
+import { Route as StaffPlansRouteImport } from './routes/staff.plans'
+import { Route as StaffReportRouteImport } from './routes/staff.report'
+import { Route as StaffMembersMemberIdRouteImport } from './routes/staff.members.$memberId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -67,6 +73,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlansRoute = PlansRouteImport.update({
+  id: '/plans',
+  path: '/plans',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
@@ -77,10 +88,35 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StaffRoute = StaffRouteImport.update({
+  id: '/staff',
+  path: '/staff',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
   getParentRoute: () => rootRouteImport,
+} as any)
+const StaffIndexRoute = StaffIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffPlansRoute = StaffPlansRouteImport.update({
+  id: '/plans',
+  path: '/plans',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffReportRoute = StaffReportRouteImport.update({
+  id: '/report',
+  path: '/report',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffMembersMemberIdRoute = StaffMembersMemberIdRouteImport.update({
+  id: '/members/$memberId',
+  path: '/members/$memberId',
+  getParentRoute: () => StaffRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -93,9 +129,15 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRoute
+  '/plans': typeof PlansRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/staff': typeof StaffRouteWithChildren
   '/terms': typeof TermsRoute
+  '/staff/plans': typeof StaffPlansRoute
+  '/staff/report': typeof StaffReportRoute
+  '/staff/': typeof StaffIndexRoute
+  '/staff/members/$memberId': typeof StaffMembersMemberIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -107,9 +149,14 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRoute
+  '/plans': typeof PlansRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
+  '/staff/plans': typeof StaffPlansRoute
+  '/staff/report': typeof StaffReportRoute
+  '/staff': typeof StaffIndexRoute
+  '/staff/members/$memberId': typeof StaffMembersMemberIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -122,9 +169,15 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRoute
+  '/plans': typeof PlansRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/staff': typeof StaffRouteWithChildren
   '/terms': typeof TermsRoute
+  '/staff/plans': typeof StaffPlansRoute
+  '/staff/report': typeof StaffReportRoute
+  '/staff/': typeof StaffIndexRoute
+  '/staff/members/$memberId': typeof StaffMembersMemberIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -138,9 +191,15 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/how-it-works'
     | '/login'
+    | '/plans'
     | '/privacy'
     | '/reset-password'
+    | '/staff'
     | '/terms'
+    | '/staff/plans'
+    | '/staff/report'
+    | '/staff/'
+    | '/staff/members/$memberId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -152,9 +211,14 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/how-it-works'
     | '/login'
+    | '/plans'
     | '/privacy'
     | '/reset-password'
     | '/terms'
+    | '/staff/plans'
+    | '/staff/report'
+    | '/staff'
+    | '/staff/members/$memberId'
   id:
     | '__root__'
     | '/'
@@ -166,9 +230,15 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/how-it-works'
     | '/login'
+    | '/plans'
     | '/privacy'
     | '/reset-password'
+    | '/staff'
     | '/terms'
+    | '/staff/plans'
+    | '/staff/report'
+    | '/staff/'
+    | '/staff/members/$memberId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -181,8 +251,10 @@ export interface RootRouteChildren {
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   HowItWorksRoute: typeof HowItWorksRoute
   LoginRoute: typeof LoginRoute
+  PlansRoute: typeof PlansRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  StaffRoute: typeof StaffRouteWithChildren
   TermsRoute: typeof TermsRoute
 }
 
@@ -251,6 +323,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/plans': {
+      id: '/plans'
+      path: '/plans'
+      fullPath: '/plans'
+      preLoaderRoute: typeof PlansRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacy': {
       id: '/privacy'
       path: '/privacy'
@@ -265,6 +344,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/staff': {
+      id: '/staff'
+      path: '/staff'
+      fullPath: '/staff'
+      preLoaderRoute: typeof StaffRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -272,8 +358,52 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/staff/': {
+      id: '/staff/'
+      path: '/'
+      fullPath: '/staff/'
+      preLoaderRoute: typeof StaffIndexRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/plans': {
+      id: '/staff/plans'
+      path: '/plans'
+      fullPath: '/staff/plans'
+      preLoaderRoute: typeof StaffPlansRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/report': {
+      id: '/staff/report'
+      path: '/report'
+      fullPath: '/staff/report'
+      preLoaderRoute: typeof StaffReportRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/members/$memberId': {
+      id: '/staff/members/$memberId'
+      path: '/members/$memberId'
+      fullPath: '/staff/members/$memberId'
+      preLoaderRoute: typeof StaffMembersMemberIdRouteImport
+      parentRoute: typeof StaffRoute
+    }
   }
 }
+
+interface StaffRouteChildren {
+  StaffPlansRoute: typeof StaffPlansRoute
+  StaffReportRoute: typeof StaffReportRoute
+  StaffIndexRoute: typeof StaffIndexRoute
+  StaffMembersMemberIdRoute: typeof StaffMembersMemberIdRoute
+}
+
+const StaffRouteChildren: StaffRouteChildren = {
+  StaffPlansRoute: StaffPlansRoute,
+  StaffReportRoute: StaffReportRoute,
+  StaffIndexRoute: StaffIndexRoute,
+  StaffMembersMemberIdRoute: StaffMembersMemberIdRoute,
+}
+
+const StaffRouteWithChildren = StaffRoute._addFileChildren(StaffRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -285,8 +415,10 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordRoute: ForgotPasswordRoute,
   HowItWorksRoute: HowItWorksRoute,
   LoginRoute: LoginRoute,
+  PlansRoute: PlansRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  StaffRoute: StaffRouteWithChildren,
   TermsRoute: TermsRoute,
 }
 export const routeTree = rootRouteImport
