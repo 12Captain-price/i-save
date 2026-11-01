@@ -13,6 +13,8 @@ const base: ReceiptDetail = {
   officeReceiptNo: "testing 4",
   issuedAt: "2026-11-01T11:20:00Z",
   reversed: false,
+  ledgerId: "l1",
+  reversal: null,
   memberId: "m1",
   memberNumber: "ISV-000001",
   memberName: "Tanaka Chikanya",
@@ -43,8 +45,23 @@ describe("ReceiptSlip", () => {
   });
 
   it("warns clearly when the payment was reversed", () => {
-    render(<ReceiptSlip receipt={{ ...base, reversed: true }} printedAt="x" />);
-    expect(screen.getByRole("alert")).toHaveTextContent(/no longer valid/i);
+    render(
+      <ReceiptSlip
+        receipt={{
+          ...base,
+          reversed: true,
+          reversal: {
+            reversedAt: "2026-11-01T12:00:00Z",
+            reason: "Entered against wrong member",
+            reversedByName: "Office Clerk",
+          },
+        }}
+        printedAt="x"
+      />,
+    );
+    const alert = screen.getByRole("alert");
+    expect(alert).toHaveTextContent(/no longer valid/i);
+    expect(alert).toHaveTextContent(/Entered against wrong member/);
   });
 
   it("falls back when the staff name is unknown", () => {

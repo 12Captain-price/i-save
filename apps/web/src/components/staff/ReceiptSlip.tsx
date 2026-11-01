@@ -48,12 +48,20 @@ export function ReceiptSlip({
       </header>
 
       {receipt.reversed && (
-        <p
+        <div
           role="alert"
-          className="mt-4 rounded border-2 border-red-700 p-2 text-center text-sm font-bold text-red-700 uppercase"
+          className="mt-4 rounded border-2 border-red-700 p-2 text-center text-sm text-red-700"
         >
-          Reversed. This receipt is no longer valid.
-        </p>
+          <p className="font-bold uppercase">
+            Reversed. This receipt is no longer valid.
+          </p>
+          {receipt.reversal && (
+            <p className="mt-1 text-xs">
+              {formatDateTime(receipt.reversal.reversedAt)}
+              {receipt.reversal.reason ? `: ${receipt.reversal.reason}` : ""}
+            </p>
+          )}
+        </div>
       )}
 
       <dl className="mt-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">

@@ -170,7 +170,17 @@ export function useMemberReceipts(memberId: string) {
   });
 }
 
+export type ReceiptReversal = {
+  reversedAt: string;
+  reason: string | null;
+  reversedByName: string | null;
+};
+
 export type ReceiptDetail = Receipt & {
+  /** The ledger row this receipt is for. Needed to reverse the payment. */
+  ledgerId: string;
+  /** Filled in when `reversed` is true. */
+  reversal: ReceiptReversal | null;
   memberId: string;
   memberNumber: string;
   memberName: string;
@@ -209,27 +219,62 @@ export function useReceiptDetail(receiptNumber: string) {
         })
         .parse(data);
 
-      // Who recorded it. This is a nice-to-have, so a failure here never blocks the receipt.
-      let issuedByName: string | null = null;
+      // Who recorded it, and (if reversed) who reversed it and why. These are extras, so a
+      // failure here never blocks the receipt from showing.
       const issued = await supabase
         .from("receipts")
-        .select("issued_by")
+        .select("issued_by, ledger_id")
         .eq("id", r.id)
         .maybeSingle();
-      const issuerId = z
-        .object({ issued_by: z.string().nullable() })
+      const issuedRow = z
+        .object({ issued_by: z.string().nullable(), ledger_id: z.string() })
         .safeParse(issued.data);
-      if (issuerId.success && issuerId.data.issued_by) {
+      if (!issuedRow.success) {
+        throw new Error("The receipt could not be read. Please try again.");
+      }
+      const ledgerId = issuedRow.data.ledger_id;
+
+      let reversalRow: {
+        created_at: string;
+        reason: string | null;
+        created_by: string | null;
+      } | null = null;
+      if (r.reversed) {
+        const rev = await supabase
+          .from("ledger_transactions")
+          .select("created_at, reason, created_by")
+          .eq("reverses_id", ledgerId)
+          .maybeSingle();
+        const parsedRev = z
+          .object({
+            created_at: z.string(),
+            reason: z.string().nullable(),
+            created_by: z.string().nullable(),
+          })
+          .safeParse(rev.data);
+        if (parsedRev.success) reversalRow = parsedRev.data;
+      }
+
+      const nameOf = async (id: string | null): Promise<string | null> => {
+        if (!id) return null;
         const who = await supabase
           .from("profiles")
           .select("full_name")
-          .eq("id", issuerId.data.issued_by)
+          .eq("id", id)
           .maybeSingle();
-        const name = z.object({ full_name: z.string() }).safeParse(who.data);
-        if (name.success && name.data.full_name.trim() !== "") {
-          issuedByName = name.data.full_name;
-        }
-      }
+        const parsed = z.object({ full_name: z.string() }).safeParse(who.data);
+        return parsed.success && parsed.data.full_name.trim() !== ""
+          ? parsed.data.full_name
+          : null;
+      };
+      const issuedByName = await nameOf(issuedRow.data.issued_by);
+      const reversal: ReceiptReversal | null = reversalRow
+        ? {
+            reversedAt: reversalRow.created_at,
+            reason: reversalRow.reason,
+            reversedByName: await nameOf(reversalRow.created_by),
+          }
+        : null;
 
       return {
         id: r.id,
@@ -241,6 +286,8 @@ export function useReceiptDetail(receiptNumber: string) {
         officeReceiptNo: r.office_receipt_no,
         issuedAt: r.issued_at,
         reversed: r.reversed,
+        ledgerId,
+        reversal,
         memberId: r.member_id,
         memberNumber: r.member_number,
         memberName: r.full_name,
@@ -436,6 +483,19 @@ export async function recordOfficePayment(
     receiptNumber: parsed.receipt_number,
     alreadyRecorded: parsed.already_recorded,
   };
+}
+
+/**
+ * Reverses a recorded payment. Nothing is deleted: the database adds a linked reversal to the
+ * ledger, keeps the receipt (shown as reversed), puts the due contribution or invoice back,
+ * writes the audit log and tells the member.
+ */
+export async function reversePayment(ledgerId: string, reason: string) {
+  const { error } = await supabase.rpc("reverse_ledger_transaction", {
+    p_ledger_id: ledgerId,
+    p_reason: reason.trim(),
+  });
+  if (error) throw error;
 }
 
 /* ------------------------------------------------------------------ */

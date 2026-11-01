@@ -8,6 +8,8 @@ import {
   providerLabel,
   purposeLabel,
   receiptPurposeNote,
+  reversalConsequences,
+  validateReversalReason,
   staffErrorMessage,
   validateNationalId,
   validateReceiptNo,
@@ -112,5 +114,24 @@ describe("receipt wording", () => {
   });
   it("adds no note for a purpose it does not know", () => {
     expect(receiptPurposeNote("something_else")).toBe("");
+  });
+});
+
+describe("reversals", () => {
+  it("needs a real reason", () => {
+    expect(validateReversalReason("")).not.toBeNull();
+    expect(validateReversalReason("   oops ")).not.toBeNull();
+    expect(validateReversalReason("Wrong member")).toBeNull();
+    expect(validateReversalReason("x".repeat(301))).not.toBeNull();
+  });
+  it("tells staff a contribution becomes due again", () => {
+    expect(reversalConsequences("savings_contribution").join(" ")).toMatch(
+      /due again/i,
+    );
+  });
+  it("tells staff a registration fee reversal does not deactivate the member", () => {
+    expect(reversalConsequences("registration_fee").join(" ")).toMatch(
+      /stays active/i,
+    );
   });
 });

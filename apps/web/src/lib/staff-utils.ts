@@ -42,6 +42,41 @@ export function receiptPurposeNote(purpose: string): string {
   return "";
 }
 
+/** The database needs a reason of at least 5 characters for every reversal. */
+export function validateReversalReason(input: string): string | null {
+  const value = input.trim();
+  if (value.length < 5) {
+    return "Say why this payment is being reversed (at least 5 characters).";
+  }
+  if (value.length > 300) {
+    return "Keep the reason under 300 characters.";
+  }
+  return null;
+}
+
+/** What staff should expect before they confirm a reversal, in plain words. */
+export function reversalConsequences(purpose: string): string[] {
+  if (purpose === "savings_contribution") {
+    return [
+      "The member's confirmed savings go down by this amount.",
+      "The contribution becomes due again, so it can be collected with a new receipt.",
+    ];
+  }
+  if (purpose === "monthly_subscription") {
+    return [
+      "The fees paid total goes down by this amount.",
+      "If this paid a subscription invoice, that invoice becomes unpaid again.",
+    ];
+  }
+  if (purpose === "registration_fee") {
+    return [
+      "The fees paid total goes down by this amount.",
+      "The member stays active. Ask an administrator if the account should be suspended.",
+    ];
+  }
+  return ["The amount is taken back off the member's account."];
+}
+
 export function isStaffRole(roles: AppRole[]): boolean {
   return roles.some(
     (r) => r === "finance" || r === "admin" || r === "super_admin",

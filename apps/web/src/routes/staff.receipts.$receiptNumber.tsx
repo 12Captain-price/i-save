@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { Printer } from "lucide-react";
 import { ReceiptSlip } from "@/components/staff/ReceiptSlip";
+import { ReverseReceiptCard } from "@/components/staff/ReverseReceiptCard";
 import { Button } from "@/components/ui/button";
 import { useReceiptDetail } from "@/lib/staff";
 import { formatDateTime, staffErrorMessage } from "@/lib/staff-utils";
@@ -67,6 +68,7 @@ function ReceiptPage() {
         Printing again later gives a copy of the same receipt. The receipt
         number and the book number stay the same.
       </p>
+      <ReverseReceiptCard receipt={r} />
     </div>
   );
 }
