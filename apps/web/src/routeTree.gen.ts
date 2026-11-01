@@ -14,6 +14,7 @@ import { Route as AccountRouteImport } from './routes/account'
 import { Route as ApplyRouteImport } from './routes/apply'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as DisclosuresRouteImport } from './routes/disclosures'
+import { Route as FaqsRouteImport } from './routes/faqs'
 import { Route as FeesRouteImport } from './routes/fees'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
@@ -55,6 +56,11 @@ const ContactRoute = ContactRouteImport.update({
 const DisclosuresRoute = DisclosuresRouteImport.update({
   id: '/disclosures',
   path: '/disclosures',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqsRoute = FaqsRouteImport.update({
+  id: '/faqs',
+  path: '/faqs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeesRoute = FeesRouteImport.update({
@@ -150,6 +156,7 @@ export interface FileRoutesByFullPath {
   '/apply': typeof ApplyRoute
   '/contact': typeof ContactRoute
   '/disclosures': typeof DisclosuresRoute
+  '/faqs': typeof FaqsRoute
   '/fees': typeof FeesRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
@@ -174,6 +181,7 @@ export interface FileRoutesByTo {
   '/apply': typeof ApplyRoute
   '/contact': typeof ContactRoute
   '/disclosures': typeof DisclosuresRoute
+  '/faqs': typeof FaqsRoute
   '/fees': typeof FeesRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
@@ -198,6 +206,7 @@ export interface FileRoutesById {
   '/apply': typeof ApplyRoute
   '/contact': typeof ContactRoute
   '/disclosures': typeof DisclosuresRoute
+  '/faqs': typeof FaqsRoute
   '/fees': typeof FeesRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
@@ -224,6 +233,7 @@ export interface FileRouteTypes {
     | '/apply'
     | '/contact'
     | '/disclosures'
+    | '/faqs'
     | '/fees'
     | '/forgot-password'
     | '/how-it-works'
@@ -248,6 +258,7 @@ export interface FileRouteTypes {
     | '/apply'
     | '/contact'
     | '/disclosures'
+    | '/faqs'
     | '/fees'
     | '/forgot-password'
     | '/how-it-works'
@@ -271,6 +282,7 @@ export interface FileRouteTypes {
     | '/apply'
     | '/contact'
     | '/disclosures'
+    | '/faqs'
     | '/fees'
     | '/forgot-password'
     | '/how-it-works'
@@ -296,6 +308,7 @@ export interface RootRouteChildren {
   ApplyRoute: typeof ApplyRoute
   ContactRoute: typeof ContactRoute
   DisclosuresRoute: typeof DisclosuresRoute
+  FaqsRoute: typeof FaqsRoute
   FeesRoute: typeof FeesRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   HowItWorksRoute: typeof HowItWorksRoute
@@ -342,6 +355,13 @@ declare module '@tanstack/react-router' {
       path: '/disclosures'
       fullPath: '/disclosures'
       preLoaderRoute: typeof DisclosuresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faqs': {
+      id: '/faqs'
+      path: '/faqs'
+      fullPath: '/faqs'
+      preLoaderRoute: typeof FaqsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/fees': {
@@ -496,6 +516,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApplyRoute: ApplyRoute,
   ContactRoute: ContactRoute,
   DisclosuresRoute: DisclosuresRoute,
+  FaqsRoute: FaqsRoute,
   FeesRoute: FeesRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   HowItWorksRoute: HowItWorksRoute,
