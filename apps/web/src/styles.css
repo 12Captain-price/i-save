@@ -189,3 +189,15 @@
     transform: none;
   }
 }
+
+/* Printing: the receipt page prints on white paper whatever the screen theme is. */
+@media print {
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  @page {
+    margin: 12mm;
+  }
+}

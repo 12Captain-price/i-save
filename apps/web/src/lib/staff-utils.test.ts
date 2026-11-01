@@ -5,7 +5,9 @@ import {
   isAdminRole,
   isStaffRole,
   normalizeNationalId,
+  providerLabel,
   purposeLabel,
+  receiptPurposeNote,
   staffErrorMessage,
   validateNationalId,
   validateReceiptNo,
@@ -89,5 +91,26 @@ describe("display helpers", () => {
     expect(staffErrorMessage(null)).toBe(
       "Something went wrong. Please try again.",
     );
+  });
+});
+
+describe("receipt wording", () => {
+  it("names how the member paid", () => {
+    expect(providerLabel("office_cash")).toBe("Cash");
+    expect(providerLabel("office_bank_transfer")).toBe("Bank transfer");
+    expect(providerLabel("mobile_money")).toBe("Mobile money");
+  });
+  it("says savings contributions go to savings", () => {
+    expect(receiptPurposeNote("savings_contribution")).toMatch(
+      /added to your savings/i,
+    );
+  });
+  it("says fees are not savings", () => {
+    for (const purpose of ["registration_fee", "monthly_subscription"]) {
+      expect(receiptPurposeNote(purpose)).toMatch(/not added to your savings/i);
+    }
+  });
+  it("adds no note for a purpose it does not know", () => {
+    expect(receiptPurposeNote("something_else")).toBe("");
   });
 });

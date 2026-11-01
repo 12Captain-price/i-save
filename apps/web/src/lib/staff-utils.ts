@@ -18,6 +18,30 @@ export function purposeLabel(purpose: string): string {
   );
 }
 
+const PROVIDER_LABEL: Record<string, string> = {
+  office_cash: "Cash",
+  office_bank_transfer: "Bank transfer",
+};
+
+/** How the member paid, in words staff and members recognise. */
+export function providerLabel(provider: string): string {
+  return (
+    PROVIDER_LABEL[provider] ??
+    provider.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase())
+  );
+}
+
+/** One plain line on the receipt saying where the money went, so a fee is never mistaken for savings. */
+export function receiptPurposeNote(purpose: string): string {
+  if (purpose === "savings_contribution") {
+    return "This amount is added to your savings.";
+  }
+  if (purpose === "registration_fee" || purpose === "monthly_subscription") {
+    return "This is a fee. It is not added to your savings.";
+  }
+  return "";
+}
+
 export function isStaffRole(roles: AppRole[]): boolean {
   return roles.some(
     (r) => r === "finance" || r === "admin" || r === "super_admin",

@@ -14,6 +14,7 @@ import {
 } from "@/lib/staff";
 import {
   formatDateTime,
+  providerLabel,
   purposeLabel,
   staffErrorMessage,
 } from "@/lib/staff-utils";
@@ -21,11 +22,6 @@ import {
 export const Route = createFileRoute("/staff/members/$memberId")({
   component: MemberPage,
 });
-
-const PROVIDER_LABEL: Record<string, string> = {
-  office_cash: "Cash",
-  office_bank_transfer: "Bank transfer",
-};
 
 function MemberPage() {
   const { memberId } = Route.useParams();
@@ -209,7 +205,14 @@ function MemberPage() {
                     className="border-b border-border/60 last:border-0"
                   >
                     <td className="py-3 pr-4 font-medium">
-                      {r.receiptNumber}
+                      <Link
+                        to="/staff/receipts/$receiptNumber"
+                        params={{ receiptNumber: r.receiptNumber }}
+                        className="text-primary underline underline-offset-4"
+                        aria-label={`Open receipt ${r.receiptNumber} to print`}
+                      >
+                        {r.receiptNumber}
+                      </Link>
                       {r.reversed && (
                         <span className="ml-2">
                           <StatusPill status="reversed" />
@@ -218,9 +221,7 @@ function MemberPage() {
                     </td>
                     <td className="py-3 pr-4">{formatDateTime(r.issuedAt)}</td>
                     <td className="py-3 pr-4">{purposeLabel(r.purpose)}</td>
-                    <td className="py-3 pr-4">
-                      {PROVIDER_LABEL[r.provider] ?? r.provider}
-                    </td>
+                    <td className="py-3 pr-4">{providerLabel(r.provider)}</td>
                     <td className="py-3 pr-4">{r.officeReceiptNo ?? "—"}</td>
                     <td className="py-3 text-right font-medium">
                       {formatMoney(r.amount, r.currency)}

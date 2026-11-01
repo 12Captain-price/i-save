@@ -170,6 +170,86 @@ export function useMemberReceipts(memberId: string) {
   });
 }
 
+export type ReceiptDetail = Receipt & {
+  memberId: string;
+  memberNumber: string;
+  memberName: string;
+  /** Name of the staff member who recorded the payment, if it can be read. */
+  issuedByName: string | null;
+};
+
+/** One receipt by its number (for example RCT-00000004), for the print page. */
+export function useReceiptDetail(receiptNumber: string) {
+  return useQuery({
+    queryKey: ["staff", "receipt", receiptNumber],
+    queryFn: async (): Promise<ReceiptDetail | null> => {
+      const { data, error } = await supabase
+        .from("member_receipts")
+        .select(
+          "id, receipt_number, purpose, amount, currency, provider, office_receipt_no, issued_at, reversed, member_id, member_number, full_name",
+        )
+        .eq("receipt_number", receiptNumber)
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) return null;
+      const r = z
+        .object({
+          id: z.string(),
+          receipt_number: z.string(),
+          purpose: z.string(),
+          amount: NumericLike,
+          currency: z.string(),
+          provider: z.string(),
+          office_receipt_no: z.string().nullable(),
+          issued_at: z.string(),
+          reversed: z.boolean(),
+          member_id: z.string(),
+          member_number: z.string(),
+          full_name: z.string(),
+        })
+        .parse(data);
+
+      // Who recorded it. This is a nice-to-have, so a failure here never blocks the receipt.
+      let issuedByName: string | null = null;
+      const issued = await supabase
+        .from("receipts")
+        .select("issued_by")
+        .eq("id", r.id)
+        .maybeSingle();
+      const issuerId = z
+        .object({ issued_by: z.string().nullable() })
+        .safeParse(issued.data);
+      if (issuerId.success && issuerId.data.issued_by) {
+        const who = await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("id", issuerId.data.issued_by)
+          .maybeSingle();
+        const name = z.object({ full_name: z.string() }).safeParse(who.data);
+        if (name.success && name.data.full_name.trim() !== "") {
+          issuedByName = name.data.full_name;
+        }
+      }
+
+      return {
+        id: r.id,
+        receiptNumber: r.receipt_number,
+        purpose: r.purpose,
+        amount: toMoney(r.amount),
+        currency: r.currency,
+        provider: r.provider,
+        officeReceiptNo: r.office_receipt_no,
+        issuedAt: r.issued_at,
+        reversed: r.reversed,
+        memberId: r.member_id,
+        memberNumber: r.member_number,
+        memberName: r.full_name,
+        issuedByName,
+      };
+    },
+  });
+}
+
 export type DueItem = {
   id: string;
   dueDate: string;

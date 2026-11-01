@@ -1,6 +1,8 @@
 import { useRef, useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { Printer } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Field, inputClass } from "@/components/ui/field";
 import {
   compareMoney,
@@ -247,7 +249,15 @@ export function RecordPaymentCard({
             the member.
           </p>
         </div>
-        <div className="mt-5">
+        <div className="mt-5 flex flex-wrap gap-3">
+          <Link
+            to="/staff/receipts/$receiptNumber"
+            params={{ receiptNumber: result.receiptNumber }}
+            className={buttonVariants({ variant: "default" })}
+          >
+            <Printer aria-hidden="true" />
+            Print receipt
+          </Link>
           <Button variant="outline" onClick={startAnother}>
             Record another payment
           </Button>

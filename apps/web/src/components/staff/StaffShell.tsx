@@ -63,12 +63,12 @@ export function StaffShell() {
 
   return (
     <Frame>
-      <p className="text-[0.7rem] font-bold tracking-[0.16em] text-primary uppercase">
+      <p className="print:hidden text-[0.7rem] font-bold tracking-[0.16em] text-primary uppercase">
         Staff area
       </p>
       <nav
         aria-label="Staff"
-        className="mt-3 mb-8 flex gap-6 border-b border-border"
+        className="mt-3 mb-8 flex gap-6 border-b border-border print:hidden"
       >
         <Link
           to="/staff"

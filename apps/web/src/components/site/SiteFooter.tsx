@@ -3,7 +3,7 @@ import { INFO_LINKS, NAV } from "./nav";
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-border bg-surface-deep">
+    <footer className="print:hidden border-t border-border bg-surface-deep">
       <div className="mx-auto grid max-w-7xl gap-10 px-6 py-14 md:grid-cols-[1.5fr_1fr_1fr]">
         <div>
           <Logo />
