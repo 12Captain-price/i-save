@@ -54,3 +54,13 @@ begin
   perform t.expect_error('update public.ledger_search set reason = ''x''', '%');
   perform t.as_owner();
 end $$;
+
+-- 4. (migration 006) A "plan chosen" row says which member it was about.
+do $$
+begin
+  perform t.as_user('00000000-0000-0000-0000-0000000000a1');
+  perform t.assert((select count(*) from public.audit_feed where action = 'plan.enrolled') > 0, 'there are plan rows to check');
+  perform t.assert((select count(*) from public.audit_feed where action = 'plan.enrolled' and subject_member_id is null) = 0, 'every plan row names its member');
+  perform t.assert(exists (select 1 from public.audit_feed where action = 'plan.enrolled' and subject_name = 'Member Four'), 'the plan row names the right member');
+  perform t.as_owner();
+end $$;
