@@ -135,3 +135,81 @@ describe("reversals", () => {
     );
   });
 });
+
+import {
+  auditActionLabel,
+  auditDetailsSummary,
+  buildLedgerSearchFilter,
+  dayRangeToTimestamps,
+  isDayRangeBackwards,
+  isSensitiveAuditAction,
+} from "./staff-utils";
+
+describe("ledger search filter", () => {
+  it("returns null for an empty search", () => {
+    expect(buildLedgerSearchFilter("   ")).toBeNull();
+  });
+  it("searches member, receipt and book numbers", () => {
+    const f = buildLedgerSearchFilter("RCT-00000005") ?? "";
+    expect(f).toContain('receipt_number.ilike."%RCT-00000005%"');
+    expect(f).toContain('office_receipt_no.ilike."%RCT-00000005%"');
+    expect(f).toContain("member_number.ilike");
+    expect(f).toContain("full_name.ilike");
+  });
+  it("cannot be used to add its own conditions", () => {
+    const f = buildLedgerSearchFilter('x%",member_id.neq.0,"') ?? "";
+    // Still exactly the five searches, each with its value wrapped in one pair of quotes.
+    const parts = f.split(",");
+    expect(parts).toHaveLength(5);
+    for (const part of parts) {
+      expect(part).toMatch(/^[a-z_]+\.ilike\."[^"]*"$/);
+    }
+  });
+});
+
+describe("day range", () => {
+  it("cuts days at midnight Zimbabwe time and includes the end day", () => {
+    const r = dayRangeToTimestamps("2026-11-01", "2026-11-01");
+    expect(r.from).toBe("2026-10-31T22:00:00.000Z");
+    expect(r.to).toBe("2026-11-01T22:00:00.000Z");
+  });
+  it("ignores empty or invalid days", () => {
+    expect(dayRangeToTimestamps("", "nope")).toEqual({ from: null, to: null });
+  });
+  it("spots a backwards range", () => {
+    expect(isDayRangeBackwards("2026-11-02", "2026-11-01")).toBe(true);
+    expect(isDayRangeBackwards("2026-11-01", "2026-11-01")).toBe(false);
+    expect(isDayRangeBackwards("", "2026-11-01")).toBe(false);
+  });
+});
+
+describe("audit wording", () => {
+  it("labels known and unknown actions", () => {
+    expect(auditActionLabel("ledger.reversed")).toBe("Payment reversed");
+    expect(auditActionLabel("some.new_action")).toBe("Some new action");
+  });
+  it("flags reversals and ID views", () => {
+    expect(isSensitiveAuditAction("ledger.reversed")).toBe(true);
+    expect(isSensitiveAuditAction("id.viewed")).toBe(true);
+    expect(isSensitiveAuditAction("payment.confirmed")).toBe(false);
+  });
+  it("summarises a reversal with its reason", () => {
+    expect(
+      auditDetailsSummary("ledger.reversed", {
+        reason: "Wrong amount",
+        due_item_reinstated: true,
+      }),
+    ).toBe("Reason: Wrong amount. Contribution is due again");
+  });
+  it("summarises an office payment without ever showing an ID number", () => {
+    expect(
+      auditDetailsSummary("office_payment.recorded", {
+        amount: 5,
+        currency: "USD",
+        method: "office_cash",
+        receipt_no: "R-4001",
+      }),
+    ).toBe("5 USD · Cash · Receipt book no. R-4001");
+    expect(auditDetailsSummary("id.viewed", {})).toBe("");
+  });
+});

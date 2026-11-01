@@ -191,3 +191,123 @@ export function formatDate(iso: string): string {
 export function formatCalendarDay(day: string): string {
   return reportDay.format(new Date(`${day}T00:00:00Z`));
 }
+
+/* ------------------------------------------------------------------ */
+/* Ledger search and audit log                                         */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Builds the PostgREST `or` filter for the ledger search box, or null for an empty search.
+ * Matches member name, member number, receipt number (ours), the paper receipt book number
+ * and the ledger reference. Syntax characters are stripped so a search can never add its
+ * own conditions.
+ */
+export function buildLedgerSearchFilter(term: string): string | null {
+  const cleaned = term
+    .replace(/[,()%*"\\]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (cleaned === "") return null;
+  return [
+    `full_name.ilike."%${cleaned}%"`,
+    `member_number.ilike."%${cleaned}%"`,
+    `receipt_number.ilike."%${cleaned}%"`,
+    `office_receipt_no.ilike."%${cleaned}%"`,
+    `reference.ilike."%${cleaned}%"`,
+  ].join(",");
+}
+
+const DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * Turns two calendar days (from date inputs) into the exact moments to filter on. Days are
+ * Zimbabwe days (midnight Africa/Harare, which is UTC+2 all year), the same cut the daily
+ * report uses. `to` is exclusive: the start of the day AFTER the chosen end day, so the end
+ * day is fully included. Anything that is not a real date is ignored.
+ */
+export function dayRangeToTimestamps(
+  from: string,
+  to: string,
+): { from: string | null; to: string | null } {
+  const start = (day: string) => {
+    if (!DAY_PATTERN.test(day)) return null;
+    const d = new Date(`${day}T00:00:00+02:00`);
+    return Number.isNaN(d.getTime()) ? null : d;
+  };
+  const a = start(from);
+  const b = start(to);
+  return {
+    from: a ? a.toISOString() : null,
+    to: b ? new Date(b.getTime() + 24 * 60 * 60 * 1000).toISOString() : null,
+  };
+}
+
+/** True when both days are filled in and the end is before the start. */
+export function isDayRangeBackwards(from: string, to: string): boolean {
+  return DAY_PATTERN.test(from) && DAY_PATTERN.test(to) && to < from;
+}
+
+const AUDIT_ACTION_LABEL: Record<string, string> = {
+  "ledger.reversed": "Payment reversed",
+  "office_payment.recorded": "Office payment recorded",
+  "payment.created": "Payment started",
+  "payment.confirmed": "Payment confirmed",
+  "payment.failed": "Payment failed",
+  "payment.cancelled": "Payment cancelled",
+  "plan.enrolled": "Plan chosen",
+  "id.sighted": "ID sighted",
+  "id.viewed": "ID number viewed",
+  "daily_report.signed_off": "Daily report signed off",
+};
+
+/** Plain words for an audit action code; unknown codes are still readable. */
+export function auditActionLabel(action: string): string {
+  return (
+    AUDIT_ACTION_LABEL[action] ??
+    action.replace(/[._]/g, " ").replace(/^\w/, (c) => c.toUpperCase())
+  );
+}
+
+/** Actions an administrator should look at first. */
+export function isSensitiveAuditAction(action: string): boolean {
+  return action === "ledger.reversed" || action === "id.viewed";
+}
+
+/** The one-line "what happened" shown beside an audit row, built only from fields we know. */
+export function auditDetailsSummary(
+  action: string,
+  details: Record<string, unknown>,
+): string {
+  const text = (key: string) =>
+    typeof details[key] === "string" ? (details[key] as string) : null;
+  if (action === "ledger.reversed") {
+    const parts = [text("reason") ? `Reason: ${text("reason")}` : null];
+    if (details.due_item_reinstated === true) {
+      parts.push("Contribution is due again");
+    }
+    if (details.invoice_reinstated === true) {
+      parts.push("Invoice is unpaid again");
+    }
+    return parts.filter(Boolean).join(". ");
+  }
+  if (action === "office_payment.recorded") {
+    const amount =
+      typeof details.amount === "number" || typeof details.amount === "string"
+        ? `${details.amount} ${text("currency") ?? ""}`.trim()
+        : null;
+    const method = text("method");
+    const book = text("receipt_no");
+    return [
+      amount,
+      method ? providerLabel(method) : null,
+      book ? `Receipt book no. ${book}` : null,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+  }
+  if (action === "daily_report.signed_off") {
+    const day = text("report_date");
+    return day ? `Report for ${day}` : "";
+  }
+  return "";
+}

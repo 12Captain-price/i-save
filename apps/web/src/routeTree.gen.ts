@@ -24,6 +24,8 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as StaffRouteImport } from './routes/staff'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as StaffIndexRouteImport } from './routes/staff.index'
+import { Route as StaffAuditRouteImport } from './routes/staff.audit'
+import { Route as StaffLedgerRouteImport } from './routes/staff.ledger'
 import { Route as StaffPlansRouteImport } from './routes/staff.plans'
 import { Route as StaffReportRouteImport } from './routes/staff.report'
 import { Route as StaffMembersMemberIdRouteImport } from './routes/staff.members.$memberId'
@@ -104,6 +106,16 @@ const StaffIndexRoute = StaffIndexRouteImport.update({
   path: '/',
   getParentRoute: () => StaffRoute,
 } as any)
+const StaffAuditRoute = StaffAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffLedgerRoute = StaffLedgerRouteImport.update({
+  id: '/ledger',
+  path: '/ledger',
+  getParentRoute: () => StaffRoute,
+} as any)
 const StaffPlansRoute = StaffPlansRouteImport.update({
   id: '/plans',
   path: '/plans',
@@ -141,6 +153,8 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/staff': typeof StaffRouteWithChildren
   '/terms': typeof TermsRoute
+  '/staff/audit': typeof StaffAuditRoute
+  '/staff/ledger': typeof StaffLedgerRoute
   '/staff/plans': typeof StaffPlansRoute
   '/staff/report': typeof StaffReportRoute
   '/staff/': typeof StaffIndexRoute
@@ -161,6 +175,8 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
+  '/staff/audit': typeof StaffAuditRoute
+  '/staff/ledger': typeof StaffLedgerRoute
   '/staff/plans': typeof StaffPlansRoute
   '/staff/report': typeof StaffReportRoute
   '/staff': typeof StaffIndexRoute
@@ -183,6 +199,8 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/staff': typeof StaffRouteWithChildren
   '/terms': typeof TermsRoute
+  '/staff/audit': typeof StaffAuditRoute
+  '/staff/ledger': typeof StaffLedgerRoute
   '/staff/plans': typeof StaffPlansRoute
   '/staff/report': typeof StaffReportRoute
   '/staff/': typeof StaffIndexRoute
@@ -206,6 +224,8 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/staff'
     | '/terms'
+    | '/staff/audit'
+    | '/staff/ledger'
     | '/staff/plans'
     | '/staff/report'
     | '/staff/'
@@ -226,6 +246,8 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reset-password'
     | '/terms'
+    | '/staff/audit'
+    | '/staff/ledger'
     | '/staff/plans'
     | '/staff/report'
     | '/staff'
@@ -247,6 +269,8 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/staff'
     | '/terms'
+    | '/staff/audit'
+    | '/staff/ledger'
     | '/staff/plans'
     | '/staff/report'
     | '/staff/'
@@ -378,6 +402,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffIndexRouteImport
       parentRoute: typeof StaffRoute
     }
+    '/staff/audit': {
+      id: '/staff/audit'
+      path: '/audit'
+      fullPath: '/staff/audit'
+      preLoaderRoute: typeof StaffAuditRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/ledger': {
+      id: '/staff/ledger'
+      path: '/ledger'
+      fullPath: '/staff/ledger'
+      preLoaderRoute: typeof StaffLedgerRouteImport
+      parentRoute: typeof StaffRoute
+    }
     '/staff/plans': {
       id: '/staff/plans'
       path: '/plans'
@@ -410,6 +448,8 @@ declare module '@tanstack/react-router' {
 }
 
 interface StaffRouteChildren {
+  StaffAuditRoute: typeof StaffAuditRoute
+  StaffLedgerRoute: typeof StaffLedgerRoute
   StaffPlansRoute: typeof StaffPlansRoute
   StaffReportRoute: typeof StaffReportRoute
   StaffIndexRoute: typeof StaffIndexRoute
@@ -418,6 +458,8 @@ interface StaffRouteChildren {
 }
 
 const StaffRouteChildren: StaffRouteChildren = {
+  StaffAuditRoute: StaffAuditRoute,
+  StaffLedgerRoute: StaffLedgerRoute,
   StaffPlansRoute: StaffPlansRoute,
   StaffReportRoute: StaffReportRoute,
   StaffIndexRoute: StaffIndexRoute,

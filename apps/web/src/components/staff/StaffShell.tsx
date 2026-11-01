@@ -85,6 +85,22 @@ export function StaffShell() {
         >
           Daily report
         </Link>
+        <Link
+          to="/staff/ledger"
+          className={TAB_IDLE}
+          activeProps={{ className: TAB_ACTIVE, "aria-current": "page" }}
+        >
+          Ledger
+        </Link>
+        {isAdminRole(roles) && (
+          <Link
+            to="/staff/audit"
+            className={TAB_IDLE}
+            activeProps={{ className: TAB_ACTIVE, "aria-current": "page" }}
+          >
+            Audit log
+          </Link>
+        )}
         {isAdminRole(roles) && (
           <Link
             to="/staff/plans"
