@@ -8,8 +8,10 @@ import {
   Shield,
 } from "lucide-react";
 import { PublicLayout } from "@/components/site/PublicLayout";
+import { NextChapter } from "@/components/site/NextChapter";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import "@/components/site/homepage.css";
 
 export const Route = createFileRoute("/")({
   component: HomePage,
@@ -45,13 +47,13 @@ const GOALS = [
 ];
 
 const STEPS = [
-  ["Apply for membership", "Apply online, or ask the office to register you."],
+  ["Apply for membership.", "Apply online, or ask the office to register you."],
   [
-    "Pay the registration fee at the office",
+    "Pay the registration fee at the office.",
     "Staff record your payment and give you a numbered receipt. A confirmed registration fee activates your account.",
   ],
   [
-    "Choose a savings goal",
+    "Choose a savings goal.",
     "Once your account is active, pick a plan and save week by week. Every payment is recorded in your history.",
   ],
 ];
@@ -67,7 +69,7 @@ const EXPECT = [
   ],
   [
     "Plan terms are still being confirmed.",
-    "Plans shown are not approved offers until the organisation publishes them.",
+    "Plans are not approved offers until the organisation publishes them.",
   ],
   [
     "Withdrawals are not open yet.",
@@ -78,31 +80,18 @@ const EXPECT = [
 function HomePage() {
   return (
     <PublicLayout>
-      <section
-        aria-labelledby="home-title"
-        className="relative overflow-hidden"
-      >
-        <div
-          className="grid-lines absolute inset-0 opacity-40"
-          aria-hidden="true"
-        />
-        <div className="relative mx-auto max-w-7xl px-6 py-20 md:py-28">
-          <div className="animate-rise max-w-2xl">
-            <p className="text-sm font-semibold tracking-wide text-primary uppercase">
-              Saving today. Planning for tomorrow.
-            </p>
-            <h1
-              id="home-title"
-              className="mt-4 text-4xl font-extrabold md:text-6xl"
-            >
-              Save for what{" "}
-              <span className="text-primary">matters to you.</span>
+      <div className="home-page">
+        <section aria-labelledby="home-title" className="home-hero home-width">
+          <div className="home-hero-copy">
+            <p className="home-eyebrow">Saving today. Planning for tomorrow.</p>
+            <h1 id="home-title">
+              Save for what <span>matters to you.</span>
             </h1>
-            <p className="mt-6 text-lg text-muted-foreground">
-              Start with a goal. i-Save gives members a clear, recorded way to
-              save week by week, with every payment on the record.
+            <p className="home-lead">
+              From education to life’s unexpected moments, start with a goal and
+              explore your next steps with i-Save.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="home-actions">
               <a href="#goals" className={cn(buttonVariants({ size: "lg" }))}>
                 Explore savings goals
                 <ArrowRight aria-hidden="true" />
@@ -116,108 +105,126 @@ function HomePage() {
                 Apply for membership
               </a>
             </div>
-            <p className="mt-5 text-sm text-muted-foreground">
-              Already a member?{" "}
-              <a
-                href="/login"
-                className="text-primary underline underline-offset-4"
-              >
-                Log in
-              </a>
-              .
+            <p className="home-login">
+              Already have an activated account? <a href="/login">Log in</a>.
             </p>
           </div>
-        </div>
-      </section>
+          <NextChapter />
+        </section>
 
-      <section
-        id="goals"
-        aria-labelledby="goals-title"
-        className="border-y border-border bg-surface-deep"
-      >
-        <div className="mx-auto max-w-7xl px-6 py-16">
-          <p className="text-sm font-semibold tracking-wide text-primary uppercase">
-            Start with a purpose
-          </p>
-          <h2 id="goals-title" className="mt-2 text-3xl font-bold">
-            What are you saving for?
-          </h2>
-          <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {GOALS.map(({ label, purpose, Icon }) => (
-              <li
-                key={label}
-                className="flex gap-4 rounded-md border border-border bg-card p-5"
-              >
-                <Icon
-                  className="mt-1 h-6 w-6 shrink-0 text-portal-accent"
-                  aria-hidden="true"
-                />
+        <section
+          id="goals"
+          aria-labelledby="home-goals-title"
+          className="home-goals-section"
+        >
+          <div className="home-width">
+            <div className="home-section-heading">
+              <p className="home-eyebrow">Start with a purpose</p>
+              <h2 id="home-goals-title">What are you saving for?</h2>
+            </div>
+            <ul className="home-goals">
+              {GOALS.map(({ label, purpose, Icon }) => (
+                <li key={label}>
+                  <a
+                    href="/plans"
+                    aria-label={label + ": explore this category"}
+                    className="home-goal"
+                  >
+                    <Icon className="home-goal-icon" aria-hidden="true" />
+                    <div>
+                      <h3>{label}</h3>
+                      <p>{purpose}</p>
+                    </div>
+                    <ArrowRight
+                      className="home-goal-arrow"
+                      aria-hidden="true"
+                    />
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <p className="home-interest-note">
+              Choosing a category only shows your interest. Plan amounts and
+              terms are shown here once the organisation approves them.
+            </p>
+          </div>
+        </section>
+
+        <section
+          aria-labelledby="home-journey-title"
+          className="home-journey home-width"
+        >
+          <div className="home-section-heading">
+            <p className="home-eyebrow">A simple journey</p>
+            <h2 id="home-journey-title">Your next steps, clearly explained.</h2>
+          </div>
+          <ol className="home-stages">
+            {STEPS.map(([title, text], index) => (
+              <li key={title}>
+                <span className="home-stage-number" aria-hidden="true">
+                  0{index + 1}
+                </span>
                 <div>
-                  <h3 className="text-lg font-semibold">{label}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {purpose}
-                  </p>
+                  <h3>{title}</h3>
+                  <p>{text}</p>
                 </div>
               </li>
             ))}
-          </ul>
-          <p className="mt-6 max-w-2xl text-sm text-muted-foreground">
-            Choosing a category only shows your interest. Plan amounts and terms
-            are shown here once the organisation approves them.
-          </p>
-        </div>
-      </section>
+          </ol>
+          <a href="/how-it-works" className="home-text-link">
+            Read how it works
+            <ArrowRight size={17} aria-hidden="true" />
+          </a>
+        </section>
 
-      <section
-        aria-labelledby="journey-title"
-        className="mx-auto max-w-7xl px-6 py-16"
-      >
-        <p className="text-sm font-semibold tracking-wide text-primary uppercase">
-          A simple journey
-        </p>
-        <h2 id="journey-title" className="mt-2 text-3xl font-bold">
-          Your next steps, clearly explained.
-        </h2>
-        <ol className="mt-8 grid gap-6 md:grid-cols-3">
-          {STEPS.map(([title, text], index) => (
-            <li
-              key={title}
-              className="rounded-md border border-border bg-card p-6"
+        <section aria-labelledby="home-expect-title" className="home-expect">
+          <div className="home-width home-expect-layout">
+            <div>
+              <p className="home-eyebrow">Know what to expect</p>
+              <h2 id="home-expect-title">A little clarity before you begin.</h2>
+              <a href="/fees" className="home-text-link">
+                Fees and office payments
+                <ArrowRight size={17} aria-hidden="true" />
+              </a>
+            </div>
+            <ul>
+              {EXPECT.map(([title, text]) => (
+                <li key={title}>
+                  <h3>{title}</h3>
+                  <p>{text}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        <section
+          aria-labelledby="home-closing-title"
+          className="home-closing home-width"
+        >
+          <div>
+            <p className="home-eyebrow">Take your next step</p>
+            <h2 id="home-closing-title">Ready to begin with a goal?</h2>
+            <p className="mt-3 text-muted-foreground">
+              Start with a membership application. The office team can help with
+              questions along the way.
+            </p>
+            <a
+              href="/apply"
+              className={cn(buttonVariants({ size: "lg" }), "mt-6")}
             >
-              <span
-                className="font-display text-3xl font-bold text-primary"
-                aria-hidden="true"
-              >
-                0{index + 1}
-              </span>
-              <h3 className="mt-3 text-lg font-semibold">{title}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{text}</p>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      <section
-        aria-labelledby="expect-title"
-        className="border-t border-border bg-surface-deep"
-      >
-        <div className="mx-auto max-w-7xl px-6 py-16">
-          <p className="text-sm font-semibold tracking-wide text-primary uppercase">
-            Know what to expect
-          </p>
-          <h2 id="expect-title" className="mt-2 text-3xl font-bold">
-            A little clarity before you begin.
-          </h2>
-          <ul className="mt-8 grid gap-6 sm:grid-cols-2">
-            {EXPECT.map(([title, text]) => (
-              <li key={title}>
-                <h3 className="font-semibold">{title}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">{text}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
+              Apply for membership
+              <ArrowRight aria-hidden="true" />
+            </a>
+          </div>
+          <div className="home-contact">
+            <a href="/contact" className="home-help-link">
+              Need a hand? Contact the office
+              <ArrowRight size={16} aria-hidden="true" />
+            </a>
+          </div>
+        </section>
+      </div>
     </PublicLayout>
   );
 }
