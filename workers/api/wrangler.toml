@@ -16,3 +16,7 @@ SUPABASE_URL = "https://vbxqvccdadtpzrykizna.supabase.co"
 # The live address of the site. Local development overrides both in workers/api/.dev.vars.
 ALLOWED_ORIGIN = "https://i-save.persytchikanya.workers.dev"
 APP_URL = "https://i-save.persytchikanya.workers.dev"
+
+# Sends queued email notifications every 5 minutes (does nothing until Resend is configured).
+[triggers]
+crons = ["*/5 * * * *"]

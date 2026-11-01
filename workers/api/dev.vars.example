@@ -1,0 +1,8 @@
+# Copy to .dev.vars (git-ignored) for pnpm dev:worker. Never commit the real key.
+SUPABASE_SERVICE_ROLE_KEY=paste-the-secret-key-here
+# Local development: these override the live addresses in wrangler.toml.
+ALLOWED_ORIGIN=http://localhost:5173
+APP_URL=http://localhost:5173
+# Optional until the Resend account exists. EMAIL_FROM must be an address on a domain verified in Resend.
+RESEND_API_KEY=
+EMAIL_FROM=iSave <notifications@example.com>
