@@ -4,6 +4,8 @@ import type {
   RegisterApplicantResult,
 } from "@/lib/register-schema";
 
+// Empty means "same address as the website", which is how the live site works (one Worker
+// serves both). For local development, set VITE_API_URL=http://localhost:8787.
 const API_URL = (import.meta.env.VITE_API_URL ?? "").replace(/\/$/, "");
 
 /** An error from the Worker, with the per-field messages when there are any. */
@@ -22,11 +24,6 @@ export class RegisterError extends Error {
 export async function registerApplicant(
   input: RegisterApplicantOutput,
 ): Promise<RegisterApplicantResult> {
-  if (!API_URL) {
-    throw new RegisterError(
-      "Office registration is not set up yet (missing VITE_API_URL).",
-    );
-  }
   const { data } = await supabase.auth.getSession();
   const token = data.session?.access_token;
   if (!token) throw new RegisterError("Please sign in again.");
