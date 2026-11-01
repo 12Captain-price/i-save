@@ -35,8 +35,10 @@ function Row({
 const link = "text-primary underline underline-offset-4";
 
 function ContactPage() {
-  const { phone, whatsapp, email, address, hours } = OFFICE_CONTACT;
-  const hasAny = Boolean(phone || whatsapp || email || address || hours);
+  const { phones, whatsapp, email, address, hours } = OFFICE_CONTACT;
+  const hasAny = Boolean(
+    phones.length || whatsapp || email || address || hours,
+  );
   return (
     <PageShell
       eyebrow="Contact"
@@ -45,13 +47,13 @@ function ContactPage() {
     >
       {hasAny ? (
         <div className="grid gap-4 sm:grid-cols-2">
-          {phone && (
-            <Row icon={<Phone className="h-5 w-5" />} label="Phone">
-              <a className={link} href={"tel:" + phone.replace(/\s+/g, "")}>
-                {phone}
+          {phones.map(({ label, value }) => (
+            <Row key={value} icon={<Phone className="h-5 w-5" />} label={label}>
+              <a className={link} href={"tel:" + value.replace(/\s+/g, "")}>
+                {value}
               </a>
             </Row>
-          )}
+          ))}
           {whatsapp && (
             <Row icon={<MessageCircle className="h-5 w-5" />} label="WhatsApp">
               <a className={link} href={"https://wa.me/" + whatsapp}>
@@ -85,6 +87,18 @@ function ContactPage() {
           Office contact details will be published here soon.
         </p>
       )}
+      <section className="mt-8 rounded-md border border-border bg-card p-6">
+        <h2 className="text-lg font-semibold">Following up on an application?</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Give the name and email address you used to apply. Please contact the
+          office rather than submit another application. Do not send passwords or
+          payment details.
+        </p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Use a phone link to call, or the email link to open your email app. This
+          website does not send a message on your behalf.
+        </p>
+      </section>
     </PageShell>
   );
 }
