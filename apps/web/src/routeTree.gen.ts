@@ -29,6 +29,7 @@ import { Route as TeamRouteImport } from './routes/team'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as EventsEventIdRouteImport } from './routes/events.$eventId'
 import { Route as StaffIndexRouteImport } from './routes/staff.index'
+import { Route as StaffAccountsRouteImport } from './routes/staff.accounts'
 import { Route as StaffAnnouncementsRouteImport } from './routes/staff.announcements'
 import { Route as StaffAuditRouteImport } from './routes/staff.audit'
 import { Route as StaffContentRouteImport } from './routes/staff.content'
@@ -141,6 +142,11 @@ const StaffIndexRoute = StaffIndexRouteImport.update({
   path: '/',
   getParentRoute: () => StaffRoute,
 } as any)
+const StaffAccountsRoute = StaffAccountsRouteImport.update({
+  id: '/accounts',
+  path: '/accounts',
+  getParentRoute: () => StaffRoute,
+} as any)
 const StaffAnnouncementsRoute = StaffAnnouncementsRouteImport.update({
   id: '/announcements',
   path: '/announcements',
@@ -218,6 +224,7 @@ export interface FileRoutesByFullPath {
   '/team': typeof TeamRoute
   '/terms': typeof TermsRoute
   '/events/$eventId': typeof EventsEventIdRoute
+  '/staff/accounts': typeof StaffAccountsRoute
   '/staff/announcements': typeof StaffAnnouncementsRoute
   '/staff/audit': typeof StaffAuditRoute
   '/staff/content': typeof StaffContentRoute
@@ -250,6 +257,7 @@ export interface FileRoutesByTo {
   '/team': typeof TeamRoute
   '/terms': typeof TermsRoute
   '/events/$eventId': typeof EventsEventIdRoute
+  '/staff/accounts': typeof StaffAccountsRoute
   '/staff/announcements': typeof StaffAnnouncementsRoute
   '/staff/audit': typeof StaffAuditRoute
   '/staff/content': typeof StaffContentRoute
@@ -284,6 +292,7 @@ export interface FileRoutesById {
   '/team': typeof TeamRoute
   '/terms': typeof TermsRoute
   '/events/$eventId': typeof EventsEventIdRoute
+  '/staff/accounts': typeof StaffAccountsRoute
   '/staff/announcements': typeof StaffAnnouncementsRoute
   '/staff/audit': typeof StaffAuditRoute
   '/staff/content': typeof StaffContentRoute
@@ -319,6 +328,7 @@ export interface FileRouteTypes {
     | '/team'
     | '/terms'
     | '/events/$eventId'
+    | '/staff/accounts'
     | '/staff/announcements'
     | '/staff/audit'
     | '/staff/content'
@@ -351,6 +361,7 @@ export interface FileRouteTypes {
     | '/team'
     | '/terms'
     | '/events/$eventId'
+    | '/staff/accounts'
     | '/staff/announcements'
     | '/staff/audit'
     | '/staff/content'
@@ -384,6 +395,7 @@ export interface FileRouteTypes {
     | '/team'
     | '/terms'
     | '/events/$eventId'
+    | '/staff/accounts'
     | '/staff/announcements'
     | '/staff/audit'
     | '/staff/content'
@@ -561,6 +573,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffIndexRouteImport
       parentRoute: typeof StaffRoute
     }
+    '/staff/accounts': {
+      id: '/staff/accounts'
+      path: '/accounts'
+      fullPath: '/staff/accounts'
+      preLoaderRoute: typeof StaffAccountsRouteImport
+      parentRoute: typeof StaffRoute
+    }
     '/staff/announcements': {
       id: '/staff/announcements'
       path: '/announcements'
@@ -653,6 +672,7 @@ const EventsRouteWithChildren =
   EventsRoute._addFileChildren(EventsRouteChildren)
 
 interface StaffRouteChildren {
+  StaffAccountsRoute: typeof StaffAccountsRoute
   StaffAnnouncementsRoute: typeof StaffAnnouncementsRoute
   StaffAuditRoute: typeof StaffAuditRoute
   StaffContentRoute: typeof StaffContentRoute
@@ -668,6 +688,7 @@ interface StaffRouteChildren {
 }
 
 const StaffRouteChildren: StaffRouteChildren = {
+  StaffAccountsRoute: StaffAccountsRoute,
   StaffAnnouncementsRoute: StaffAnnouncementsRoute,
   StaffAuditRoute: StaffAuditRoute,
   StaffContentRoute: StaffContentRoute,

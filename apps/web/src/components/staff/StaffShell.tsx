@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Link, Navigate, Outlet } from "@tanstack/react-router";
 import { PublicLayout } from "@/components/site/PublicLayout";
 import { buttonVariants } from "@/components/ui/button";
+import { AdminModeSwitch } from "@/components/staff/AdminModeSwitch";
 import { useAuth } from "@/lib/auth";
 import { isAdminRole, isStaffRole } from "@/lib/staff-utils";
 import { cn } from "@/lib/utils";
@@ -66,9 +67,12 @@ export function StaffShell() {
       <p className="print:hidden text-[0.7rem] font-bold tracking-[0.16em] text-primary uppercase">
         Staff area
       </p>
+      <div className="mt-3 print:hidden">
+        <AdminModeSwitch compact />
+      </div>
       <nav
         aria-label="Staff"
-        className="mt-3 mb-8 flex flex-wrap gap-x-6 border-b border-border print:hidden"
+        className="mt-4 mb-8 flex flex-wrap gap-x-6 border-b border-border print:hidden"
       >
         <Link
           to="/staff"
@@ -144,6 +148,15 @@ export function StaffShell() {
             activeProps={{ className: TAB_ACTIVE, "aria-current": "page" }}
           >
             Pages and FAQs
+          </Link>
+        )}
+        {isAdminRole(roles) && (
+          <Link
+            to="/staff/accounts"
+            className={TAB_IDLE}
+            activeProps={{ className: TAB_ACTIVE, "aria-current": "page" }}
+          >
+            Staff accounts
           </Link>
         )}
       </nav>

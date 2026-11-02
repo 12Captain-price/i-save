@@ -1,6 +1,8 @@
 import type { Env } from "./env";
 import { registerApplicantSchema } from "@/lib/register-schema";
 import type { RegisterApplicantResult } from "@/lib/register-schema";
+import { createStaffSchema } from "@/lib/staff-account-schema";
+import type { CreateStaffResult } from "@/lib/staff-account-schema";
 
 type FetchFn = typeof fetch;
 
@@ -279,6 +281,194 @@ async function registerMember(
 }
 
 /* ------------------------------------------------------------------ */
+/* POST /staff/create-staff                                            */
+/* ------------------------------------------------------------------ */
+
+async function createStaff(
+  request: Request,
+  env: Env,
+  doFetch: FetchFn,
+): Promise<Response> {
+  const auth = request.headers.get("Authorization") ?? "";
+  const token = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
+  if (!token) return fail(request, env, 401, "Please sign in again.");
+  const callerId = await getCaller(token, env, doFetch);
+  if (!callerId) return fail(request, env, 401, "Please sign in again.");
+
+  let raw: unknown;
+  try {
+    raw = await request.json();
+  } catch {
+    return fail(request, env, 400, "That request could not be read.");
+  }
+  const parsed = createStaffSchema.safeParse(raw);
+  if (!parsed.success) {
+    const fieldErrors: Record<string, string> = {};
+    for (const issue of parsed.error.issues) {
+      const key = String(issue.path[0] ?? "form");
+      if (!(key in fieldErrors)) fieldErrors[key] = issue.message;
+    }
+    return fail(
+      request,
+      env,
+      400,
+      "Please correct the highlighted details.",
+      fieldErrors,
+    );
+  }
+  const a = parsed.data;
+
+  // The database decides who may create which kind of account (admins: staff or admin;
+  // staff in admin mode: staff only). Ask it before creating anything.
+  const allowedRes = await doFetch(
+    `${env.SUPABASE_URL}/rest/v1/rpc/staff_grant_allowed`,
+    {
+      method: "POST",
+      headers: serviceHeaders(env),
+      body: JSON.stringify({ p_actor: callerId, p_role: a.role }),
+    },
+  );
+  if (!allowedRes.ok) {
+    return fail(
+      request,
+      env,
+      502,
+      "Could not check your access. Please try again.",
+    );
+  }
+  if ((await allowedRes.json()) !== true) {
+    return fail(
+      request,
+      env,
+      403,
+      a.role === "admin"
+        ? "Only administrators can create another administrator."
+        : "Switch to admin mode (or ask an administrator) to create staff accounts.",
+    );
+  }
+
+  const [phoneHit, emailHit] = await Promise.all([
+    restRows(
+      `profiles?select=id&phone=eq.${encodeURIComponent(a.phone)}&limit=1`,
+      env,
+      doFetch,
+    ),
+    restRows(
+      `profiles?select=id&email=eq.${encodeURIComponent(a.email)}&limit=1`,
+      env,
+      doFetch,
+    ),
+  ]);
+  if (phoneHit === null || emailHit === null) {
+    return fail(
+      request,
+      env,
+      502,
+      "Could not check for an existing account. Please try again.",
+    );
+  }
+  const clashes: Record<string, string> = {};
+  if (phoneHit.length > 0)
+    clashes.phone = "This phone number is already in use.";
+  if (emailHit.length > 0)
+    clashes.email = "This email address is already in use.";
+  if (Object.keys(clashes).length > 0) {
+    return fail(
+      request,
+      env,
+      409,
+      "An account with these details already exists.",
+      clashes,
+    );
+  }
+
+  const createRes = await doFetch(`${env.SUPABASE_URL}/auth/v1/admin/users`, {
+    method: "POST",
+    headers: serviceHeaders(env),
+    body: JSON.stringify({
+      email: a.email,
+      email_confirm: true,
+      user_metadata: {
+        full_name: a.fullName,
+        phone: a.phone,
+        age_confirmed: "true",
+        terms_accepted: "true",
+      },
+    }),
+  });
+  if (!createRes.ok) {
+    const body = (await createRes.json().catch(() => ({}))) as {
+      error_code?: string;
+    };
+    if (body.error_code === "email_exists") {
+      return fail(
+        request,
+        env,
+        409,
+        "An account with these details already exists.",
+        {
+          email: "This email address is already in use.",
+        },
+      );
+    }
+    console.error("create staff failed", createRes.status, body.error_code);
+    return fail(
+      request,
+      env,
+      502,
+      "The account could not be created. Nothing was saved.",
+    );
+  }
+  const created = (await createRes.json()) as { id: string };
+
+  // Grant the role (the database re-checks the actor and writes the audit row). If that
+  // fails, remove the new sign-in account so no half-made account is left behind.
+  const grantRes = await doFetch(
+    `${env.SUPABASE_URL}/rest/v1/rpc/grant_staff_role`,
+    {
+      method: "POST",
+      headers: serviceHeaders(env),
+      body: JSON.stringify({
+        p_user: created.id,
+        p_actor: callerId,
+        p_role: a.role,
+      }),
+    },
+  );
+  if (!grantRes.ok) {
+    console.error("grant staff role failed", grantRes.status);
+    await doFetch(`${env.SUPABASE_URL}/auth/v1/admin/users/${created.id}`, {
+      method: "DELETE",
+      headers: serviceHeaders(env),
+    });
+    return fail(
+      request,
+      env,
+      502,
+      "The account could not be created. Nothing was saved.",
+    );
+  }
+
+  const redirectTo = `${env.APP_URL.replace(/\/$/, "")}/reset-password`;
+  const mailRes = await doFetch(
+    `${env.SUPABASE_URL}/auth/v1/recover?redirect_to=${encodeURIComponent(redirectTo)}`,
+    {
+      method: "POST",
+      headers: serviceHeaders(env),
+      body: JSON.stringify({ email: a.email }),
+    },
+  );
+  if (!mailRes.ok)
+    console.error("staff set-password email failed", mailRes.status);
+
+  const result: CreateStaffResult = {
+    userId: created.id,
+    emailSent: mailRes.ok,
+  };
+  return json(request, env, 201, { ok: true, result });
+}
+
+/* ------------------------------------------------------------------ */
 /* Router                                                              */
 /* ------------------------------------------------------------------ */
 
@@ -304,6 +494,17 @@ export async function handleRequest(
     } catch (error) {
       console.error(
         "register-member crashed",
+        error instanceof Error ? error.message : "unknown",
+      );
+      return fail(request, env, 500, "Something went wrong. Please try again.");
+    }
+  }
+  if (url.pathname === "/staff/create-staff" && request.method === "POST") {
+    try {
+      return await createStaff(request, env, doFetch);
+    } catch (error) {
+      console.error(
+        "create-staff crashed",
         error instanceof Error ? error.message : "unknown",
       );
       return fail(request, env, 500, "Something went wrong. Please try again.");

@@ -29,16 +29,21 @@ export type Profile = {
   status: MemberStatus;
 };
 
-type Me = { profile: Profile | null; roles: AppRole[] };
+type Me = { profile: Profile | null; roles: AppRole[]; adminMode: boolean };
 
 async function fetchMe(userId: string): Promise<Me> {
-  const [profileResult, rolesResult] = await Promise.all([
+  const [profileResult, rolesResult, modeResult] = await Promise.all([
     supabase
       .from("profiles")
       .select("id, full_name, member_number, status")
       .eq("id", userId)
       .maybeSingle(),
     supabase.from("user_roles").select("role").eq("user_id", userId),
+    supabase
+      .from("staff_admin_mode")
+      .select("enabled")
+      .eq("user_id", userId)
+      .maybeSingle(),
   ]);
   if (profileResult.error) throw profileResult.error;
   if (rolesResult.error) throw rolesResult.error;
@@ -59,7 +64,9 @@ async function fetchMe(userId: string): Promise<Me> {
     const parsed = RoleRow.safeParse(row);
     return parsed.success ? [parsed.data.role] : [];
   });
-  return { profile, roles };
+  // A missing row (or an unreadable one) simply means admin mode is off.
+  const adminMode = !modeResult.error && modeResult.data?.enabled === true;
+  return { profile, roles, adminMode };
 }
 
 type AuthState = {
@@ -67,7 +74,18 @@ type AuthState = {
   loading: boolean;
   session: Session | null;
   profile: Profile | null;
+  /**
+   * The roles the person can act with right now. Finance staff who have switched on admin
+   * mode also get "admin" here, so every screen that checks for an admin lets them in.
+   */
   roles: AppRole[];
+  /** True while a finance staff member has admin mode switched on. */
+  adminMode: boolean;
+  /** True for finance staff who can switch admin mode on (they hold no admin role of their own). */
+  canSwitchToAdmin: boolean;
+  /** True for a real administrator (can create other administrators). */
+  realAdmin: boolean;
+  setAdminMode: (on: boolean) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -103,11 +121,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     enabled: Boolean(userId),
   });
 
+  const realRoles = me.data?.roles ?? [];
+  const realAdmin = realRoles.some((r) => r === "admin" || r === "super_admin");
+  const isFinance = realRoles.includes("finance");
+  const adminMode = !realAdmin && isFinance && (me.data?.adminMode ?? false);
+
   const value: AuthState = {
     loading: sessionLoading || (Boolean(userId) && me.isPending),
     session,
     profile: me.data?.profile ?? null,
-    roles: me.data?.roles ?? [],
+    roles: adminMode ? [...realRoles, "admin"] : realRoles,
+    adminMode,
+    canSwitchToAdmin: isFinance && !realAdmin,
+    realAdmin,
+    setAdminMode: async (on) => {
+      const { error } = await supabase.rpc("set_admin_mode", { p_on: on });
+      if (error) throw error;
+      await queryClient.invalidateQueries();
+    },
     signOut: async () => {
       await supabase.auth.signOut();
       queryClient.removeQueries({ queryKey: ["me"] });
