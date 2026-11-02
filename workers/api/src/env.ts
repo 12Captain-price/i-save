@@ -6,4 +6,8 @@ export interface Env {
   ALLOWED_ORIGIN: string;
   /** Base URL of the web app, used for the set-password link. */
   APP_URL: string;
+  /** Secret. Resend API key. Email sending stays off until this and EMAIL_FROM are set. */
+  RESEND_API_KEY?: string;
+  /** Sender shown to members, e.g. "iSave <notifications@yourdomain.com>". */
+  EMAIL_FROM?: string;
 }
