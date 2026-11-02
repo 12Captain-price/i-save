@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
+import { AdminDashboard } from "@/components/staff/AdminDashboard";
 import { StatusPill } from "@/components/staff/StatusPill";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { inputClass } from "@/components/ui/field";
@@ -29,6 +30,7 @@ function MemberSearchPage() {
 
   return (
     <div>
+      <AdminDashboard />
       <h1 className="text-3xl font-semibold md:text-4xl">Members</h1>
       <p className="mt-3 max-w-2xl text-muted-foreground">
         Find a member by name, member number, phone or email. Open a member to
