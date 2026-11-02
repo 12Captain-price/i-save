@@ -8,6 +8,7 @@ import {
   Shield,
 } from "lucide-react";
 import { PublicLayout } from "@/components/site/PublicLayout";
+import { HomeSections } from "@/components/site/HomeSections";
 import { NextChapter } from "@/components/site/NextChapter";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -197,6 +198,8 @@ function HomePage() {
             </ul>
           </div>
         </section>
+
+        <HomeSections />
 
         <section
           aria-labelledby="home-closing-title"

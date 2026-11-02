@@ -4,8 +4,14 @@ type FetchFn = typeof fetch;
 
 /** After this many failed tries a notification is marked "failed" and left alone. */
 export const MAX_ATTEMPTS = 5;
-/** How many queued emails one run sends. Keeps a run well inside Worker limits. */
-const BATCH_SIZE = 25;
+/**
+ * How many queued emails one run sends. Each email costs two requests (send + update) and the
+ * Cloudflare free plan allows 50 requests per run, so 20 plus the queue read stays inside it.
+ * The cron runs every minute, which is about 1,200 emails an hour.
+ */
+const BATCH_SIZE = 20;
+/** Resend allows 2 requests a second by default; stay just under it. */
+const PAUSE_MS = 600;
 
 interface QueuedEmail {
   id: string;
@@ -84,6 +90,8 @@ async function markRow(
 export async function sendQueuedEmails(
   env: Env,
   doFetch: FetchFn = fetch,
+  pause: (ms: number) => Promise<void> = (ms) =>
+    new Promise((resolve) => setTimeout(resolve, ms)),
 ): Promise<SendSummary> {
   const summary: SendSummary = { sent: 0, failed: 0, skipped: 0 };
   if (!env.RESEND_API_KEY || !env.EMAIL_FROM) {
@@ -104,6 +112,7 @@ export async function sendQueuedEmails(
   }
   const rows = (await listRes.json()) as QueuedEmail[];
 
+  let first = true;
   for (const row of rows) {
     const to = row.profiles?.email;
     // Opted out since it was queued, or no address: stop retrying, do not send.
@@ -117,6 +126,8 @@ export async function sendQueuedEmails(
       continue;
     }
 
+    if (!first) await pause(PAUSE_MS);
+    first = false;
     try {
       const res = await doFetch("https://api.resend.com/emails", {
         method: "POST",
@@ -138,6 +149,11 @@ export async function sendQueuedEmails(
           ),
         }),
       });
+      if (res.status === 429) {
+        // Rate limited: not this email's fault. Leave it queued and try again next minute.
+        console.log("Resend rate limit reached; will continue next run");
+        break;
+      }
       if (!res.ok) throw new Error(`Resend answered ${res.status}`);
       const data = (await res.json().catch(() => ({}))) as { id?: string };
       await markRow(env, doFetch, row.id, {

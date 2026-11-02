@@ -27,8 +27,8 @@ export function SiteHeader() {
     <header className="print:hidden sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <Logo />
-        <nav aria-label="Main" className="hidden lg:block">
-          <ul className="flex gap-8 text-sm font-medium text-muted-foreground">
+        <nav aria-label="Main" className="hidden xl:block">
+          <ul className="flex gap-6 text-sm font-medium text-muted-foreground">
             {NAV.map((n) => (
               <li key={n.href}>
                 <a
@@ -41,7 +41,7 @@ export function SiteHeader() {
             ))}
           </ul>
         </nav>
-        <div className="hidden items-center gap-6 lg:flex">
+        <div className="hidden items-center gap-6 xl:flex">
           {session ? (
             <a
               href="/account"
@@ -75,7 +75,7 @@ export function SiteHeader() {
         <button
           ref={trigger}
           type="button"
-          className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-border lg:hidden"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-border xl:hidden"
           aria-label={open ? "Close menu" : "Open menu"}
           aria-expanded={open}
           aria-controls="mobile-nav"
@@ -88,7 +88,7 @@ export function SiteHeader() {
         <nav
           id="mobile-nav"
           aria-label="Mobile"
-          className="max-h-[calc(100dvh-76px)] overflow-y-auto border-t border-border bg-background px-6 pb-6 lg:hidden"
+          className="max-h-[calc(100dvh-76px)] overflow-y-auto border-t border-border bg-background px-6 pb-6 xl:hidden"
         >
           <ul className="flex flex-col py-2">
             {NAV.map((n) => (

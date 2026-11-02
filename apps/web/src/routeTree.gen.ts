@@ -11,9 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AccountRouteImport } from './routes/account'
+import { Route as AnnouncementsRouteImport } from './routes/announcements'
 import { Route as ApplyRouteImport } from './routes/apply'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as DisclosuresRouteImport } from './routes/disclosures'
+import { Route as EventsRouteImport } from './routes/events'
 import { Route as FaqsRouteImport } from './routes/faqs'
 import { Route as FeesRouteImport } from './routes/fees'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
@@ -23,13 +25,19 @@ import { Route as PlansRouteImport } from './routes/plans'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as StaffRouteImport } from './routes/staff'
+import { Route as TeamRouteImport } from './routes/team'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as EventsEventIdRouteImport } from './routes/events.$eventId'
 import { Route as StaffIndexRouteImport } from './routes/staff.index'
+import { Route as StaffAnnouncementsRouteImport } from './routes/staff.announcements'
 import { Route as StaffAuditRouteImport } from './routes/staff.audit'
+import { Route as StaffContentRouteImport } from './routes/staff.content'
+import { Route as StaffEventsRouteImport } from './routes/staff.events'
 import { Route as StaffLedgerRouteImport } from './routes/staff.ledger'
 import { Route as StaffPlansRouteImport } from './routes/staff.plans'
 import { Route as StaffRegisterRouteImport } from './routes/staff.register'
 import { Route as StaffReportRouteImport } from './routes/staff.report'
+import { Route as StaffTeamRouteImport } from './routes/staff.team'
 import { Route as StaffMembersMemberIdRouteImport } from './routes/staff.members.$memberId'
 import { Route as StaffReceiptsReceiptNumberRouteImport } from './routes/staff.receipts.$receiptNumber'
 
@@ -41,6 +49,11 @@ const IndexRoute = IndexRouteImport.update({
 const AccountRoute = AccountRouteImport.update({
   id: '/account',
   path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnnouncementsRoute = AnnouncementsRouteImport.update({
+  id: '/announcements',
+  path: '/announcements',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApplyRoute = ApplyRouteImport.update({
@@ -56,6 +69,11 @@ const ContactRoute = ContactRouteImport.update({
 const DisclosuresRoute = DisclosuresRouteImport.update({
   id: '/disclosures',
   path: '/disclosures',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EventsRoute = EventsRouteImport.update({
+  id: '/events',
+  path: '/events',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FaqsRoute = FaqsRouteImport.update({
@@ -103,19 +121,44 @@ const StaffRoute = StaffRouteImport.update({
   path: '/staff',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TeamRoute = TeamRouteImport.update({
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
   getParentRoute: () => rootRouteImport,
+} as any)
+const EventsEventIdRoute = EventsEventIdRouteImport.update({
+  id: '/$eventId',
+  path: '/$eventId',
+  getParentRoute: () => EventsRoute,
 } as any)
 const StaffIndexRoute = StaffIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => StaffRoute,
 } as any)
+const StaffAnnouncementsRoute = StaffAnnouncementsRouteImport.update({
+  id: '/announcements',
+  path: '/announcements',
+  getParentRoute: () => StaffRoute,
+} as any)
 const StaffAuditRoute = StaffAuditRouteImport.update({
   id: '/audit',
   path: '/audit',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffContentRoute = StaffContentRouteImport.update({
+  id: '/content',
+  path: '/content',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffEventsRoute = StaffEventsRouteImport.update({
+  id: '/events',
+  path: '/events',
   getParentRoute: () => StaffRoute,
 } as any)
 const StaffLedgerRoute = StaffLedgerRouteImport.update({
@@ -138,6 +181,11 @@ const StaffReportRoute = StaffReportRouteImport.update({
   path: '/report',
   getParentRoute: () => StaffRoute,
 } as any)
+const StaffTeamRoute = StaffTeamRouteImport.update({
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => StaffRoute,
+} as any)
 const StaffMembersMemberIdRoute = StaffMembersMemberIdRouteImport.update({
   id: '/members/$memberId',
   path: '/members/$memberId',
@@ -153,9 +201,11 @@ const StaffReceiptsReceiptNumberRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
+  '/announcements': typeof AnnouncementsRoute
   '/apply': typeof ApplyRoute
   '/contact': typeof ContactRoute
   '/disclosures': typeof DisclosuresRoute
+  '/events': typeof EventsRouteWithChildren
   '/faqs': typeof FaqsRoute
   '/fees': typeof FeesRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -165,12 +215,18 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/staff': typeof StaffRouteWithChildren
+  '/team': typeof TeamRoute
   '/terms': typeof TermsRoute
+  '/events/$eventId': typeof EventsEventIdRoute
+  '/staff/announcements': typeof StaffAnnouncementsRoute
   '/staff/audit': typeof StaffAuditRoute
+  '/staff/content': typeof StaffContentRoute
+  '/staff/events': typeof StaffEventsRoute
   '/staff/ledger': typeof StaffLedgerRoute
   '/staff/plans': typeof StaffPlansRoute
   '/staff/register': typeof StaffRegisterRoute
   '/staff/report': typeof StaffReportRoute
+  '/staff/team': typeof StaffTeamRoute
   '/staff/': typeof StaffIndexRoute
   '/staff/members/$memberId': typeof StaffMembersMemberIdRoute
   '/staff/receipts/$receiptNumber': typeof StaffReceiptsReceiptNumberRoute
@@ -178,9 +234,11 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
+  '/announcements': typeof AnnouncementsRoute
   '/apply': typeof ApplyRoute
   '/contact': typeof ContactRoute
   '/disclosures': typeof DisclosuresRoute
+  '/events': typeof EventsRouteWithChildren
   '/faqs': typeof FaqsRoute
   '/fees': typeof FeesRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -189,12 +247,18 @@ export interface FileRoutesByTo {
   '/plans': typeof PlansRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/team': typeof TeamRoute
   '/terms': typeof TermsRoute
+  '/events/$eventId': typeof EventsEventIdRoute
+  '/staff/announcements': typeof StaffAnnouncementsRoute
   '/staff/audit': typeof StaffAuditRoute
+  '/staff/content': typeof StaffContentRoute
+  '/staff/events': typeof StaffEventsRoute
   '/staff/ledger': typeof StaffLedgerRoute
   '/staff/plans': typeof StaffPlansRoute
   '/staff/register': typeof StaffRegisterRoute
   '/staff/report': typeof StaffReportRoute
+  '/staff/team': typeof StaffTeamRoute
   '/staff': typeof StaffIndexRoute
   '/staff/members/$memberId': typeof StaffMembersMemberIdRoute
   '/staff/receipts/$receiptNumber': typeof StaffReceiptsReceiptNumberRoute
@@ -203,9 +267,11 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
+  '/announcements': typeof AnnouncementsRoute
   '/apply': typeof ApplyRoute
   '/contact': typeof ContactRoute
   '/disclosures': typeof DisclosuresRoute
+  '/events': typeof EventsRouteWithChildren
   '/faqs': typeof FaqsRoute
   '/fees': typeof FeesRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -215,12 +281,18 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/staff': typeof StaffRouteWithChildren
+  '/team': typeof TeamRoute
   '/terms': typeof TermsRoute
+  '/events/$eventId': typeof EventsEventIdRoute
+  '/staff/announcements': typeof StaffAnnouncementsRoute
   '/staff/audit': typeof StaffAuditRoute
+  '/staff/content': typeof StaffContentRoute
+  '/staff/events': typeof StaffEventsRoute
   '/staff/ledger': typeof StaffLedgerRoute
   '/staff/plans': typeof StaffPlansRoute
   '/staff/register': typeof StaffRegisterRoute
   '/staff/report': typeof StaffReportRoute
+  '/staff/team': typeof StaffTeamRoute
   '/staff/': typeof StaffIndexRoute
   '/staff/members/$memberId': typeof StaffMembersMemberIdRoute
   '/staff/receipts/$receiptNumber': typeof StaffReceiptsReceiptNumberRoute
@@ -230,9 +302,11 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/account'
+    | '/announcements'
     | '/apply'
     | '/contact'
     | '/disclosures'
+    | '/events'
     | '/faqs'
     | '/fees'
     | '/forgot-password'
@@ -242,12 +316,18 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reset-password'
     | '/staff'
+    | '/team'
     | '/terms'
+    | '/events/$eventId'
+    | '/staff/announcements'
     | '/staff/audit'
+    | '/staff/content'
+    | '/staff/events'
     | '/staff/ledger'
     | '/staff/plans'
     | '/staff/register'
     | '/staff/report'
+    | '/staff/team'
     | '/staff/'
     | '/staff/members/$memberId'
     | '/staff/receipts/$receiptNumber'
@@ -255,9 +335,11 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/account'
+    | '/announcements'
     | '/apply'
     | '/contact'
     | '/disclosures'
+    | '/events'
     | '/faqs'
     | '/fees'
     | '/forgot-password'
@@ -266,12 +348,18 @@ export interface FileRouteTypes {
     | '/plans'
     | '/privacy'
     | '/reset-password'
+    | '/team'
     | '/terms'
+    | '/events/$eventId'
+    | '/staff/announcements'
     | '/staff/audit'
+    | '/staff/content'
+    | '/staff/events'
     | '/staff/ledger'
     | '/staff/plans'
     | '/staff/register'
     | '/staff/report'
+    | '/staff/team'
     | '/staff'
     | '/staff/members/$memberId'
     | '/staff/receipts/$receiptNumber'
@@ -279,9 +367,11 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/account'
+    | '/announcements'
     | '/apply'
     | '/contact'
     | '/disclosures'
+    | '/events'
     | '/faqs'
     | '/fees'
     | '/forgot-password'
@@ -291,12 +381,18 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reset-password'
     | '/staff'
+    | '/team'
     | '/terms'
+    | '/events/$eventId'
+    | '/staff/announcements'
     | '/staff/audit'
+    | '/staff/content'
+    | '/staff/events'
     | '/staff/ledger'
     | '/staff/plans'
     | '/staff/register'
     | '/staff/report'
+    | '/staff/team'
     | '/staff/'
     | '/staff/members/$memberId'
     | '/staff/receipts/$receiptNumber'
@@ -305,9 +401,11 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountRoute: typeof AccountRoute
+  AnnouncementsRoute: typeof AnnouncementsRoute
   ApplyRoute: typeof ApplyRoute
   ContactRoute: typeof ContactRoute
   DisclosuresRoute: typeof DisclosuresRoute
+  EventsRoute: typeof EventsRouteWithChildren
   FaqsRoute: typeof FaqsRoute
   FeesRoute: typeof FeesRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
@@ -317,6 +415,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   StaffRoute: typeof StaffRouteWithChildren
+  TeamRoute: typeof TeamRoute
   TermsRoute: typeof TermsRoute
 }
 
@@ -334,6 +433,13 @@ declare module '@tanstack/react-router' {
       path: '/account'
       fullPath: '/account'
       preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/announcements': {
+      id: '/announcements'
+      path: '/announcements'
+      fullPath: '/announcements'
+      preLoaderRoute: typeof AnnouncementsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/apply': {
@@ -355,6 +461,13 @@ declare module '@tanstack/react-router' {
       path: '/disclosures'
       fullPath: '/disclosures'
       preLoaderRoute: typeof DisclosuresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/events': {
+      id: '/events'
+      path: '/events'
+      fullPath: '/events'
+      preLoaderRoute: typeof EventsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/faqs': {
@@ -420,12 +533,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/team': {
+      id: '/team'
+      path: '/team'
+      fullPath: '/team'
+      preLoaderRoute: typeof TeamRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terms': {
       id: '/terms'
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/events/$eventId': {
+      id: '/events/$eventId'
+      path: '/$eventId'
+      fullPath: '/events/$eventId'
+      preLoaderRoute: typeof EventsEventIdRouteImport
+      parentRoute: typeof EventsRoute
     }
     '/staff/': {
       id: '/staff/'
@@ -434,11 +561,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffIndexRouteImport
       parentRoute: typeof StaffRoute
     }
+    '/staff/announcements': {
+      id: '/staff/announcements'
+      path: '/announcements'
+      fullPath: '/staff/announcements'
+      preLoaderRoute: typeof StaffAnnouncementsRouteImport
+      parentRoute: typeof StaffRoute
+    }
     '/staff/audit': {
       id: '/staff/audit'
       path: '/audit'
       fullPath: '/staff/audit'
       preLoaderRoute: typeof StaffAuditRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/content': {
+      id: '/staff/content'
+      path: '/content'
+      fullPath: '/staff/content'
+      preLoaderRoute: typeof StaffContentRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/events': {
+      id: '/staff/events'
+      path: '/events'
+      fullPath: '/staff/events'
+      preLoaderRoute: typeof StaffEventsRouteImport
       parentRoute: typeof StaffRoute
     }
     '/staff/ledger': {
@@ -469,6 +617,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffReportRouteImport
       parentRoute: typeof StaffRoute
     }
+    '/staff/team': {
+      id: '/staff/team'
+      path: '/team'
+      fullPath: '/staff/team'
+      preLoaderRoute: typeof StaffTeamRouteImport
+      parentRoute: typeof StaffRoute
+    }
     '/staff/members/$memberId': {
       id: '/staff/members/$memberId'
       path: '/members/$memberId'
@@ -486,23 +641,42 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface EventsRouteChildren {
+  EventsEventIdRoute: typeof EventsEventIdRoute
+}
+
+const EventsRouteChildren: EventsRouteChildren = {
+  EventsEventIdRoute: EventsEventIdRoute,
+}
+
+const EventsRouteWithChildren =
+  EventsRoute._addFileChildren(EventsRouteChildren)
+
 interface StaffRouteChildren {
+  StaffAnnouncementsRoute: typeof StaffAnnouncementsRoute
   StaffAuditRoute: typeof StaffAuditRoute
+  StaffContentRoute: typeof StaffContentRoute
+  StaffEventsRoute: typeof StaffEventsRoute
   StaffLedgerRoute: typeof StaffLedgerRoute
   StaffPlansRoute: typeof StaffPlansRoute
   StaffRegisterRoute: typeof StaffRegisterRoute
   StaffReportRoute: typeof StaffReportRoute
+  StaffTeamRoute: typeof StaffTeamRoute
   StaffIndexRoute: typeof StaffIndexRoute
   StaffMembersMemberIdRoute: typeof StaffMembersMemberIdRoute
   StaffReceiptsReceiptNumberRoute: typeof StaffReceiptsReceiptNumberRoute
 }
 
 const StaffRouteChildren: StaffRouteChildren = {
+  StaffAnnouncementsRoute: StaffAnnouncementsRoute,
   StaffAuditRoute: StaffAuditRoute,
+  StaffContentRoute: StaffContentRoute,
+  StaffEventsRoute: StaffEventsRoute,
   StaffLedgerRoute: StaffLedgerRoute,
   StaffPlansRoute: StaffPlansRoute,
   StaffRegisterRoute: StaffRegisterRoute,
   StaffReportRoute: StaffReportRoute,
+  StaffTeamRoute: StaffTeamRoute,
   StaffIndexRoute: StaffIndexRoute,
   StaffMembersMemberIdRoute: StaffMembersMemberIdRoute,
   StaffReceiptsReceiptNumberRoute: StaffReceiptsReceiptNumberRoute,
@@ -513,9 +687,11 @@ const StaffRouteWithChildren = StaffRoute._addFileChildren(StaffRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountRoute: AccountRoute,
+  AnnouncementsRoute: AnnouncementsRoute,
   ApplyRoute: ApplyRoute,
   ContactRoute: ContactRoute,
   DisclosuresRoute: DisclosuresRoute,
+  EventsRoute: EventsRouteWithChildren,
   FaqsRoute: FaqsRoute,
   FeesRoute: FeesRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
@@ -525,6 +701,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   StaffRoute: StaffRouteWithChildren,
+  TeamRoute: TeamRoute,
   TermsRoute: TermsRoute,
 }
 export const routeTree = rootRouteImport

@@ -1,0 +1,110 @@
+import { ArrowRight } from "lucide-react";
+import { EventCard } from "@/components/site/EventCard";
+import { RichText } from "@/components/site/RichText";
+import { TeamCard } from "@/components/site/TeamCard";
+import { useAnnouncements, useEvents, useTeam } from "@/lib/content";
+import { formatDate } from "@/lib/staff-utils";
+import { groupByLevel } from "@/lib/team-utils";
+
+function Heading({
+  eyebrow,
+  title,
+  href,
+  linkText,
+}: {
+  eyebrow: string;
+  title: string;
+  href: string;
+  linkText: string;
+}) {
+  return (
+    <div className="home-section-heading flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <p className="home-eyebrow">{eyebrow}</p>
+        <h2>{title}</h2>
+      </div>
+      <a href={href} className="home-text-link">
+        {linkText}
+        <ArrowRight size={17} aria-hidden="true" />
+      </a>
+    </div>
+  );
+}
+
+/** Latest announcements, events and the leadership team. Each section hides itself when empty. */
+export function HomeSections() {
+  const announcements = useAnnouncements(false, 3).data ?? [];
+  const events = useEvents(false, 3).data ?? [];
+  const team = useTeam().data ?? [];
+  const leaders = groupByLevel(team)[0] ?? [];
+
+  return (
+    <>
+      {announcements.length > 0 && (
+        <section aria-label="Announcements" className="home-width py-12">
+          <Heading
+            eyebrow="Latest news"
+            title="Announcements"
+            href="/announcements"
+            linkText="All announcements"
+          />
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            {announcements.map((a) => (
+              <article
+                key={a.id}
+                className="rounded-md border border-border bg-card p-5"
+              >
+                {a.published_at && (
+                  <p className="text-xs text-muted-foreground">
+                    {formatDate(a.published_at)}
+                  </p>
+                )}
+                <h3 className="mt-1 font-semibold">{a.title}</h3>
+                <RichText
+                  text={
+                    a.body.length > 160
+                      ? a.body.slice(0, 160).trimEnd() + "…"
+                      : a.body
+                  }
+                  className="mt-2 space-y-2 text-sm text-muted-foreground"
+                />
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {events.length > 0 && (
+        <section aria-label="Events" className="home-width py-12">
+          <Heading
+            eyebrow="What we have been doing"
+            title="Recent events"
+            href="/events"
+            linkText="All events"
+          />
+          <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {events.map((e) => (
+              <EventCard key={e.id} event={e} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {leaders.length > 0 && (
+        <section aria-label="Our team" className="home-width py-12">
+          <Heading
+            eyebrow="Meet the team"
+            title="The people behind i-Save"
+            href="/team"
+            linkText="Whole team"
+          />
+          <div className="mt-8 flex flex-wrap justify-center gap-x-8 gap-y-10">
+            {leaders.map((m) => (
+              <TeamCard key={m.id} member={m} large />
+            ))}
+          </div>
+        </section>
+      )}
+    </>
+  );
+}

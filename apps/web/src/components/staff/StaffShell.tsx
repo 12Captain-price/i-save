@@ -68,7 +68,7 @@ export function StaffShell() {
       </p>
       <nav
         aria-label="Staff"
-        className="mt-3 mb-8 flex gap-6 border-b border-border print:hidden"
+        className="mt-3 mb-8 flex flex-wrap gap-x-6 border-b border-border print:hidden"
       >
         <Link
           to="/staff"
@@ -108,6 +108,42 @@ export function StaffShell() {
             activeProps={{ className: TAB_ACTIVE, "aria-current": "page" }}
           >
             Plans
+          </Link>
+        )}
+        {isAdminRole(roles) && (
+          <Link
+            to="/staff/announcements"
+            className={TAB_IDLE}
+            activeProps={{ className: TAB_ACTIVE, "aria-current": "page" }}
+          >
+            Announcements
+          </Link>
+        )}
+        {isAdminRole(roles) && (
+          <Link
+            to="/staff/events"
+            className={TAB_IDLE}
+            activeProps={{ className: TAB_ACTIVE, "aria-current": "page" }}
+          >
+            Events
+          </Link>
+        )}
+        {isAdminRole(roles) && (
+          <Link
+            to="/staff/team"
+            className={TAB_IDLE}
+            activeProps={{ className: TAB_ACTIVE, "aria-current": "page" }}
+          >
+            Team
+          </Link>
+        )}
+        {isAdminRole(roles) && (
+          <Link
+            to="/staff/content"
+            className={TAB_IDLE}
+            activeProps={{ className: TAB_ACTIVE, "aria-current": "page" }}
+          >
+            Pages and FAQs
           </Link>
         )}
       </nav>

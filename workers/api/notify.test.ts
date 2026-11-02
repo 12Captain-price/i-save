@@ -39,7 +39,11 @@ const patches = (f: ReturnType<typeof mockFetch>) =>
 describe("sendQueuedEmails", () => {
   it("does nothing when Resend is not configured", async () => {
     const f = mockFetch([row()], new Response("{}"));
-    const s = await sendQueuedEmails({ ...env, RESEND_API_KEY: undefined }, f);
+    const s = await sendQueuedEmails(
+      { ...env, RESEND_API_KEY: undefined },
+      f,
+      async () => {},
+    );
     expect(s).toEqual({ sent: 0, failed: 0, skipped: 0 });
     expect(f).not.toHaveBeenCalled();
   });
@@ -49,16 +53,29 @@ describe("sendQueuedEmails", () => {
       [row()],
       new Response(JSON.stringify({ id: "re_1" }), { status: 200 }),
     );
-    const s = await sendQueuedEmails(env, f);
+    const s = await sendQueuedEmails(env, f, async () => {});
     expect(s.sent).toBe(1);
     const [p] = patches(f);
     expect(p.status).toBe("sent");
     expect(p.provider_message_id).toBe("re_1");
   });
 
+  it("stops without using up attempts when rate limited", async () => {
+    const f = mockFetch(
+      [row(), row({ id: "n2" })],
+      new Response("{}", { status: 429 }),
+    );
+    const s = await sendQueuedEmails(env, f, async () => {});
+    expect(s).toEqual({ sent: 0, failed: 0, skipped: 0 });
+    expect(patches(f)).toHaveLength(0);
+    expect(
+      f.mock.calls.filter(([u]) => String(u).includes("resend")),
+    ).toHaveLength(1);
+  });
+
   it("keeps the row queued after a first failure", async () => {
     const f = mockFetch([row()], new Response("{}", { status: 500 }));
-    const s = await sendQueuedEmails(env, f);
+    const s = await sendQueuedEmails(env, f, async () => {});
     expect(s.failed).toBe(1);
     expect(patches(f)[0]).toMatchObject({ status: "queued", attempts: 1 });
   });
@@ -68,7 +85,7 @@ describe("sendQueuedEmails", () => {
       [row({ attempts: 4 })],
       new Response("{}", { status: 500 }),
     );
-    await sendQueuedEmails(env, f);
+    await sendQueuedEmails(env, f, async () => {});
     expect(patches(f)[0]).toMatchObject({ status: "failed", attempts: 5 });
   });
 
@@ -81,7 +98,7 @@ describe("sendQueuedEmails", () => {
       ],
       new Response("{}"),
     );
-    const s = await sendQueuedEmails(env, f);
+    const s = await sendQueuedEmails(env, f, async () => {});
     expect(s.skipped).toBe(1);
     expect(f.mock.calls.some(([u]) => String(u).includes("resend"))).toBe(
       false,

@@ -17,6 +17,6 @@ SUPABASE_URL = "https://vbxqvccdadtpzrykizna.supabase.co"
 ALLOWED_ORIGIN = "https://i-save.persytchikanya.workers.dev"
 APP_URL = "https://i-save.persytchikanya.workers.dev"
 
-# Sends queued email notifications every 5 minutes (does nothing until Resend is configured).
+# Sends queued email notifications every minute (does nothing until Resend is configured).
 [triggers]
-crons = ["*/5 * * * *"]
+crons = ["* * * * *"]
