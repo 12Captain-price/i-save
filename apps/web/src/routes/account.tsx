@@ -42,6 +42,11 @@ const STAFF_TILES = [
   },
   { to: "/staff/report", label: "Daily report", note: "Today’s payments" },
   { to: "/staff/ledger", label: "Ledger", note: "Every money event" },
+  {
+    to: "/staff/withdrawals",
+    label: "Withdrawals",
+    note: "Review, approve, pay out",
+  },
 ] as const;
 
 const ADMIN_TILES = [

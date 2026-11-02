@@ -39,6 +39,8 @@ import { Route as StaffPlansRouteImport } from './routes/staff.plans'
 import { Route as StaffRegisterRouteImport } from './routes/staff.register'
 import { Route as StaffReportRouteImport } from './routes/staff.report'
 import { Route as StaffTeamRouteImport } from './routes/staff.team'
+import { Route as StaffWithdrawalsRouteImport } from './routes/staff.withdrawals'
+import { Route as WithdrawalReceiptIdRouteImport } from './routes/withdrawal-receipt.$id'
 import { Route as StaffMembersMemberIdRouteImport } from './routes/staff.members.$memberId'
 import { Route as StaffReceiptsReceiptNumberRouteImport } from './routes/staff.receipts.$receiptNumber'
 
@@ -192,6 +194,16 @@ const StaffTeamRoute = StaffTeamRouteImport.update({
   path: '/team',
   getParentRoute: () => StaffRoute,
 } as any)
+const StaffWithdrawalsRoute = StaffWithdrawalsRouteImport.update({
+  id: '/withdrawals',
+  path: '/withdrawals',
+  getParentRoute: () => StaffRoute,
+} as any)
+const WithdrawalReceiptIdRoute = WithdrawalReceiptIdRouteImport.update({
+  id: '/withdrawal-receipt/$id',
+  path: '/withdrawal-receipt/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StaffMembersMemberIdRoute = StaffMembersMemberIdRouteImport.update({
   id: '/members/$memberId',
   path: '/members/$memberId',
@@ -234,6 +246,8 @@ export interface FileRoutesByFullPath {
   '/staff/register': typeof StaffRegisterRoute
   '/staff/report': typeof StaffReportRoute
   '/staff/team': typeof StaffTeamRoute
+  '/staff/withdrawals': typeof StaffWithdrawalsRoute
+  '/withdrawal-receipt/$id': typeof WithdrawalReceiptIdRoute
   '/staff/': typeof StaffIndexRoute
   '/staff/members/$memberId': typeof StaffMembersMemberIdRoute
   '/staff/receipts/$receiptNumber': typeof StaffReceiptsReceiptNumberRoute
@@ -267,6 +281,8 @@ export interface FileRoutesByTo {
   '/staff/register': typeof StaffRegisterRoute
   '/staff/report': typeof StaffReportRoute
   '/staff/team': typeof StaffTeamRoute
+  '/staff/withdrawals': typeof StaffWithdrawalsRoute
+  '/withdrawal-receipt/$id': typeof WithdrawalReceiptIdRoute
   '/staff': typeof StaffIndexRoute
   '/staff/members/$memberId': typeof StaffMembersMemberIdRoute
   '/staff/receipts/$receiptNumber': typeof StaffReceiptsReceiptNumberRoute
@@ -302,6 +318,8 @@ export interface FileRoutesById {
   '/staff/register': typeof StaffRegisterRoute
   '/staff/report': typeof StaffReportRoute
   '/staff/team': typeof StaffTeamRoute
+  '/staff/withdrawals': typeof StaffWithdrawalsRoute
+  '/withdrawal-receipt/$id': typeof WithdrawalReceiptIdRoute
   '/staff/': typeof StaffIndexRoute
   '/staff/members/$memberId': typeof StaffMembersMemberIdRoute
   '/staff/receipts/$receiptNumber': typeof StaffReceiptsReceiptNumberRoute
@@ -338,6 +356,8 @@ export interface FileRouteTypes {
     | '/staff/register'
     | '/staff/report'
     | '/staff/team'
+    | '/staff/withdrawals'
+    | '/withdrawal-receipt/$id'
     | '/staff/'
     | '/staff/members/$memberId'
     | '/staff/receipts/$receiptNumber'
@@ -371,6 +391,8 @@ export interface FileRouteTypes {
     | '/staff/register'
     | '/staff/report'
     | '/staff/team'
+    | '/staff/withdrawals'
+    | '/withdrawal-receipt/$id'
     | '/staff'
     | '/staff/members/$memberId'
     | '/staff/receipts/$receiptNumber'
@@ -405,6 +427,8 @@ export interface FileRouteTypes {
     | '/staff/register'
     | '/staff/report'
     | '/staff/team'
+    | '/staff/withdrawals'
+    | '/withdrawal-receipt/$id'
     | '/staff/'
     | '/staff/members/$memberId'
     | '/staff/receipts/$receiptNumber'
@@ -429,6 +453,7 @@ export interface RootRouteChildren {
   StaffRoute: typeof StaffRouteWithChildren
   TeamRoute: typeof TeamRoute
   TermsRoute: typeof TermsRoute
+  WithdrawalReceiptIdRoute: typeof WithdrawalReceiptIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -643,6 +668,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffTeamRouteImport
       parentRoute: typeof StaffRoute
     }
+    '/staff/withdrawals': {
+      id: '/staff/withdrawals'
+      path: '/withdrawals'
+      fullPath: '/staff/withdrawals'
+      preLoaderRoute: typeof StaffWithdrawalsRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/withdrawal-receipt/$id': {
+      id: '/withdrawal-receipt/$id'
+      path: '/withdrawal-receipt/$id'
+      fullPath: '/withdrawal-receipt/$id'
+      preLoaderRoute: typeof WithdrawalReceiptIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/staff/members/$memberId': {
       id: '/staff/members/$memberId'
       path: '/members/$memberId'
@@ -682,6 +721,7 @@ interface StaffRouteChildren {
   StaffRegisterRoute: typeof StaffRegisterRoute
   StaffReportRoute: typeof StaffReportRoute
   StaffTeamRoute: typeof StaffTeamRoute
+  StaffWithdrawalsRoute: typeof StaffWithdrawalsRoute
   StaffIndexRoute: typeof StaffIndexRoute
   StaffMembersMemberIdRoute: typeof StaffMembersMemberIdRoute
   StaffReceiptsReceiptNumberRoute: typeof StaffReceiptsReceiptNumberRoute
@@ -698,6 +738,7 @@ const StaffRouteChildren: StaffRouteChildren = {
   StaffRegisterRoute: StaffRegisterRoute,
   StaffReportRoute: StaffReportRoute,
   StaffTeamRoute: StaffTeamRoute,
+  StaffWithdrawalsRoute: StaffWithdrawalsRoute,
   StaffIndexRoute: StaffIndexRoute,
   StaffMembersMemberIdRoute: StaffMembersMemberIdRoute,
   StaffReceiptsReceiptNumberRoute: StaffReceiptsReceiptNumberRoute,
@@ -724,6 +765,7 @@ const rootRouteChildren: RootRouteChildren = {
   StaffRoute: StaffRouteWithChildren,
   TeamRoute: TeamRoute,
   TermsRoute: TermsRoute,
+  WithdrawalReceiptIdRoute: WithdrawalReceiptIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

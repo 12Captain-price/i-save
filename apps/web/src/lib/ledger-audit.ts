@@ -220,4 +220,10 @@ export const AUDIT_ACTION_OPTIONS: { value: string; label: string }[] = [
   { value: "id.sighted", label: "ID sighted" },
   { value: "daily_report.signed_off", label: "Daily report signed off" },
   { value: "plan.enrolled", label: "Plan chosen" },
+  { value: "withdrawal.requested", label: "Withdrawal requested" },
+  { value: "withdrawal.reviewed", label: "Withdrawal reviewed" },
+  { value: "withdrawal.approved", label: "Withdrawal approved" },
+  { value: "withdrawal.rejected", label: "Withdrawal rejected" },
+  { value: "withdrawal.paid", label: "Withdrawal paid out" },
+  { value: "withdrawal.cancelled", label: "Withdrawal cancelled" },
 ];
