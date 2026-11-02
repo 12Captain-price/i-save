@@ -33,6 +33,7 @@ import { lastMonths, monthLabel, runningTotalByMonth } from "@/lib/chart-utils";
 import { useMemberLedger, useMemberPlanProgress } from "@/lib/dashboard-data";
 import { compareMoney } from "@/lib/money";
 import { PlanPicker } from "@/components/member/PlanPicker";
+import { WithdrawalCard } from "@/components/member/WithdrawalCard";
 import { describeDuration, describePlanAmount } from "@/lib/plan-utils";
 
 function Card({
@@ -425,13 +426,7 @@ export function MemberDashboard({ memberId }: { memberId: string }) {
           </Card>
 
           <Card id="withdrawals-heading" title="Withdrawals">
-            <p>
-              <StatusPill status="pending" label="Policy pending approval" />
-            </p>
-            <p className="mt-2 text-muted-foreground">
-              Withdrawals are not available yet. We will tell you here once the
-              rules are approved.
-            </p>
+            <WithdrawalCard memberId={memberId} />
           </Card>
         </aside>
       </div>
