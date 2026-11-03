@@ -9,7 +9,7 @@ export function TeamCard({
   large?: boolean;
 }) {
   return (
-    <figure className="w-44 text-center sm:w-48">
+    <figure className="zoom-photo w-44 text-center sm:w-48">
       <Photo
         path={member.photo_path}
         alt={member.full_name}

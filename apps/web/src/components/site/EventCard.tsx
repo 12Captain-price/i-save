@@ -8,7 +8,7 @@ export function EventCard({ event }: { event: SiteEvent }) {
     <Link
       to="/events/$eventId"
       params={{ eventId: event.id }}
-      className="group block overflow-hidden rounded-md border border-border bg-card"
+      className="group zoom-photo block h-full overflow-hidden rounded-md border border-border bg-card"
     >
       <Photo
         path={event.images[0]?.path ?? null}

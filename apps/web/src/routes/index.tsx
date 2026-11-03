@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { PublicLayout } from "@/components/site/PublicLayout";
 import { HomeSections } from "@/components/site/HomeSections";
+import { Reveal } from "@/components/site/Reveal";
 import { NextChapter } from "@/components/site/NextChapter";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -84,16 +85,50 @@ function HomePage() {
       <div className="home-page">
         <section aria-labelledby="home-title" className="home-hero home-width">
           <div className="home-hero-copy">
-            <p className="home-eyebrow">Saving today. Planning for tomorrow.</p>
+            <p
+              className="home-eyebrow stagger-in"
+              style={{ ["--i" as string]: 0 }}
+            >
+              Saving today. Planning for tomorrow.
+            </p>
             <h1 id="home-title">
-              Save for what <span>matters to you.</span>
+              {["Save", "for", "what"].map((w, i) => (
+                <span
+                  key={w}
+                  className="hero-word"
+                  style={{ ["--i" as string]: i }}
+                >
+                  {w}{" "}
+                </span>
+              ))}
+              <span className="hero-accent">
+                {["matters", "to", "you."].map((w, i) => (
+                  <span
+                    key={w}
+                    className="hero-word"
+                    style={{ ["--i" as string]: i + 3 }}
+                  >
+                    {w}
+                    {i < 2 ? " " : ""}
+                  </span>
+                ))}
+              </span>
             </h1>
-            <p className="home-lead">
+            <p
+              className="home-lead stagger-in"
+              style={{ ["--i" as string]: 7 }}
+            >
               From education to life’s unexpected moments, start with a goal and
               explore your next steps with i-Save.
             </p>
-            <div className="home-actions">
-              <a href="#goals" className={cn(buttonVariants({ size: "lg" }))}>
+            <div
+              className="home-actions stagger-in"
+              style={{ ["--i" as string]: 9 }}
+            >
+              <a
+                href="#goals"
+                className={cn(buttonVariants({ size: "lg" }), "pulse-glow")}
+              >
                 Explore savings goals
                 <ArrowRight aria-hidden="true" />
               </a>
@@ -119,13 +154,13 @@ function HomePage() {
           className="home-goals-section"
         >
           <div className="home-width">
-            <div className="home-section-heading">
+            <Reveal className="home-section-heading">
               <p className="home-eyebrow">Start with a purpose</p>
               <h2 id="home-goals-title">What are you saving for?</h2>
-            </div>
+            </Reveal>
             <ul className="home-goals">
-              {GOALS.map(({ label, purpose, Icon }) => (
-                <li key={label}>
+              {GOALS.map(({ label, purpose, Icon }, i) => (
+                <Reveal as="li" index={i} key={label}>
                   <a
                     href="/plans"
                     aria-label={label + ": explore this category"}
@@ -141,7 +176,7 @@ function HomePage() {
                       aria-hidden="true"
                     />
                   </a>
-                </li>
+                </Reveal>
               ))}
             </ul>
             <p className="home-interest-note">
@@ -155,13 +190,13 @@ function HomePage() {
           aria-labelledby="home-journey-title"
           className="home-journey home-width"
         >
-          <div className="home-section-heading">
+          <Reveal className="home-section-heading">
             <p className="home-eyebrow">A simple journey</p>
             <h2 id="home-journey-title">Your next steps, clearly explained.</h2>
-          </div>
-          <ol className="home-stages">
+          </Reveal>
+          <Reveal as="ol" className="home-stages">
             {STEPS.map(([title, text], index) => (
-              <li key={title}>
+              <li key={title} style={{ ["--i" as string]: index }}>
                 <span className="home-stage-number" aria-hidden="true">
                   0{index + 1}
                 </span>
@@ -171,7 +206,7 @@ function HomePage() {
                 </div>
               </li>
             ))}
-          </ol>
+          </Reveal>
           <a href="/how-it-works" className="home-text-link">
             Read how it works
             <ArrowRight size={17} aria-hidden="true" />
@@ -180,20 +215,20 @@ function HomePage() {
 
         <section aria-labelledby="home-expect-title" className="home-expect">
           <div className="home-width home-expect-layout">
-            <div>
+            <Reveal>
               <p className="home-eyebrow">Know what to expect</p>
               <h2 id="home-expect-title">A little clarity before you begin.</h2>
               <a href="/fees" className="home-text-link">
                 Fees and office payments
                 <ArrowRight size={17} aria-hidden="true" />
               </a>
-            </div>
+            </Reveal>
             <ul>
-              {EXPECT.map(([title, text]) => (
-                <li key={title}>
+              {EXPECT.map(([title, text], i) => (
+                <Reveal as="li" index={i} key={title}>
                   <h3>{title}</h3>
                   <p>{text}</p>
-                </li>
+                </Reveal>
               ))}
             </ul>
           </div>
@@ -205,7 +240,7 @@ function HomePage() {
           aria-labelledby="home-closing-title"
           className="home-closing home-width"
         >
-          <div>
+          <Reveal>
             <p className="home-eyebrow">Take your next step</p>
             <h2 id="home-closing-title">Ready to begin with a goal?</h2>
             <p className="mt-3 text-muted-foreground">
@@ -214,18 +249,18 @@ function HomePage() {
             </p>
             <a
               href="/apply"
-              className={cn(buttonVariants({ size: "lg" }), "mt-6")}
+              className={cn(buttonVariants({ size: "lg" }), "pulse-glow mt-6")}
             >
               Apply for membership
               <ArrowRight aria-hidden="true" />
             </a>
-          </div>
-          <div className="home-contact">
+          </Reveal>
+          <Reveal className="home-contact" index={1}>
             <a href="/contact" className="home-help-link">
               Need a hand? Contact the office
               <ArrowRight size={16} aria-hidden="true" />
             </a>
-          </div>
+          </Reveal>
         </section>
       </div>
     </PublicLayout>

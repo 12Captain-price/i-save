@@ -1,5 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { EventCard } from "@/components/site/EventCard";
+import { Reveal } from "@/components/site/Reveal";
 import { RichText } from "@/components/site/RichText";
 import { TeamCard } from "@/components/site/TeamCard";
 import { useAnnouncements, useEvents, useTeam } from "@/lib/content";
@@ -18,7 +19,7 @@ function Heading({
   linkText: string;
 }) {
   return (
-    <div className="home-section-heading flex flex-wrap items-end justify-between gap-3">
+    <Reveal className="home-section-heading flex flex-wrap items-end justify-between gap-3">
       <div>
         <p className="home-eyebrow">{eyebrow}</p>
         <h2>{title}</h2>
@@ -27,7 +28,7 @@ function Heading({
         {linkText}
         <ArrowRight size={17} aria-hidden="true" />
       </a>
-    </div>
+    </Reveal>
   );
 }
 
@@ -49,10 +50,12 @@ export function HomeSections() {
             linkText="All announcements"
           />
           <div className="mt-6 grid gap-4 md:grid-cols-3">
-            {announcements.map((a) => (
-              <article
+            {announcements.map((a, i) => (
+              <Reveal
+                as="article"
+                index={i}
                 key={a.id}
-                className="rounded-md border border-border bg-card p-5"
+                className="lift-card rounded-md border border-border bg-card p-5"
               >
                 {a.published_at && (
                   <p className="text-xs text-muted-foreground">
@@ -68,7 +71,7 @@ export function HomeSections() {
                   }
                   className="mt-2 space-y-2 text-sm text-muted-foreground"
                 />
-              </article>
+              </Reveal>
             ))}
           </div>
         </section>
@@ -83,8 +86,10 @@ export function HomeSections() {
             linkText="All events"
           />
           <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {events.map((e) => (
-              <EventCard key={e.id} event={e} />
+            {events.map((e, i) => (
+              <Reveal key={e.id} index={i} className="h-full">
+                <EventCard event={e} />
+              </Reveal>
             ))}
           </div>
         </section>
@@ -99,8 +104,10 @@ export function HomeSections() {
             linkText="Whole team"
           />
           <div className="mt-8 flex flex-wrap justify-center gap-x-8 gap-y-10">
-            {leaders.map((m) => (
-              <TeamCard key={m.id} member={m} large />
+            {leaders.map((m, i) => (
+              <Reveal key={m.id} index={i}>
+                <TeamCard member={m} large />
+              </Reveal>
             ))}
           </div>
         </section>
