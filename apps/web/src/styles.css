@@ -201,3 +201,110 @@
     margin: 12mm;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Welcome celebration (shown once after login)                        */
+/* ------------------------------------------------------------------ */
+
+.welcome-overlay {
+  animation: welcome-fade 0.35s ease-out both;
+}
+.welcome-card {
+  animation: welcome-pop 0.7s cubic-bezier(0.18, 1.1, 0.3, 1.25) both;
+}
+.welcome-ribbon {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.45rem 2.4rem;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 50%, 100% 100%, 0 100%, 14px 50%);
+}
+.welcome-wave {
+  display: inline-block;
+  transform-origin: 70% 80%;
+  animation: welcome-wave 1.6s ease-in-out 0.6s 2;
+}
+.welcome-name {
+  background: linear-gradient(90deg, var(--primary), var(--portal-warm), var(--primary));
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: welcome-shimmer 2.4s linear infinite;
+}
+.welcome-timer {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 4px;
+  background: var(--primary);
+  transform-origin: left;
+  animation: welcome-timer 7s linear forwards;
+}
+.welcome-piece {
+  position: absolute;
+  top: -40px;
+  opacity: 0;
+  animation-name: welcome-fall;
+  animation-timing-function: cubic-bezier(0.3, 0.1, 0.6, 1);
+  animation-fill-mode: both;
+}
+.welcome-emoji {
+  position: absolute;
+  bottom: -3rem;
+  opacity: 0;
+  animation-name: welcome-float;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
+}
+
+@keyframes welcome-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes welcome-pop {
+  0% { opacity: 0; transform: scale(0.7) translateY(24px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes welcome-wave {
+  0%, 60%, 100% { transform: rotate(0deg); }
+  10%, 30% { transform: rotate(16deg); }
+  20%, 40% { transform: rotate(-10deg); }
+  50% { transform: rotate(8deg); }
+}
+@keyframes welcome-shimmer {
+  to { background-position: -200% 0; }
+}
+@keyframes welcome-timer {
+  to { transform: scaleX(0); }
+}
+@keyframes welcome-fall {
+  0% { opacity: 0; transform: translate3d(0, 0, 0) rotate(0deg); }
+  8% { opacity: 1; }
+  100% { opacity: 0.9; transform: translate3d(var(--drift), 112vh, 0) rotate(var(--spin)); }
+}
+@keyframes welcome-float {
+  0% { opacity: 0; transform: translateY(0) scale(0.6); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-85vh) scale(1.15); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .welcome-piece,
+  .welcome-emoji {
+    display: none;
+  }
+  .welcome-card,
+  .welcome-overlay,
+  .welcome-wave,
+  .welcome-name {
+    animation: none;
+  }
+}

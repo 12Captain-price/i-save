@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { friendlyLoginError } from "@/lib/auth-errors";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
+import { markWelcomePending } from "@/lib/welcome";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -38,6 +39,7 @@ function LoginPage() {
       setError(friendlyLoginError(signInError.message));
       return;
     }
+    markWelcomePending();
     await navigate({ to: "/account" });
   }
 

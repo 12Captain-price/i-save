@@ -1,16 +1,24 @@
 import { useEffect, useRef, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { LogOut, Menu, X } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 import { Logo } from "./Logo";
 import { InstallButton } from "./InstallButton";
 import { NAV } from "./nav";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
-  const { session } = useAuth();
+  const { session, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  async function logOut() {
+    setOpen(false);
+    await signOut();
+    await navigate({ to: "/" });
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -45,15 +53,26 @@ export function SiteHeader() {
         <div className="hidden items-center gap-6 xl:flex">
           <InstallButton />
           {session ? (
-            <a
-              href="/account"
-              className={cn(
-                buttonVariants({ size: "sm" }),
-                "px-5 py-2.5 text-sm",
-              )}
-            >
-              My account
-            </a>
+            <>
+              <a
+                href="/account"
+                className={cn(
+                  buttonVariants({ size: "sm" }),
+                  "px-5 py-2.5 text-sm",
+                )}
+              >
+                My account
+              </a>
+              <Button
+                variant="outline"
+                size="sm"
+                className="px-4 py-2.5 text-sm"
+                onClick={() => void logOut()}
+              >
+                <LogOut aria-hidden="true" />
+                Log out
+              </Button>
+            </>
           ) : (
             <>
               <a
@@ -74,17 +93,30 @@ export function SiteHeader() {
             </>
           )}
         </div>
-        <button
-          ref={trigger}
-          type="button"
-          className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-border xl:hidden"
-          aria-label={open ? "Close menu" : "Open menu"}
-          aria-expanded={open}
-          aria-controls="mobile-nav"
-          onClick={() => setOpen(!open)}
-        >
-          {open ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
-        </button>
+        <div className="flex items-center gap-2 xl:hidden">
+          {session && (
+            <Button
+              variant="outline"
+              className="h-11 px-3"
+              aria-label="Log out"
+              onClick={() => void logOut()}
+            >
+              <LogOut aria-hidden="true" />
+              <span className="hidden sm:inline">Log out</span>
+            </Button>
+          )}
+          <button
+            ref={trigger}
+            type="button"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-border"
+            aria-label={open ? "Close menu" : "Open menu"}
+            aria-expanded={open}
+            aria-controls="mobile-nav"
+            onClick={() => setOpen(!open)}
+          >
+            {open ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
+          </button>
+        </div>
       </div>
       {open && (
         <nav

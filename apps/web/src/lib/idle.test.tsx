@@ -43,4 +43,19 @@ describe("useIdleTimeout", () => {
     act(() => void vi.advanceTimersByTime(60_000));
     expect(onTimeout).not.toHaveBeenCalled();
   });
+
+  it("activity in another tab keeps this one signed in", () => {
+    localStorage.clear();
+    const onTimeout = vi.fn();
+    renderHook(() =>
+      useIdleTimeout({ ...opts(onTimeout), shareKey: "test:last-activity" }),
+    );
+    act(() => void vi.advanceTimersByTime(8_000));
+    // Another tab reports activity just now.
+    localStorage.setItem("test:last-activity", String(Date.now()));
+    act(() => void vi.advanceTimersByTime(5_000));
+    expect(onTimeout).not.toHaveBeenCalled();
+    act(() => void vi.advanceTimersByTime(6_000));
+    expect(onTimeout).toHaveBeenCalledTimes(1);
+  });
 });
