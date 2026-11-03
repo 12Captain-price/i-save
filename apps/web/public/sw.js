@@ -6,7 +6,12 @@
 // is never stored here. To retire it, delete this file's registration in src/main.tsx.
 const VERSION = "isave-v1";
 const SHELL = ["/", "/favicon.png", "/icons/icon-192.png"];
-const NEVER_CACHE = ["/staff/register-member", "/staff/create-staff", "/health"];
+const NEVER_CACHE = [
+  "/staff/register-member",
+  "/staff/create-staff",
+  "/assistant",
+  "/health",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -22,7 +27,9 @@ self.addEventListener("activate", (event) => {
     caches
       .keys()
       .then((keys) =>
-        Promise.all(keys.filter((k) => k !== VERSION).map((k) => caches.delete(k))),
+        Promise.all(
+          keys.filter((k) => k !== VERSION).map((k) => caches.delete(k)),
+        ),
       )
       .then(() => self.clients.claim()),
   );

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Logo } from "./Logo";
+import { InstallButton } from "./InstallButton";
 import { NAV } from "./nav";
 import { buttonVariants } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
@@ -42,6 +43,7 @@ export function SiteHeader() {
           </ul>
         </nav>
         <div className="hidden items-center gap-6 xl:flex">
+          <InstallButton />
           {session ? (
             <a
               href="/account"
@@ -103,7 +105,10 @@ export function SiteHeader() {
               </li>
             ))}
           </ul>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <div className="mt-4">
+            <InstallButton size="default" className="w-full" />
+          </div>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {session ? (
               <a href="/account" className={cn(buttonVariants())}>
                 My account

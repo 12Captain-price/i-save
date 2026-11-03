@@ -10,4 +10,10 @@ export interface Env {
   RESEND_API_KEY?: string;
   /** Sender shown to members, e.g. "iSave <notifications@yourdomain.com>". */
   EMAIL_FROM?: string;
+  /** Cloudflare Workers AI binding (free tier). Powers the in-site assistant. Set in wrangler.toml. */
+  AI?: { run(model: string, input: unknown): Promise<unknown> };
+  /** Optional secret. Only used if there is no AI binding: answers come from Claude instead. */
+  ANTHROPIC_API_KEY?: string;
+  /** Optional model override for whichever service answers. */
+  ASSISTANT_MODEL?: string;
 }

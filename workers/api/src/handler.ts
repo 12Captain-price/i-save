@@ -1,4 +1,5 @@
 import type { Env } from "./env";
+import { assistantChat } from "./assistant";
 import { registerApplicantSchema } from "@/lib/register-schema";
 import type { RegisterApplicantResult } from "@/lib/register-schema";
 import { createStaffSchema } from "@/lib/staff-account-schema";
@@ -505,6 +506,22 @@ export async function handleRequest(
     } catch (error) {
       console.error(
         "create-staff crashed",
+        error instanceof Error ? error.message : "unknown",
+      );
+      return fail(request, env, 500, "Something went wrong. Please try again.");
+    }
+  }
+  if (url.pathname === "/assistant" && request.method === "POST") {
+    try {
+      return await assistantChat(request, env, {
+        fetch: doFetch,
+        respond: (status, body) => json(request, env, status, body),
+        getCaller: (token) => getCaller(token, env, doFetch),
+        rows: (path) => restRows(path, env, doFetch),
+      });
+    } catch (error) {
+      console.error(
+        "assistant crashed",
         error instanceof Error ? error.message : "unknown",
       );
       return fail(request, env, 500, "Something went wrong. Please try again.");
