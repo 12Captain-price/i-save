@@ -1,3 +1,4 @@
+import { LoadingSkeleton } from "@/components/ui/motion";
 import { useState, type FormEvent } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
@@ -170,11 +171,7 @@ function StaffAccountsPage() {
       </form>
 
       <h2 className="mt-12 text-lg font-semibold">Current staff</h2>
-      {list.isPending && (
-        <p role="status" className="mt-3 text-sm text-muted-foreground">
-          Loading…
-        </p>
-      )}
+      {list.isPending && <LoadingSkeleton />}
       {list.isError && (
         <ErrorLine message="The staff list could not be loaded." />
       )}

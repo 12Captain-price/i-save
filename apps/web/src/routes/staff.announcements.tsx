@@ -1,3 +1,4 @@
+import { LoadingSkeleton } from "@/components/ui/motion";
 import { useState, type FormEvent } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { AdminOnly } from "@/components/staff/AdminOnly";
@@ -11,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { CheckField, Field } from "@/components/ui/field";
 import {
   deleteAnnouncement,
+  discardWhatsappOutbox,
   markWhatsappSent,
   saveAnnouncement,
   sendAnnouncement,
@@ -83,11 +85,7 @@ function AnnouncementsAdmin() {
         {editing === "new" && (
           <AnnouncementForm initial={null} onDone={() => setEditing(null)} />
         )}
-        {isPending && (
-          <p role="status" className="text-sm text-muted-foreground">
-            Loading…
-          </p>
-        )}
+        {isPending && <LoadingSkeleton />}
         {isError && <ErrorLine message="Announcements could not be loaded." />}
         {data?.map((a) =>
           editing && editing !== "new" && editing.id === a.id ? (
@@ -154,18 +152,20 @@ function AnnouncementsAdmin() {
                       {a.published ? "Hide from website" : "Show on website"}
                     </Button>
                   )}
-                  {!a.sent_at && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        if (window.confirm("Delete this announcement?"))
-                          void run(() => deleteAnnouncement(a.id));
-                      }}
-                    >
-                      Delete
-                    </Button>
-                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={busy}
+                    onClick={() => {
+                      const message = a.sent_at
+                        ? `Delete "${a.title}" from this list and the website? Members who already received it keep their copy.`
+                        : "Delete this announcement?";
+                      if (window.confirm(message))
+                        void run(() => deleteAnnouncement(a.id));
+                    }}
+                  >
+                    Delete
+                  </Button>
                 </div>
               </div>
             </div>
@@ -267,11 +267,7 @@ function Outbox() {
       <div className="mt-3">
         <ErrorLine message={error} />
       </div>
-      {isPending && (
-        <p role="status" className="mt-4 text-sm text-muted-foreground">
-          Loading…
-        </p>
-      )}
+      {isPending && <LoadingSkeleton />}
       {isError && <ErrorLine message="The outbox could not be loaded." />}
       {data?.length === 0 && (
         <p className="mt-4 text-sm text-muted-foreground">Nothing waiting.</p>
@@ -279,17 +275,36 @@ function Outbox() {
       {data && data.length > 0 && (
         <>
           <div className="mt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={busy}
-              onClick={() => {
-                if (window.confirm(`Mark all ${data.length} as sent?`))
-                  void run(() => markWhatsappSent(data.map((d) => d.id)));
-              }}
-            >
-              Mark all {data.length} as sent
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={busy}
+                onClick={() => {
+                  if (window.confirm(`Mark all ${data.length} as sent?`))
+                    void run(() => markWhatsappSent(data.map((d) => d.id)));
+                }}
+              >
+                Mark all {data.length} as sent
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={busy}
+                onClick={() => {
+                  if (
+                    window.confirm(
+                      `Throw away all ${data.length} waiting WhatsApp messages? They will not be sent.`,
+                    )
+                  )
+                    void run(() =>
+                      discardWhatsappOutbox(data.map((d) => d.id)),
+                    );
+                }}
+              >
+                Clear the outbox
+              </Button>
+            </div>
           </div>
           <ul className="mt-4 divide-y divide-border rounded-md border border-border">
             {data.map((item) => (
@@ -326,6 +341,21 @@ function Outbox() {
                     onClick={() => void run(() => markWhatsappSent([item.id]))}
                   >
                     Mark sent
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={busy}
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          "Throw away this message without sending it?",
+                        )
+                      )
+                        void run(() => discardWhatsappOutbox([item.id]));
+                    }}
+                  >
+                    Remove
                   </Button>
                 </div>
               </li>

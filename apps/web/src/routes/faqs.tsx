@@ -1,3 +1,4 @@
+import { LoadingSkeleton } from "@/components/ui/motion";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageShell } from "@/components/site/PageShell";
 import { RichText } from "@/components/site/RichText";
@@ -15,11 +16,7 @@ function FaqsPage() {
       title="Questions members ask."
       lead="Short answers about joining, paying and saving. If yours is not here, the office can help."
     >
-      {isPending && (
-        <p role="status" className="text-sm text-muted-foreground">
-          Loading…
-        </p>
-      )}
+      {isPending && <LoadingSkeleton />}
       {isError && (
         <p role="alert" className="text-sm text-destructive">
           The questions could not be loaded. Please try again in a moment.

@@ -1,3 +1,4 @@
+import { LoadingSkeleton } from "@/components/ui/motion";
 import { PageShell } from "@/components/site/PageShell";
 import { RichText } from "@/components/site/RichText";
 import { usePage, type SitePage } from "@/lib/content";
@@ -15,11 +16,7 @@ export function ContentPage({
   const { data, isPending, isError } = usePage(pageKey);
   return (
     <PageShell eyebrow={eyebrow} title={data?.title ?? eyebrow} lead={lead}>
-      {isPending && (
-        <p role="status" className="text-sm text-muted-foreground">
-          Loading…
-        </p>
-      )}
+      {isPending && <LoadingSkeleton />}
       {isError && (
         <p role="alert" className="text-sm text-destructive">
           This page could not be loaded. Please try again in a moment.

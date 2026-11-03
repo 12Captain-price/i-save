@@ -315,6 +315,11 @@ export async function markWhatsappSent(ids: string[]) {
   check((await supabase.rpc("mark_whatsapp_sent", { p_ids: ids })).error);
 }
 
+/** Throws away queued WhatsApp messages that will never be sent. Admins only. */
+export async function discardWhatsappOutbox(ids: string[]) {
+  check((await supabase.rpc("discard_whatsapp_outbox", { p_ids: ids })).error);
+}
+
 /** wa.me link that opens WhatsApp with the message ready to send. */
 export function whatsappLink(
   phone: string,

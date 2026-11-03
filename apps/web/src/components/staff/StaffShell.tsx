@@ -1,3 +1,4 @@
+import { LoadingSkeleton } from "@/components/ui/motion";
 import type { ReactNode } from "react";
 import { Link, Navigate, Outlet } from "@tanstack/react-router";
 import { PublicLayout } from "@/components/site/PublicLayout";
@@ -34,9 +35,7 @@ export function StaffShell() {
   if (loading) {
     return (
       <Frame>
-        <p role="status" className="text-sm text-muted-foreground">
-          Loading…
-        </p>
+        <LoadingSkeleton />
       </Frame>
     );
   }

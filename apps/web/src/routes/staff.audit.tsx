@@ -1,3 +1,4 @@
+import { LoadingSkeleton } from "@/components/ui/motion";
 import { useState, type FormEvent } from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { StatusPill } from "@/components/staff/StatusPill";
@@ -166,11 +167,7 @@ function AuditLog() {
       </form>
 
       <div className="mt-8" aria-live="polite">
-        {audit.isPending && (
-          <p role="status" className="text-sm text-muted-foreground">
-            Loading…
-          </p>
-        )}
+        {audit.isPending && <LoadingSkeleton />}
         {audit.isError && (
           <p role="alert" className="text-sm text-destructive">
             {staffErrorMessage(audit.error)}

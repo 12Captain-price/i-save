@@ -1,3 +1,4 @@
+import { LoadingSkeleton } from "@/components/ui/motion";
 import { useState, type FormEvent } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { AdminOnly } from "@/components/staff/AdminOnly";
@@ -69,12 +70,7 @@ const PAGE_LABEL: Record<SitePage["key"], string> = {
 function PagesEditor() {
   const { data, isPending, isError } = useAllPages();
   const [open, setOpen] = useState<SitePage["key"] | null>(null);
-  if (isPending)
-    return (
-      <p role="status" className="text-sm text-muted-foreground">
-        Loading…
-      </p>
-    );
+  if (isPending) return <LoadingSkeleton />;
   if (isError || !data)
     return <ErrorLine message="The pages could not be loaded." />;
   return (
@@ -169,12 +165,7 @@ function FaqsEditor() {
   const { data, isPending, isError } = useFaqs(true);
   const [editing, setEditing] = useState<Faq | "new" | null>(null);
   const { run, error } = useContentAction();
-  if (isPending)
-    return (
-      <p role="status" className="text-sm text-muted-foreground">
-        Loading…
-      </p>
-    );
+  if (isPending) return <LoadingSkeleton />;
   if (isError || !data)
     return <ErrorLine message="The FAQs could not be loaded." />;
   const nextOrder = (data.at(-1)?.sort_order ?? 0) + 10;

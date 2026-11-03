@@ -1,3 +1,4 @@
+import { LoadingSkeleton } from "@/components/ui/motion";
 import { useState, type FormEvent } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { AdminOnly } from "@/components/staff/AdminOnly";
@@ -50,11 +51,7 @@ function EventsAdmin() {
         {editing === "new" && (
           <EventForm initial={null} onDone={() => setEditing(null)} />
         )}
-        {isPending && (
-          <p role="status" className="text-sm text-muted-foreground">
-            Loading…
-          </p>
-        )}
+        {isPending && <LoadingSkeleton />}
         {isError && <ErrorLine message="Events could not be loaded." />}
         {data?.map((ev) =>
           editing && editing !== "new" && editing.id === ev.id ? (

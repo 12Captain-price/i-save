@@ -1,3 +1,4 @@
+import { LoadingSkeleton } from "@/components/ui/motion";
 import { useState } from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
@@ -46,11 +47,7 @@ function WithdrawalsPage() {
       </p>
 
       <div className="mt-8 grid gap-4" aria-live="polite">
-        {queue.isPending && (
-          <p role="status" className="text-sm text-muted-foreground">
-            Loading…
-          </p>
-        )}
+        {queue.isPending && <LoadingSkeleton />}
         {queue.isError && (
           <p role="alert" className="text-sm text-destructive">
             {staffErrorMessage(queue.error)}

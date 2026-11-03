@@ -1,3 +1,4 @@
+import { LoadingSkeleton } from "@/components/ui/motion";
 import { useState, type FormEvent } from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { StatusPill } from "@/components/staff/StatusPill";
@@ -133,11 +134,7 @@ function LedgerPage() {
       </form>
 
       <div className="mt-8" aria-live="polite">
-        {ledger.isPending && (
-          <p role="status" className="text-sm text-muted-foreground">
-            Loading…
-          </p>
-        )}
+        {ledger.isPending && <LoadingSkeleton />}
         {ledger.isError && (
           <p role="alert" className="text-sm text-destructive">
             {staffErrorMessage(ledger.error)}

@@ -54,6 +54,18 @@ export function useMyMessages(memberId: string) {
   });
 }
 
+/** Removes one of the member's own in-app messages. Receipts and money are never touched. */
+export async function deleteMyMessage(id: string): Promise<void> {
+  const { error } = await supabase.rpc("delete_my_message", { p_id: id });
+  if (error) throw error;
+}
+
+/** Removes every in-app message the member has. */
+export async function deleteAllMyMessages(): Promise<void> {
+  const { error } = await supabase.rpc("delete_my_messages");
+  if (error) throw error;
+}
+
 /* ------------------------------------------------------------------ */
 /* Plans                                                               */
 /* ------------------------------------------------------------------ */

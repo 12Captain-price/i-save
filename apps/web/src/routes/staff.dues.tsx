@@ -1,15 +1,18 @@
+import { LoadingSkeleton } from "@/components/ui/motion";
 import { useMemo, useState } from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { MessageMemberButton } from "@/components/staff/MessageMemberButton";
 import { Button } from "@/components/ui/button";
-import { dueBucket, dueWording, todayInZimbabwe, type DueBucket } from "@/lib/due-dates";
+import {
+  dueBucket,
+  dueWording,
+  todayInZimbabwe,
+  type DueBucket,
+} from "@/lib/due-dates";
 import { useDueList, type DueRow } from "@/lib/dues-list";
 import { formatMoney } from "@/lib/money";
 import { formatCalendarDay, staffErrorMessage } from "@/lib/staff-utils";
-import {
-  STAFF_TEMPLATES,
-  memberFirstName,
-} from "@/lib/whatsapp";
+import { STAFF_TEMPLATES, memberFirstName } from "@/lib/whatsapp";
 
 export const Route = createFileRoute("/staff/dues")({
   component: DuesPage,
@@ -70,11 +73,7 @@ function DuesPage() {
         ))}
       </div>
 
-      {dues.isPending && (
-        <p role="status" className="mt-6 text-sm text-muted-foreground">
-          Loading…
-        </p>
-      )}
+      {dues.isPending && <LoadingSkeleton />}
       {dues.isError && (
         <p role="alert" className="mt-6 text-sm text-destructive">
           {staffErrorMessage(dues.error)}
@@ -118,7 +117,9 @@ function DueLine({ row, today }: { row: DueRow; today: string }) {
           {formatCalendarDay(row.dueDate)}{" "}
           <span
             className={
-              overdue ? "font-semibold text-destructive" : "text-muted-foreground"
+              overdue
+                ? "font-semibold text-destructive"
+                : "text-muted-foreground"
             }
           >
             ({dueWording(row.dueDate, today)})

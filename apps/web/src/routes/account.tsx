@@ -1,4 +1,7 @@
 import { Link, Navigate, createFileRoute } from "@tanstack/react-router";
+import { ActivationWatcher } from "@/components/site/ActivationCelebration";
+import { useSignOutWithGoodbye } from "@/components/site/GoodbyeToast";
+import { LoadingSkeleton } from "@/components/ui/motion";
 import { MemberDashboard } from "@/components/member/MemberDashboard";
 import { PublicLayout } from "@/components/site/PublicLayout";
 import { AdminModeSwitch } from "@/components/staff/AdminModeSwitch";
@@ -71,15 +74,18 @@ function Tile({
   to,
   label,
   note,
+  index = 0,
 }: {
   to: (typeof STAFF_TILES)[number]["to"] | (typeof ADMIN_TILES)[number]["to"];
   label: string;
   note: string;
+  index?: number;
 }) {
   return (
     <Link
       to={to}
-      className="block rounded-md border border-border bg-background p-4 transition-colors hover:border-primary"
+      style={{ ["--i" as string]: index }}
+      className="stagger-in lift block rounded-md border border-border bg-background p-4 hover:border-primary"
     >
       <p className="font-semibold">{label}</p>
       <p className="mt-1 text-xs text-muted-foreground">{note}</p>
@@ -100,8 +106,8 @@ function StaffWorkspace() {
       </h2>
       <AdminModeSwitch />
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {STAFF_TILES.map((t) => (
-          <Tile key={t.to} {...t} />
+        {STAFF_TILES.map((t, i) => (
+          <Tile key={t.to} {...t} index={i} />
         ))}
       </div>
       {isAdminRole(roles) && (
@@ -110,8 +116,8 @@ function StaffWorkspace() {
             Administration
           </p>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {ADMIN_TILES.map((t) => (
-              <Tile key={t.to} {...t} />
+            {ADMIN_TILES.map((t, i) => (
+              <Tile key={t.to} {...t} index={STAFF_TILES.length + i} />
             ))}
           </div>
         </div>
@@ -174,14 +180,13 @@ function PendingStrip({
 }
 
 function AccountPage() {
-  const { loading, session, profile, roles, signOut } = useAuth();
+  const { loading, session, profile, roles } = useAuth();
+  const signOut = useSignOutWithGoodbye();
 
   if (loading) {
     return (
       <Shell title="Your account">
-        <p role="status" className="text-sm text-muted-foreground">
-          Loading your account…
-        </p>
+        <LoadingSkeleton lines={4} />
       </Shell>
     );
   }
@@ -216,11 +221,15 @@ function AccountPage() {
       {staff && <StaffWorkspace />}
 
       {profile.status === "pending" && (
-        <PendingStrip profile={profile} openByDefault={!staff} />
+        <>
+          <ActivationWatcher profile={profile} />
+          <PendingStrip profile={profile} openByDefault={!staff} />
+        </>
       )}
 
       {profile.status === "active" && (
         <>
+          <ActivationWatcher profile={profile} />
           <p className="text-sm text-muted-foreground">
             Member number{" "}
             <strong className="text-foreground">{profile.memberNumber}</strong>

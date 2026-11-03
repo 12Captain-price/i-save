@@ -5,13 +5,40 @@ import { Logo } from "./Logo";
 import { InstallButton } from "./InstallButton";
 import { NAV } from "./nav";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { useSignOutWithGoodbye } from "@/components/site/GoodbyeToast";
+import { Avatar } from "@/components/ui/motion";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+import { firstNameOf } from "@/lib/welcome";
+
+/** "Hi, Tanaka 👋" with a round initials avatar. On small screens only the avatar shows. */
+function GreetingChip({
+  name,
+  compact = false,
+}: {
+  name: string;
+  compact?: boolean;
+}) {
+  const first = firstNameOf(name);
+  return (
+    <a
+      href="/account"
+      aria-label={`Hi, ${first}. Open my account`}
+      className="greet-chip inline-flex items-center gap-2 rounded-full border border-border bg-card py-1 pr-3 pl-1 text-sm font-semibold hover:border-primary"
+    >
+      <Avatar name={name} size={32} />
+      <span className={compact ? "hidden sm:inline" : undefined}>
+        Hi, {first} <span aria-hidden="true">👋</span>
+      </span>
+    </a>
+  );
+}
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
-  const { session, signOut } = useAuth();
+  const { session, profile } = useAuth();
+  const signOut = useSignOutWithGoodbye();
   const navigate = useNavigate();
 
   async function logOut() {
@@ -54,6 +81,7 @@ export function SiteHeader() {
           <InstallButton />
           {session ? (
             <>
+              {profile && <GreetingChip name={profile.fullName} />}
               <a
                 href="/account"
                 className={cn(
@@ -94,6 +122,9 @@ export function SiteHeader() {
           )}
         </div>
         <div className="flex items-center gap-2 xl:hidden">
+          {session && profile && (
+            <GreetingChip name={profile.fullName} compact />
+          )}
           {session && (
             <Button
               variant="outline"

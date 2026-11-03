@@ -1,3 +1,4 @@
+import { SuccessCheck } from "@/components/ui/motion";
 import { useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Printer } from "lucide-react";
@@ -236,9 +237,13 @@ export function RecordPaymentCard({
       >
         {heading}
         <div role="status" className="mt-4 grid gap-2 text-sm">
-          <p className="text-base font-semibold text-primary">
-            Payment recorded. Receipt {result.receiptNumber}
-          </p>
+          <div className="flex items-center gap-3">
+            <SuccessCheck size={40} />
+            <p className="text-base font-semibold text-primary">
+              Payment recorded for {member.full_name}. Receipt{" "}
+              {result.receiptNumber}
+            </p>
+          </div>
           {result.alreadyRecorded && (
             <p className="text-muted-foreground">
               This payment had already been saved, so nothing new was added.

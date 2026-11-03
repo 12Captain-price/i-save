@@ -1,3 +1,4 @@
+import { LoadingSkeleton } from "@/components/ui/motion";
 import { useState, type FormEvent } from "react";
 import { ErrorLine } from "@/components/staff/FormBits";
 import { useContentAction } from "@/components/staff/useContentAction";
@@ -19,8 +20,14 @@ export function SupportContactsAdmin() {
   const { run, error } = useContentAction();
 
   return (
-    <section aria-labelledby="support-heading" className="mt-12 border-t border-border pt-8">
-      <h2 id="support-heading" className="flex items-center gap-2 text-2xl font-semibold">
+    <section
+      aria-labelledby="support-heading"
+      className="mt-12 border-t border-border pt-8"
+    >
+      <h2
+        id="support-heading"
+        className="flex items-center gap-2 text-2xl font-semibold"
+      >
         <WhatsAppIcon className="h-6 w-6 text-[#128C7E]" />
         WhatsApp contacts for members
       </h2>
@@ -41,16 +48,16 @@ export function SupportContactsAdmin() {
           <ContactForm initial={null} onDone={() => setEditing(null)} />
         </div>
       )}
-      {isPending && (
-        <p role="status" className="mt-4 text-sm text-muted-foreground">
-          Loading…
-        </p>
-      )}
+      {isPending && <LoadingSkeleton />}
       {isError && <ErrorLine message="The contacts could not be loaded." />}
       <div className="mt-4 grid gap-3">
         {data?.map((c) =>
           editing && editing !== "new" && editing.id === c.id ? (
-            <ContactForm key={c.id} initial={c} onDone={() => setEditing(null)} />
+            <ContactForm
+              key={c.id}
+              initial={c}
+              onDone={() => setEditing(null)}
+            />
           ) : (
             <div
               key={c.id}
@@ -64,14 +71,22 @@ export function SupportContactsAdmin() {
                 </p>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => setEditing(c)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setEditing(c)}
+                >
                   Edit
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    if (window.confirm(`Remove ${c.full_name} from the WhatsApp contacts?`))
+                    if (
+                      window.confirm(
+                        `Remove ${c.full_name} from the WhatsApp contacts?`,
+                      )
+                    )
                       void run(() => deleteSupportContact(c.id));
                   }}
                 >
@@ -132,9 +147,22 @@ function ContactForm({
   }
 
   return (
-    <form onSubmit={submit} className="grid gap-4 rounded-md border border-primary/40 p-5">
-      <Field id="sc-name" label="Full name" value={name} onChange={(e) => setName(e.target.value)} />
-      <Field id="sc-role" label="Role" value={role} onChange={(e) => setRole(e.target.value)} />
+    <form
+      onSubmit={submit}
+      className="grid gap-4 rounded-md border border-primary/40 p-5"
+    >
+      <Field
+        id="sc-name"
+        label="Full name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
+      <Field
+        id="sc-role"
+        label="Role"
+        value={role}
+        onChange={(e) => setRole(e.target.value)}
+      />
       <Field
         id="sc-phone"
         label="WhatsApp number"

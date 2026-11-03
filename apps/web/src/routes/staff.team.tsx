@@ -1,3 +1,4 @@
+import { LoadingSkeleton } from "@/components/ui/motion";
 import { useState, type FormEvent } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { SupportContactsAdmin } from "@/components/staff/SupportContactsAdmin";
@@ -58,11 +59,7 @@ function TeamAdmin() {
           <TeamForm initial={null} onDone={() => setEditing(null)} />
         </div>
       )}
-      {isPending && (
-        <p role="status" className="mt-6 text-sm text-muted-foreground">
-          Loading…
-        </p>
-      )}
+      {isPending && <LoadingSkeleton />}
       {isError && <ErrorLine message="The team could not be loaded." />}
       <div className="mt-6 grid gap-8">
         {data &&

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { buttonVariants } from "@/components/ui/button";
+import { Avatar, NameReveal } from "@/components/ui/motion";
 import { useAuth } from "@/lib/auth";
 import { isStaffRole } from "@/lib/staff-utils";
 import {
@@ -135,16 +136,19 @@ export function WelcomeCelebration() {
         onClick={(event) => event.stopPropagation()}
       >
         <div className="welcome-ribbon">Welcome back</div>
-        <p className="welcome-wave mt-6 text-5xl" aria-hidden="true">
-          👋
-        </p>
+        <div className="mt-6 flex items-center justify-center gap-3">
+          <Avatar name={profile?.fullName} size={64} bounce />
+          <span className="welcome-wave text-5xl" aria-hidden="true">
+            👋
+          </span>
+        </div>
         <h2
           id="welcome-title"
           className="mt-3 text-2xl font-semibold md:text-3xl"
         >
           {greeting.text} <span aria-hidden="true">{greeting.emoji}</span>
           <br />
-          <span className="welcome-name">{name}</span>
+          <NameReveal name={name} className="text-primary" />
           <span aria-hidden="true"> 🎉</span>
         </h2>
         <p className="mt-3 text-sm text-muted-foreground">

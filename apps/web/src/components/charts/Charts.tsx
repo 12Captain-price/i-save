@@ -1,4 +1,5 @@
 import {
+  useEffect,
   useId,
   useRef,
   useState,
@@ -570,6 +571,12 @@ export function ProgressRing({
   size?: number;
 }) {
   const p = Math.max(0, Math.min(100, percent));
+  // Starts empty and fills to the real value, so the ring sweeps in when it appears.
+  const [shown, setShown] = useState(0);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setShown(p));
+    return () => cancelAnimationFrame(id);
+  }, [p]);
   const R = 52;
   const C = 2 * Math.PI * R;
   return (
@@ -596,9 +603,11 @@ export function ProgressRing({
         stroke={color}
         strokeWidth="12"
         strokeLinecap="round"
-        strokeDasharray={`${(p / 100) * C} ${C}`}
+        strokeDasharray={`${(shown / 100) * C} ${C}`}
         transform="rotate(-90 65 65)"
-        style={{ transition: "stroke-dasharray 500ms ease" }}
+        style={{
+          transition: "stroke-dasharray 1100ms cubic-bezier(0.2, 0.7, 0.2, 1)",
+        }}
       />
       <text
         x="65"

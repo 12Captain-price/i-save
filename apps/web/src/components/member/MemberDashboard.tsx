@@ -1,4 +1,14 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
+import {
+  CelebrationToast,
+  CountUpMoney,
+  LoadingSkeleton,
+  readSeen,
+  writeSeen,
+  type CelebrationSpec,
+} from "@/components/ui/motion";
+import { firstNameOf } from "@/lib/welcome";
+import { deleteAllMyMessages, deleteMyMessage } from "@/lib/member";
 import { formatMoney, toMoney } from "@/lib/money";
 import { usePublicFees } from "@/lib/public-fees";
 import {
@@ -6,6 +16,7 @@ import {
   useMyEnrollment,
   useMyMessages,
 } from "@/lib/member";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   useMemberBalances,
   useMemberDueItems,
@@ -77,11 +88,83 @@ function Card({
 }
 
 function Loading() {
-  return (
-    <p role="status" className="text-muted-foreground">
-      Loading…
-    </p>
-  );
+  return <LoadingSkeleton />;
+}
+
+const MILESTONES = [25, 50, 75, 100] as const;
+
+/**
+ * Plays a short celebration when the database shows something good: a new receipt, or the
+ * plan reaching 25, 50, 75 or 100 percent. It remembers what it has already celebrated on
+ * this device, and the first visit only records where things stand, so nothing old replays.
+ */
+function useCelebrations(
+  memberId: string,
+  firstName: string,
+  receipts: ReturnType<typeof useMemberReceipts>["data"],
+  percent: number,
+  hasPlan: boolean,
+) {
+  const [queue, setQueue] = useState<CelebrationSpec[]>([]);
+  const push = (spec: CelebrationSpec) => setQueue((q) => [...q, spec]);
+
+  // A new receipt appeared.
+  useEffect(() => {
+    if (!receipts) return;
+    const key = `isave:last-receipt:${memberId}`;
+    const stamp = (iso: string) => Date.parse(iso) || 0;
+    const latest = receipts.reduce((m, r) => Math.max(m, stamp(r.issuedAt)), 0);
+    const seenRaw = readSeen(key);
+    if (seenRaw === null) {
+      writeSeen(key, String(latest));
+      return;
+    }
+    const seen = Number(seenRaw) || 0;
+    const fresh = receipts
+      .filter((r) => !r.reversed && stamp(r.issuedAt) > seen)
+      .sort((a, b) => stamp(b.issuedAt) - stamp(a.issuedAt));
+    if (latest > seen) writeSeen(key, String(latest));
+    const newest = fresh[0];
+    if (newest) {
+      push({
+        id: `receipt-${newest.id}`,
+        tone: "coins",
+        title: `Thank you, ${firstName}, payment received 🎉`,
+        detail: `${purposeLabel(newest.purpose)} · ${formatMoney(newest.amount, newest.currency)} · Receipt ${newest.receiptNumber}`,
+      });
+    }
+  }, [receipts, memberId, firstName]);
+
+  // The plan crossed a milestone.
+  useEffect(() => {
+    if (!hasPlan) return;
+    const key = `isave:last-milestone:${memberId}`;
+    const reached = MILESTONES.filter((m) => percent >= m).pop() ?? 0;
+    const seenRaw = readSeen(key);
+    if (seenRaw === null) {
+      writeSeen(key, String(reached));
+      return;
+    }
+    if (reached > (Number(seenRaw) || 0)) {
+      writeSeen(key, String(reached));
+      push({
+        id: `milestone-${reached}`,
+        tone: "confetti",
+        title:
+          reached === 100
+            ? `${firstName}, you finished your plan! 🏆`
+            : `${firstName}, you are ${reached}% of the way! 🎯`,
+        detail:
+          reached === 100
+            ? "Every contribution is paid. Well done."
+            : "Keep going. Every payment counts.",
+      });
+    }
+  }, [percent, hasPlan, memberId, firstName]);
+
+  const current = queue[0] ?? null;
+  const dismiss = useCallback(() => setQueue((q) => q.slice(1)), []);
+  return { current, dismiss };
 }
 
 function ErrorLine({ error }: { error: unknown }) {
@@ -119,17 +202,20 @@ function Tile({
   value,
   note,
   onOpen,
+  index = 0,
 }: {
   label: string;
   value: string;
   note: string;
   onOpen: () => void;
+  index?: number;
 }) {
   return (
     <button
       type="button"
       onClick={onOpen}
-      className="rounded-xl border border-border bg-card p-4 text-left transition-colors hover:border-primary focus-visible:border-primary"
+      style={{ ["--i" as string]: index }}
+      className="stagger-in lift rounded-xl border border-border bg-card p-4 text-left hover:border-primary focus-visible:border-primary"
     >
       <p className="text-[0.7rem] font-semibold tracking-wide text-muted-foreground uppercase">
         {label}
@@ -214,6 +300,31 @@ export function MemberDashboard({
   const percent =
     prog && prog.total > 0 ? Math.round((prog.paid / prog.total) * 100) : 0;
 
+  const celebration = useCelebrations(
+    memberId,
+    firstNameOf(memberName),
+    receipts.data,
+    percent,
+    Boolean(prog && prog.total > 0),
+  );
+  const queryClient = useQueryClient();
+  const [cleaning, setCleaning] = useState(false);
+  const [cleanError, setCleanError] = useState<unknown>(null);
+  async function cleanUp(work: () => Promise<void>) {
+    setCleaning(true);
+    setCleanError(null);
+    try {
+      await work();
+      await queryClient.invalidateQueries({
+        queryKey: ["member", memberId, "messages"],
+      });
+    } catch (e) {
+      setCleanError(e);
+    } finally {
+      setCleaning(false);
+    }
+  }
+
   // A goal line only when the plan has one fixed amount, so the number is exact.
   const planAmount = enrollment.data?.plan.amount ?? null;
   const goalMoney =
@@ -294,6 +405,12 @@ export function MemberDashboard({
 
   return (
     <div className="grid gap-6">
+      {celebration.current && (
+        <CelebrationToast
+          spec={celebration.current}
+          onDone={celebration.dismiss}
+        />
+      )}
       {/* Hero: the one number a member cares about, and how far along their plan is. */}
       <section
         aria-label="Savings summary"
@@ -307,14 +424,17 @@ export function MemberDashboard({
             <ErrorLine error={balances.error} />
           ) : (
             <p className="mt-2 font-display text-4xl font-semibold text-primary md:text-5xl">
-              {formatMoney(main.savings, cur)}
+              <CountUpMoney value={main.savings} currency={cur} />
             </p>
           )}
           <p className="mt-2 text-xs text-muted-foreground">
             Only confirmed savings contributions count here.
           </p>
           <dl className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
-            <div className="rounded-lg bg-background/40 px-3 py-2.5">
+            <div
+              className="stagger-in rounded-lg bg-background/40 px-3 py-2.5"
+              style={{ ["--i" as string]: 1 }}
+            >
               <dt className="text-[0.7rem] text-muted-foreground uppercase">
                 Fees paid
               </dt>
@@ -322,7 +442,10 @@ export function MemberDashboard({
                 {formatMoney(main.fees, cur)}
               </dd>
             </div>
-            <div className="rounded-lg bg-background/40 px-3 py-2.5">
+            <div
+              className="stagger-in rounded-lg bg-background/40 px-3 py-2.5"
+              style={{ ["--i" as string]: 2 }}
+            >
               <dt className="text-[0.7rem] text-muted-foreground uppercase">
                 Next payment
               </dt>
@@ -330,7 +453,10 @@ export function MemberDashboard({
                 {nextDue ? formatCalendarDay(nextDue.dueDate) : "None due"}
               </dd>
             </div>
-            <div className="col-span-2 rounded-lg bg-background/40 px-3 py-2.5 sm:col-span-1">
+            <div
+              className="stagger-in col-span-2 rounded-lg bg-background/40 px-3 py-2.5 sm:col-span-1"
+              style={{ ["--i" as string]: 3 }}
+            >
               <dt className="text-[0.7rem] text-muted-foreground uppercase">
                 Contributions
               </dt>
@@ -370,12 +496,14 @@ export function MemberDashboard({
             </h2>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               <Tile
+                index={0}
                 label="Receipts"
                 value={receipts.data ? `${receipts.data.length} issued` : "…"}
                 note="Every payment recorded"
                 onOpen={() => open("receipts")}
               />
               <Tile
+                index={1}
                 label="Savings plan"
                 value={
                   enrollment.data ? enrollment.data.plan.planName : "Not joined"
@@ -388,6 +516,7 @@ export function MemberDashboard({
                 onOpen={() => open("plan")}
               />
               <Tile
+                index={2}
                 label="Subscription"
                 value={
                   fees.data?.subscription
@@ -398,18 +527,21 @@ export function MemberDashboard({
                 onOpen={() => open("subscription")}
               />
               <Tile
+                index={3}
                 label="Messages"
                 value={messages.data ? `${messages.data.length}` : "…"}
                 note="Notices from the office"
                 onOpen={() => open("messages")}
               />
               <Tile
+                index={4}
                 label="Withdrawals"
                 value="Your savings"
                 note="Request and track"
                 onOpen={() => open("withdrawals")}
               />
               <Tile
+                index={5}
                 label="Need help?"
                 value="Ask for assistance"
                 note="Message the office or a staff member on WhatsApp"
@@ -433,7 +565,9 @@ export function MemberDashboard({
             </button>
           </div>
           {view === "receipts" && (
-            <Card id="receipts-heading" title="Your receipts"
+            <Card
+              id="receipts-heading"
+              title="Your receipts"
               help={{ topic: "a receipt", onAsk: askAbout }}
             >
               {receipts.isPending && <Loading />}
@@ -492,7 +626,9 @@ export function MemberDashboard({
             </Card>
           )}
           {view === "plan" && (
-            <Card id="plan-heading" title="Your savings plan"
+            <Card
+              id="plan-heading"
+              title="Your savings plan"
               help={{ topic: "my savings plan", onAsk: askAbout }}
             >
               {enrollment.isPending && <Loading />}
@@ -551,7 +687,9 @@ export function MemberDashboard({
             </Card>
           )}
           {view === "subscription" && (
-            <Card id="subscription-heading" title="Monthly subscription"
+            <Card
+              id="subscription-heading"
+              title="Monthly subscription"
               help={{ topic: "the monthly subscription", onAsk: askAbout }}
             >
               <div className="grid gap-2">
@@ -585,7 +723,9 @@ export function MemberDashboard({
             </Card>
           )}
           {view === "messages" && (
-            <Card id="messages-heading" title="Messages"
+            <Card
+              id="messages-heading"
+              title="Messages"
               help={{ topic: "a message from the office", onAsk: askAbout }}
             >
               {messages.isPending && <Loading />}
@@ -593,18 +733,56 @@ export function MemberDashboard({
               {messages.data && messages.data.length === 0 && (
                 <p className="text-muted-foreground">No messages yet.</p>
               )}
+              {cleanError !== null && <ErrorLine error={cleanError} />}
               {messages.data && messages.data.length > 0 && (
-                <ul className="grid gap-4">
-                  {messages.data.map((m) => (
-                    <li key={m.id}>
-                      <p className="font-semibold">{m.subject ?? "Message"}</p>
-                      <p className="mt-1">{m.body}</p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {formatDateTime(m.createdAt)}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
+                <>
+                  <ul className="grid gap-4">
+                    {messages.data.map((m, i) => (
+                      <li
+                        key={m.id}
+                        className="stagger-in flex items-start justify-between gap-3 border-b border-border/60 pb-4 last:border-0 last:pb-0"
+                        style={{ ["--i" as string]: i }}
+                      >
+                        <div className="min-w-0">
+                          <p className="font-semibold">
+                            {m.subject ?? "Message"}
+                          </p>
+                          <p className="mt-1">{m.body}</p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {formatDateTime(m.createdAt)}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          disabled={cleaning}
+                          aria-label={`Delete message ${m.subject ?? ""}`.trim()}
+                          onClick={() => {
+                            if (window.confirm("Delete this message?"))
+                              void cleanUp(() => deleteMyMessage(m.id));
+                          }}
+                          className="shrink-0 rounded-md border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:border-destructive hover:text-destructive disabled:opacity-50"
+                        >
+                          Delete
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    type="button"
+                    disabled={cleaning}
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          "Delete all your messages? Your receipts and savings are not affected.",
+                        )
+                      )
+                        void cleanUp(deleteAllMyMessages);
+                    }}
+                    className="mt-5 text-xs font-semibold text-muted-foreground underline underline-offset-4 hover:text-destructive disabled:opacity-50"
+                  >
+                    Delete all messages
+                  </button>
+                </>
               )}
             </Card>
           )}
@@ -614,7 +792,9 @@ export function MemberDashboard({
             </Card>
           )}
           {view === "withdrawals" && (
-            <Card id="withdrawals-heading" title="Withdrawals"
+            <Card
+              id="withdrawals-heading"
+              title="Withdrawals"
               help={{ topic: "a withdrawal", onAsk: askAbout }}
             >
               <WithdrawalCard memberId={memberId} />

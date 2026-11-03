@@ -115,18 +115,32 @@ export function AssistantWidget() {
         <section
           role="dialog"
           aria-label={copy.title}
-          className="fixed right-4 bottom-20 z-[60] flex h-[min(34rem,calc(100dvh-7rem))] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-lg border border-border bg-background shadow-xl"
+          className="chat-pop fixed right-4 bottom-20 z-[60] flex h-[min(34rem,calc(100dvh-7rem))] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-lg border border-border bg-background shadow-xl"
         >
           <header className="flex items-center justify-between bg-primary px-4 py-3 text-primary-foreground">
             <h2 className="text-sm font-semibold">{copy.title}</h2>
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              aria-label="Close assistant"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-primary-foreground/15"
-            >
-              <X aria-hidden="true" className="size-4" />
-            </button>
+            <div className="flex items-center gap-1">
+              {messages.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMessages([]);
+                    setError(null);
+                  }}
+                  className="rounded-md px-2 py-1 text-xs font-semibold hover:bg-primary-foreground/15"
+                >
+                  Clear chat
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                aria-label="Close assistant"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-primary-foreground/15"
+              >
+                <X aria-hidden="true" className="size-4" />
+              </button>
+            </div>
           </header>
 
           <div
@@ -152,7 +166,7 @@ export function AssistantWidget() {
               <p
                 key={i}
                 className={cn(
-                  "max-w-[90%] rounded-md px-3 py-2 whitespace-pre-wrap",
+                  "bubble-in max-w-[90%] rounded-md px-3 py-2 whitespace-pre-wrap",
                   m.role === "user"
                     ? "ml-auto bg-primary text-primary-foreground"
                     : "bg-muted",
@@ -162,8 +176,16 @@ export function AssistantWidget() {
               </p>
             ))}
             {busy && (
-              <p role="status" className="text-xs text-muted-foreground">
-                Thinking…
+              <p
+                role="status"
+                className="bubble-in inline-flex rounded-md bg-muted px-3 py-3 text-muted-foreground"
+              >
+                <span className="sr-only">Thinking…</span>
+                <span className="typing-dots" aria-hidden="true">
+                  <span />
+                  <span />
+                  <span />
+                </span>
               </p>
             )}
             {error && (

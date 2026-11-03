@@ -23,9 +23,7 @@ function StatementPage() {
   if (!session) return <Navigate to="/login" />;
   if (!profile) return <Shell>Your account could not be found.</Shell>;
 
-  const currencies = [
-    ...new Set((ledger.data ?? []).map((r) => r.currency)),
-  ];
+  const currencies = [...new Set((ledger.data ?? []).map((r) => r.currency))];
   if (currencies.length === 0) currencies.push("USD");
 
   return (
@@ -47,7 +45,11 @@ function StatementPage() {
         <header className="border-b border-neutral-300 pb-4">
           <p className="text-2xl font-bold tracking-tight">i-Save</p>
           <p className="text-xs text-neutral-600">
-            {[OFFICE_CONTACT.address, OFFICE_CONTACT.phone, OFFICE_CONTACT.email]
+            {[
+              OFFICE_CONTACT.address,
+              OFFICE_CONTACT.phone,
+              OFFICE_CONTACT.email,
+            ]
               .filter(Boolean)
               .join(" · ")}
           </p>
@@ -73,7 +75,11 @@ function StatementPage() {
           currencies.map((cur) => {
             const s = buildStatement(ledger.data, cur);
             return (
-              <section key={cur} className="mt-6" aria-label={`${cur} statement`}>
+              <section
+                key={cur}
+                className="mt-6"
+                aria-label={`${cur} statement`}
+              >
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <p>
                     <span className="block text-xs font-semibold text-neutral-600 uppercase">
@@ -101,16 +107,29 @@ function StatementPage() {
                     <table className="w-full min-w-[34rem] text-left text-sm">
                       <thead>
                         <tr className="border-b-2 border-neutral-900 text-xs uppercase">
-                          <th scope="col" className="py-2 pr-3">Date</th>
-                          <th scope="col" className="py-2 pr-3">Description</th>
-                          <th scope="col" className="py-2 pr-3 text-right">Savings</th>
-                          <th scope="col" className="py-2 pr-3 text-right">Fees</th>
-                          <th scope="col" className="py-2 text-right">Savings balance</th>
+                          <th scope="col" className="py-2 pr-3">
+                            Date
+                          </th>
+                          <th scope="col" className="py-2 pr-3">
+                            Description
+                          </th>
+                          <th scope="col" className="py-2 pr-3 text-right">
+                            Savings
+                          </th>
+                          <th scope="col" className="py-2 pr-3 text-right">
+                            Fees
+                          </th>
+                          <th scope="col" className="py-2 text-right">
+                            Savings balance
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
                         {s.rows.map((r) => (
-                          <tr key={r.id} className="border-b border-neutral-200">
+                          <tr
+                            key={r.id}
+                            className="border-b border-neutral-200"
+                          >
                             <td className="py-2 pr-3">{formatDate(r.date)}</td>
                             <td className="py-2 pr-3">{r.description}</td>
                             <td className="py-2 pr-3 text-right">

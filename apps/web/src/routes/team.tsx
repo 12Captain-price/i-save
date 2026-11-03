@@ -1,3 +1,4 @@
+import { LoadingSkeleton } from "@/components/ui/motion";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageShell } from "@/components/site/PageShell";
 import { TeamCard } from "@/components/site/TeamCard";
@@ -17,11 +18,7 @@ function TeamPage() {
       title="The people behind i-Save."
       lead="Meet the team that looks after your membership and your savings records."
     >
-      {isPending && (
-        <p role="status" className="text-sm text-muted-foreground">
-          Loading…
-        </p>
-      )}
+      {isPending && <LoadingSkeleton />}
       {isError && (
         <p role="alert" className="text-sm text-destructive">
           The team could not be loaded. Please try again in a moment.

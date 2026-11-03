@@ -1,3 +1,4 @@
+import { LoadingSkeleton } from "@/components/ui/motion";
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
@@ -30,11 +31,7 @@ export function WithdrawalCard({ memberId }: { memberId: string }) {
   const mine = useMyWithdrawals(memberId);
 
   if (quote.isPending || mine.isPending) {
-    return (
-      <p role="status" className="text-muted-foreground">
-        Loading…
-      </p>
-    );
+    return <LoadingSkeleton />;
   }
   if (quote.isError || mine.isError) {
     return (

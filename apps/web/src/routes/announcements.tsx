@@ -1,3 +1,4 @@
+import { LoadingSkeleton } from "@/components/ui/motion";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageShell } from "@/components/site/PageShell";
 import { RichText } from "@/components/site/RichText";
@@ -16,11 +17,7 @@ function AnnouncementsPage() {
       title="News from the office."
       lead="Notices for members. Members who opt in also receive these by email and WhatsApp."
     >
-      {isPending && (
-        <p role="status" className="text-sm text-muted-foreground">
-          Loading…
-        </p>
-      )}
+      {isPending && <LoadingSkeleton />}
       {isError && (
         <p role="alert" className="text-sm text-destructive">
           Announcements could not be loaded. Please try again in a moment.
