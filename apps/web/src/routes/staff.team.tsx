@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { SupportContactsAdmin } from "@/components/staff/SupportContactsAdmin";
 import { AdminOnly } from "@/components/staff/AdminOnly";
 import {
   ErrorLine,
@@ -126,6 +127,7 @@ function TeamAdmin() {
             </section>
           ))}
       </div>
+      <SupportContactsAdmin />
     </div>
   );
 }

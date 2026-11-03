@@ -225,7 +225,11 @@ function AccountPage() {
             Member number{" "}
             <strong className="text-foreground">{profile.memberNumber}</strong>
           </p>
-          <MemberDashboard memberId={profile.id} />
+          <MemberDashboard
+            memberId={profile.id}
+            memberName={profile.fullName}
+            memberNumber={profile.memberNumber}
+          />
         </>
       )}
 

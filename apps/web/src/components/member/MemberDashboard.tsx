@@ -32,6 +32,8 @@ import {
 import { lastMonths, monthLabel, runningTotalByMonth } from "@/lib/chart-utils";
 import { useMemberLedger, useMemberPlanProgress } from "@/lib/dashboard-data";
 import { compareMoney } from "@/lib/money";
+import { AssistancePanel } from "@/components/member/AssistancePanel";
+import { WhatsAppIcon } from "@/components/whatsapp/WhatsAppIcon";
 import { PlanPicker } from "@/components/member/PlanPicker";
 import { WithdrawalCard } from "@/components/member/WithdrawalCard";
 import { describeDuration, describePlanAmount } from "@/lib/plan-utils";
@@ -40,19 +42,35 @@ function Card({
   id,
   title,
   children,
+  help,
 }: {
   id: string;
   title: string;
   children: ReactNode;
+  /** When set, a WhatsApp icon opens "Ask for assistance" already about this topic. */
+  help?: { topic: string; onAsk: (topic: string) => void };
 }) {
   return (
     <section
       aria-labelledby={id}
       className="rounded-xl border border-border bg-card p-5 md:p-6"
     >
-      <h2 id={id} className="text-lg font-semibold">
-        {title}
-      </h2>
+      <div className="flex items-center justify-between gap-3">
+        <h2 id={id} className="text-lg font-semibold">
+          {title}
+        </h2>
+        {help && (
+          <button
+            type="button"
+            onClick={() => help.onAsk(help.topic)}
+            aria-label={`Ask for assistance about ${help.topic}`}
+            title="Ask for assistance on WhatsApp"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#25D366] text-white hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <WhatsAppIcon className="h-5 w-5" />
+          </button>
+        )}
+      </div>
       <div className="mt-3 text-sm">{children}</div>
     </section>
   );
@@ -75,13 +93,19 @@ function ErrorLine({ error }: { error: unknown }) {
 }
 
 type SectionId =
-  "receipts" | "plan" | "subscription" | "messages" | "withdrawals";
+  | "receipts"
+  | "plan"
+  | "subscription"
+  | "messages"
+  | "withdrawals"
+  | "assistance";
 const SECTION_IDS: SectionId[] = [
   "receipts",
   "plan",
   "subscription",
   "messages",
   "withdrawals",
+  "assistance",
 ];
 
 function readHash(): SectionId | null {
@@ -122,7 +146,15 @@ function Tile({
  * plan, what is due, receipts and messages. Everything is read-only. Payments are recorded
  * by office staff, and the database decides what each member is allowed to see.
  */
-export function MemberDashboard({ memberId }: { memberId: string }) {
+export function MemberDashboard({
+  memberId,
+  memberName = "",
+  memberNumber = "",
+}: {
+  memberId: string;
+  memberName?: string;
+  memberNumber?: string;
+}) {
   const fees = usePublicFees();
   const balances = useMemberBalances(memberId);
   const receipts = useMemberReceipts(memberId);
@@ -149,6 +181,13 @@ export function MemberDashboard({ memberId }: { memberId: string }) {
   const back = () => {
     window.location.hash = "";
   };
+  // The topic the member was looking at when they tapped a WhatsApp icon.
+  const [helpTopic, setHelpTopic] = useState<string | undefined>(undefined);
+  const askAbout = (topic: string) => {
+    setHelpTopic(topic);
+    open("assistance");
+  };
+  const who = { name: memberName, memberNumber };
 
   const balanceRows =
     balances.data && balances.data.length > 0
@@ -329,7 +368,7 @@ export function MemberDashboard({ memberId }: { memberId: string }) {
             <h2 className="mb-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
               Your account
             </h2>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               <Tile
                 label="Receipts"
                 value={receipts.data ? `${receipts.data.length} issued` : "…"}
@@ -370,6 +409,15 @@ export function MemberDashboard({ memberId }: { memberId: string }) {
                 note="Request and track"
                 onOpen={() => open("withdrawals")}
               />
+              <Tile
+                label="Need help?"
+                value="Ask for assistance"
+                note="Message the office or a staff member on WhatsApp"
+                onOpen={() => {
+                  setHelpTopic(undefined);
+                  open("assistance");
+                }}
+              />
             </div>
           </section>
         </>
@@ -385,7 +433,9 @@ export function MemberDashboard({ memberId }: { memberId: string }) {
             </button>
           </div>
           {view === "receipts" && (
-            <Card id="receipts-heading" title="Your receipts">
+            <Card id="receipts-heading" title="Your receipts"
+              help={{ topic: "a receipt", onAsk: askAbout }}
+            >
               {receipts.isPending && <Loading />}
               {receipts.isError && <ErrorLine error={receipts.error} />}
               {receipts.data && receipts.data.length === 0 && (
@@ -442,7 +492,9 @@ export function MemberDashboard({ memberId }: { memberId: string }) {
             </Card>
           )}
           {view === "plan" && (
-            <Card id="plan-heading" title="Your savings plan">
+            <Card id="plan-heading" title="Your savings plan"
+              help={{ topic: "my savings plan", onAsk: askAbout }}
+            >
               {enrollment.isPending && <Loading />}
               {enrollment.isError && <ErrorLine error={enrollment.error} />}
               {enrollment.data && (
@@ -499,7 +551,9 @@ export function MemberDashboard({ memberId }: { memberId: string }) {
             </Card>
           )}
           {view === "subscription" && (
-            <Card id="subscription-heading" title="Monthly subscription">
+            <Card id="subscription-heading" title="Monthly subscription"
+              help={{ topic: "the monthly subscription", onAsk: askAbout }}
+            >
               <div className="grid gap-2">
                 <p>
                   {fees.data?.subscription
@@ -531,7 +585,9 @@ export function MemberDashboard({ memberId }: { memberId: string }) {
             </Card>
           )}
           {view === "messages" && (
-            <Card id="messages-heading" title="Messages">
+            <Card id="messages-heading" title="Messages"
+              help={{ topic: "a message from the office", onAsk: askAbout }}
+            >
               {messages.isPending && <Loading />}
               {messages.isError && <ErrorLine error={messages.error} />}
               {messages.data && messages.data.length === 0 && (
@@ -552,8 +608,15 @@ export function MemberDashboard({ memberId }: { memberId: string }) {
               )}
             </Card>
           )}
+          {view === "assistance" && (
+            <Card id="assistance-heading" title="Ask for assistance">
+              <AssistancePanel who={who} topic={helpTopic} />
+            </Card>
+          )}
           {view === "withdrawals" && (
-            <Card id="withdrawals-heading" title="Withdrawals">
+            <Card id="withdrawals-heading" title="Withdrawals"
+              help={{ topic: "a withdrawal", onAsk: askAbout }}
+            >
               <WithdrawalCard memberId={memberId} />
             </Card>
           )}

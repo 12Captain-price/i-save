@@ -1,9 +1,11 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { IdSightingCard } from "@/components/staff/IdSightingCard";
 import { RecordPaymentCard } from "@/components/staff/RecordPaymentCard";
+import { MessageMemberButton } from "@/components/staff/MessageMemberButton";
 import { StatusPill } from "@/components/staff/StatusPill";
 import { useAuth } from "@/lib/auth";
 import { formatMoney } from "@/lib/money";
+import { STAFF_TEMPLATES, memberFirstName } from "@/lib/whatsapp";
 import { usePublicFees } from "@/lib/public-fees";
 import {
   useMember,
@@ -13,6 +15,8 @@ import {
   useMemberReceipts,
 } from "@/lib/staff";
 import {
+  formatCalendarDay,
+  formatDate,
   formatDateTime,
   providerLabel,
   purposeLabel,
@@ -74,6 +78,46 @@ function MemberPage() {
   const m = member.data;
   const isSelf = session?.user.id === m.id;
 
+  // Starting messages for the WhatsApp icon. Staff can change them before anything opens.
+  const first = memberFirstName(m.full_name) || "there";
+  const nextDue = dues.data?.[0] ?? null;
+  const lastReceipt = receipts.data?.find((r) => !r.reversed) ?? null;
+  const whatsappTemplates = [
+    { label: "Hello", text: STAFF_TEMPLATES.general(first) },
+    ...(nextDue
+      ? [
+          {
+            label: "Payment reminder",
+            text: STAFF_TEMPLATES.reminder(
+              first,
+              nextDue.amount
+                ? formatMoney(nextDue.amount, nextDue.currency)
+                : null,
+              formatCalendarDay(nextDue.dueDate),
+            ),
+          },
+        ]
+      : []),
+    ...(lastReceipt
+      ? [
+          {
+            label: "Receipt",
+            text: STAFF_TEMPLATES.receipt(first, {
+              receiptNumber: lastReceipt.receiptNumber,
+              amount: lastReceipt.amount,
+              currency: lastReceipt.currency,
+              purposeLabel: purposeLabel(lastReceipt.purpose),
+              issuedOn: formatDate(lastReceipt.issuedAt),
+            }),
+          },
+        ]
+      : []),
+    {
+      label: "Confirmation",
+      text: STAFF_TEMPLATES.confirmation(first, "your details"),
+    },
+  ];
+
   return (
     <div className="grid gap-6">
       <div>
@@ -83,6 +127,14 @@ function MemberPage() {
             {m.full_name || "(no name)"}
           </h1>
           <StatusPill status={m.status} />
+          <MessageMemberButton
+            memberName={m.full_name}
+            phone={m.phone}
+            templates={whatsappTemplates}
+            label="Message member"
+            showLabel
+            optedIn={m.whatsapp_opt_in}
+          />
         </div>
         <dl className="mt-5 grid gap-4 rounded-md border border-border bg-card p-6 text-sm sm:grid-cols-2 lg:grid-cols-4">
           <Detail label="Member number">{m.member_number}</Detail>

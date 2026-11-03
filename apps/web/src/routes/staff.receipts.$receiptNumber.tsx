@@ -3,9 +3,16 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { Printer } from "lucide-react";
 import { ReceiptSlip } from "@/components/staff/ReceiptSlip";
 import { ReverseReceiptCard } from "@/components/staff/ReverseReceiptCard";
+import { MessageMemberButton } from "@/components/staff/MessageMemberButton";
 import { Button } from "@/components/ui/button";
-import { useReceiptDetail } from "@/lib/staff";
-import { formatDateTime, staffErrorMessage } from "@/lib/staff-utils";
+import { useMember, useReceiptDetail } from "@/lib/staff";
+import { STAFF_TEMPLATES, memberFirstName } from "@/lib/whatsapp";
+import {
+  formatDate,
+  formatDateTime,
+  purposeLabel,
+  staffErrorMessage,
+} from "@/lib/staff-utils";
 
 export const Route = createFileRoute("/staff/receipts/$receiptNumber")({
   component: ReceiptPage,
@@ -14,6 +21,7 @@ export const Route = createFileRoute("/staff/receipts/$receiptNumber")({
 function ReceiptPage() {
   const { receiptNumber } = Route.useParams();
   const receipt = useReceiptDetail(receiptNumber);
+  const owner = useMember(receipt.data?.memberId ?? "");
   // Fixed when the page opens, so the "Printed" line does not change while it is on screen.
   const [openedAt] = useState(() => new Date().toISOString());
 
@@ -58,10 +66,36 @@ function ReceiptPage() {
         >
           ← Back to {r.memberName || "member"}
         </Link>
-        <Button onClick={() => window.print()}>
-          <Printer aria-hidden="true" />
-          Print receipt
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          {!r.reversed && (
+            <MessageMemberButton
+              memberName={r.memberName}
+              phone={owner.data?.phone ?? null}
+              label="Send receipt on WhatsApp"
+              showLabel
+              optedIn={owner.data?.whatsapp_opt_in}
+              templates={[
+                {
+                  label: "Receipt",
+                  text: STAFF_TEMPLATES.receipt(
+                    memberFirstName(r.memberName) || "there",
+                    {
+                      receiptNumber: r.receiptNumber,
+                      amount: r.amount,
+                      currency: r.currency,
+                      purposeLabel: purposeLabel(r.purpose),
+                      issuedOn: formatDate(r.issuedAt),
+                    },
+                  ),
+                },
+              ]}
+            />
+          )}
+          <Button onClick={() => window.print()}>
+            <Printer aria-hidden="true" />
+            Print receipt
+          </Button>
+        </div>
       </div>
       <ReceiptSlip receipt={r} printedAt={formatDateTime(openedAt)} />
       <p className="text-center text-xs text-muted-foreground print:hidden">

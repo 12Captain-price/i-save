@@ -79,6 +79,7 @@ export function useMember(memberId: string) {
       if (error) throw error;
       return data ? MemberRow.parse(data) : null;
     },
+    enabled: memberId !== "",
   });
 }
 
