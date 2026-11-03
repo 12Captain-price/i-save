@@ -102,37 +102,59 @@ async function livePublicFacts(d: AssistantDeps): Promise<string> {
   return parts.join("\n\n");
 }
 
-/** Free path: Cloudflare Workers AI through the AI binding. Returns null on any failure. */
+/** Free models to fall back on, in order, if the first choice is retired or unavailable. */
+const FALLBACK_WORKERS_AI_MODELS = [
+  "@cf/meta/llama-3.1-8b-instruct",
+  "@cf/meta/llama-3.2-3b-instruct",
+];
+
+/** Reads the text out of either answer shape Workers AI models use. */
+function textFromAi(out: unknown): string | null {
+  const o = out as {
+    response?: unknown;
+    choices?: Array<{ message?: { content?: unknown } }>;
+  } | null;
+  const text =
+    typeof o?.response === "string"
+      ? o.response
+      : o?.choices?.[0]?.message?.content;
+  return typeof text === "string" && text.trim() ? text.trim() : null;
+}
+
+/**
+ * Free path: Cloudflare Workers AI through the AI binding. Tries the chosen model, then
+ * the fallbacks, and logs why each one failed (never the question or the answer).
+ * Returns null only if every model fails.
+ */
 async function replyWithWorkersAi(
   env: Env,
   system: string,
   messages: ChatMessage[],
 ): Promise<string | null> {
-  try {
-    const out = (await env.AI!.run(
+  const models = [
+    ...new Set([
       env.ASSISTANT_MODEL || DEFAULT_WORKERS_AI_MODEL,
-      {
+      ...FALLBACK_WORKERS_AI_MODELS,
+    ]),
+  ];
+  for (const model of models) {
+    try {
+      const out = await env.AI!.run(model, {
         messages: [{ role: "system", content: system }, ...messages],
         max_tokens: MAX_OUTPUT_TOKENS,
-      },
-    )) as unknown;
-    // Older models answer { response }, newer ones answer in the OpenAI style.
-    const o = out as {
-      response?: unknown;
-      choices?: Array<{ message?: { content?: unknown } }>;
-    };
-    const text =
-      typeof o?.response === "string"
-        ? o.response
-        : o?.choices?.[0]?.message?.content;
-    return typeof text === "string" && text.trim() ? text.trim() : null;
-  } catch (error) {
-    console.error(
-      "assistant workers-ai failed",
-      error instanceof Error ? error.message : "unknown",
-    );
-    return null;
+      });
+      const text = textFromAi(out);
+      if (text) return text;
+      console.error("assistant workers-ai empty reply", model);
+    } catch (error) {
+      console.error(
+        "assistant workers-ai failed",
+        model,
+        error instanceof Error ? error.message : "unknown",
+      );
+    }
   }
+  return null;
 }
 
 /** Optional paid path, used only when ANTHROPIC_API_KEY is set and no AI binding exists. */
