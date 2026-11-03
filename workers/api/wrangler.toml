@@ -16,6 +16,8 @@ SUPABASE_URL = "https://vbxqvccdadtpzrykizna.supabase.co"
 # The live address of the site. Local development overrides both in workers/api/.dev.vars.
 ALLOWED_ORIGIN = "https://i-save.persytchikanya.workers.dev"
 APP_URL = "https://i-save.persytchikanya.workers.dev"
+# Free Workers AI model used by the in-site assistant. Change it here if it is ever retired.
+ASSISTANT_MODEL = "@cf/meta/llama-3.1-8b-instruct"
 
 # Sends queued email notifications every minute (does nothing until Resend is configured).
 [triggers]
