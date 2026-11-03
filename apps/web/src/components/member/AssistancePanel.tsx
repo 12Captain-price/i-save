@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { ChevronRight, Phone } from "lucide-react";
-import { WhatsAppComposer } from "@/components/whatsapp/WhatsAppComposer";
 import { WhatsAppIcon } from "@/components/whatsapp/WhatsAppIcon";
+import { Button } from "@/components/ui/button";
+import { inputClass } from "@/components/ui/field";
 import { OFFICE_CONTACT } from "@/lib/office-contact";
 import { useSupportContacts } from "@/lib/support-contacts";
 import {
   assistanceMessage,
-  memberIntro,
+  whatsappLink,
   type MemberContext,
 } from "@/lib/whatsapp";
 
@@ -18,10 +19,11 @@ const TOPICS = [
   "my account",
 ];
 
-type Target = { name: string; phone: string; staffName?: string };
-
-/** "Ask for assistance": the office first, then each staff member. Tapping one opens a
- *  review box with the message typed, then WhatsApp. */
+/**
+ * "Ask for assistance". The message is already written at the top; the member can change it
+ * or write their own. Tapping the office or any staff member goes straight to that person's
+ * WhatsApp with the message typed. WhatsApp shows it once more, and the member presses send.
+ */
 export function AssistancePanel({
   who,
   topic,
@@ -30,10 +32,20 @@ export function AssistancePanel({
   topic?: string;
 }) {
   const contacts = useSupportContacts();
-  const [target, setTarget] = useState<Target | null>(null);
   const [picked, setPicked] = useState<string | undefined>(topic);
+  // null means "use the suggested message"; text means the member changed it.
+  const [custom, setCustom] = useState<string | null>(null);
 
+  const suggested = assistanceMessage(who, picked);
+  const message = custom ?? suggested;
   const office = OFFICE_CONTACT.whatsapp ? `+${OFFICE_CONTACT.whatsapp}` : null;
+
+  /** Untouched messages greet the person by first name; edited ones are sent exactly as written. */
+  const linkFor = (phone: string, staffName?: string) =>
+    whatsappLink(
+      phone,
+      custom ?? assistanceMessage(who, picked, staffName),
+    );
 
   return (
     <div className="grid gap-4">
@@ -61,13 +73,38 @@ export function AssistancePanel({
         </div>
       </div>
 
+      <div>
+        <label htmlFor="assist-text" className="mb-1.5 block text-sm font-medium">
+          Your message (change it or write your own)
+        </label>
+        <textarea
+          id="assist-text"
+          rows={4}
+          className={inputClass}
+          value={message}
+          onChange={(e) => setCustom(e.target.value)}
+        />
+        <div className="mt-1.5 flex flex-wrap items-center justify-between gap-2">
+          <p className="text-xs text-muted-foreground">
+            Tap a person below. WhatsApp opens with this message ready, and you
+            press send there.
+          </p>
+          {custom !== null && (
+            <Button size="sm" variant="ghost" onClick={() => setCustom(null)}>
+              Use suggested message
+            </Button>
+          )}
+        </div>
+      </div>
+
       <ul className="grid list-none gap-2 p-0">
         {office && (
           <li>
             <ContactRow
               name="The iSave office"
               detail="Main office WhatsApp"
-              onClick={() => setTarget({ name: "the iSave office", phone: office })}
+              href={linkFor(office)}
+              disabled={!message.trim()}
             />
           </li>
         )}
@@ -76,13 +113,8 @@ export function AssistancePanel({
             <ContactRow
               name={c.full_name}
               detail={c.role_title}
-              onClick={() =>
-                setTarget({
-                  name: c.full_name,
-                  phone: c.whatsapp_phone,
-                  staffName: c.full_name,
-                })
-              }
+              href={linkFor(c.whatsapp_phone, c.full_name)}
+              disabled={!message.trim()}
             />
           </li>
         ))}
@@ -109,25 +141,6 @@ export function AssistancePanel({
           Prefer to call? {OFFICE_CONTACT.phone}
         </p>
       )}
-
-      {target && (
-        <WhatsAppComposer
-          title="Ask for assistance"
-          toName={target.name}
-          phone={target.phone}
-          onClose={() => setTarget(null)}
-          templates={[
-            {
-              label: "Suggested",
-              text: assistanceMessage(who, picked, target.staffName),
-            },
-            {
-              label: "Start blank",
-              text: `${memberIntro(who, target.staffName)} `,
-            },
-          ]}
-        />
-      )}
     </div>
   );
 }
@@ -135,26 +148,46 @@ export function AssistancePanel({
 function ContactRow({
   name,
   detail,
-  onClick,
+  href,
+  disabled,
 }: {
   name: string;
   detail: string;
-  onClick: () => void;
+  href: string | null;
+  disabled?: boolean;
 }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex min-h-14 w-full items-center gap-3 rounded-lg border border-border bg-background p-3 text-left hover:border-primary focus-visible:border-primary"
-    >
+  const body = (
+    <>
       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#25D366] text-white">
         <WhatsAppIcon className="h-5 w-5" />
       </span>
       <span className="min-w-0 flex-1">
         <span className="block font-semibold">{name}</span>
-        <span className="block text-xs text-muted-foreground">{detail}</span>
+        <span className="block text-xs text-muted-foreground">
+          {disabled ? "Write a message first" : detail}
+        </span>
       </span>
       <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-    </button>
+    </>
+  );
+  const base =
+    "flex min-h-14 w-full items-center gap-3 rounded-lg border border-border bg-background p-3 text-left";
+  if (!href || disabled) {
+    return (
+      <div aria-disabled="true" className={base + " opacity-60"}>
+        {body}
+      </div>
+    );
+  }
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`Message ${name} on WhatsApp`}
+      className={base + " hover:border-primary focus-visible:border-primary"}
+    >
+      {body}
+    </a>
   );
 }
