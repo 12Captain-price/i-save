@@ -20,3 +20,8 @@ APP_URL = "https://i-save.persytchikanya.workers.dev"
 # Sends queued email notifications every minute (does nothing until Resend is configured).
 [triggers]
 crons = ["* * * * *"]
+
+# Keeps request and error logs in the Cloudflare dashboard (Workers & Pages > i-save > Logs),
+# so a failing email run or API error can be seen after the fact.
+[observability]
+enabled = true

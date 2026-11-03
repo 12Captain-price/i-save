@@ -1,6 +1,8 @@
+import { QRCodeSVG } from "qrcode.react";
 import { formatMoney } from "@/lib/money";
 import { OFFICE_CONTACT } from "@/lib/office-contact";
 import type { ReceiptDetail } from "@/lib/staff";
+import { verifyUrl } from "@/lib/receipt-link";
 import {
   formatDateTime,
   providerLabel,
@@ -88,10 +90,21 @@ export function ReceiptSlip({
 
       {note && <p className="mt-3 text-xs text-neutral-700">{note}</p>}
 
-      <footer className="mt-6 grid gap-1 text-xs text-neutral-600">
-        <p>Received by: {receipt.issuedByName ?? "i-Save office"}</p>
-        <p>Printed: {printedAt}</p>
-        <p>Keep this receipt as proof of payment.</p>
+      <footer className="mt-6 flex items-end justify-between gap-4 text-xs text-neutral-600">
+        <div className="grid gap-1">
+          <p>Received by: {receipt.issuedByName ?? "i-Save office"}</p>
+          <p>Printed: {printedAt}</p>
+          <p>Keep this receipt as proof of payment.</p>
+        </div>
+        <div className="shrink-0 text-center">
+          <QRCodeSVG
+            value={verifyUrl(receipt.id, window.location.origin)}
+            size={72}
+            level="M"
+            aria-label="QR code to check this receipt"
+          />
+          <p className="mt-1 text-[0.6rem]">Scan to check</p>
+        </div>
       </footer>
     </article>
   );

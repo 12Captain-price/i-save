@@ -4,6 +4,7 @@ import { PublicLayout } from "@/components/site/PublicLayout";
 import { buttonVariants } from "@/components/ui/button";
 import { AdminModeSwitch } from "@/components/staff/AdminModeSwitch";
 import { useAuth } from "@/lib/auth";
+import { useIdleTimeout } from "@/lib/idle";
 import { isAdminRole, isStaffRole } from "@/lib/staff-utils";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +15,9 @@ const TAB_IDLE = cn(
   "border-transparent text-muted-foreground hover:text-foreground",
 );
 const TAB_ACTIVE = cn(TAB_BASE, "border-primary text-foreground");
+
+/** Staff are signed out after 20 minutes without any activity. */
+const IDLE_LIMIT_MS = 20 * 60 * 1000;
 
 function Frame({ children }: { children: ReactNode }) {
   return (
@@ -29,7 +33,15 @@ function Frame({ children }: { children: ReactNode }) {
  * same rule on every read and write; this only decides what the screen shows.
  */
 export function StaffShell() {
-  const { loading, session, roles } = useAuth();
+  const { loading, session, roles, signOut } = useAuth();
+
+  // Staff accounts can record money, so an unattended screen signs itself out.
+  const { secondsLeft } = useIdleTimeout({
+    timeoutMs: IDLE_LIMIT_MS,
+    warnMs: 60_000,
+    enabled: Boolean(session) && isStaffRole(roles),
+    onTimeout: () => void signOut(),
+  });
 
   if (loading) {
     return (
@@ -64,6 +76,16 @@ export function StaffShell() {
 
   return (
     <Frame>
+      {secondsLeft !== null && (
+        <p
+          role="alert"
+          className="print:hidden mb-4 rounded-md border border-destructive/60 p-3 text-sm"
+        >
+          You have been inactive. For safety you will be signed out in{" "}
+          {secondsLeft} second{secondsLeft === 1 ? "" : "s"}. Move the mouse or
+          tap the screen to stay signed in.
+        </p>
+      )}
       <p className="print:hidden text-[0.7rem] font-bold tracking-[0.16em] text-primary uppercase">
         Staff area
       </p>
@@ -81,6 +103,13 @@ export function StaffShell() {
           activeProps={{ className: TAB_ACTIVE, "aria-current": "page" }}
         >
           Members
+        </Link>
+        <Link
+          to="/staff/dues"
+          className={TAB_IDLE}
+          activeProps={{ className: TAB_ACTIVE, "aria-current": "page" }}
+        >
+          Who is due
         </Link>
         <Link
           to="/staff/report"

@@ -224,6 +224,13 @@ function AccountPage() {
           <p className="text-sm text-muted-foreground">
             Member number{" "}
             <strong className="text-foreground">{profile.memberNumber}</strong>
+            {" · "}
+            <Link
+              to="/statement"
+              className="font-semibold text-primary underline underline-offset-4"
+            >
+              Download my statement
+            </Link>
           </p>
           <MemberDashboard
             memberId={profile.id}
