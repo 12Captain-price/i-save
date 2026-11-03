@@ -76,7 +76,12 @@ async function getCaller(
       Authorization: `Bearer ${token}`,
     },
   });
-  if (!res.ok) return null;
+  if (!res.ok) {
+    // Status only (never the token). 401 here usually means the Worker's
+    // SUPABASE_SERVICE_ROLE_KEY secret is missing or wrong, or the person's session expired.
+    console.error("sign-in check failed", res.status);
+    return null;
+  }
   const user = (await res.json()) as { id?: string };
   return typeof user.id === "string" ? user.id : null;
 }
