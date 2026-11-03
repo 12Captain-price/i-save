@@ -77,9 +77,18 @@ async function getCaller(
     },
   });
   if (!res.ok) {
-    // Status only (never the token). 401 here usually means the Worker's
-    // SUPABASE_SERVICE_ROLE_KEY secret is missing or wrong, or the person's session expired.
-    console.error("sign-in check failed", res.status);
+    // Status plus Supabase's own reason (never the token) so we can tell a bad key from a bad session.
+    const detail = (await res.json().catch(() => ({}))) as {
+      error_code?: string;
+      msg?: string;
+      message?: string;
+    };
+    console.error(
+      "sign-in check failed",
+      res.status,
+      detail.error_code ?? "",
+      detail.msg ?? detail.message ?? "",
+    );
     return null;
   }
   const user = (await res.json()) as { id?: string };
