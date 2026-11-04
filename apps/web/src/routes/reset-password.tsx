@@ -38,7 +38,7 @@ function ResetPasswordPage() {
       );
       return;
     }
-    await navigate({ to: "/account" });
+    await navigate({ to: "/staff" });
   }
 
   if (loading) {

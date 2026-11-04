@@ -22,17 +22,13 @@ const TAB_IDLE = cn(
 const TAB_ACTIVE = cn(TAB_BASE, "border-primary text-primary");
 
 const TABS = [
-  { to: "/staff", label: "Members", exact: true, admin: false },
-  { to: "/staff/dues", label: "Who is due", admin: false },
-  { to: "/staff/report", label: "Daily report", admin: false },
-  { to: "/staff/ledger", label: "Ledger", admin: false },
-  { to: "/staff/audit", label: "Audit log", admin: true },
-  { to: "/staff/plans", label: "Plans", admin: true },
+  { to: "/staff", label: "Overview", exact: true, admin: false },
   { to: "/staff/announcements", label: "Announcements", admin: true },
   { to: "/staff/events", label: "Events", admin: true },
+  { to: "/staff/plans", label: "Plans", admin: true },
   { to: "/staff/team", label: "Team", admin: true },
+  { to: "/staff/agents", label: "Agents", admin: true },
   { to: "/staff/content", label: "Pages, FAQs, contact", admin: true },
-  { to: "/staff/accounts", label: "Staff accounts", admin: true },
 ] as const;
 
 /**
@@ -56,7 +52,7 @@ function StaffTabs({ admin }: { admin: boolean }) {
   return (
     <nav
       ref={strip}
-      aria-label="Staff"
+      aria-label="Admin"
       className="-mx-6 mt-4 mb-8 flex gap-x-6 overflow-x-auto border-b border-border px-6 print:hidden md:mx-0 md:flex-wrap md:overflow-visible md:px-0"
     >
       {TABS.filter((t) => admin || !t.admin).map((t) => (
@@ -104,15 +100,12 @@ export function StaffShell() {
       <Frame>
         <h1 className="text-3xl font-semibold">Staff only</h1>
         <p className="mt-4 text-sm text-muted-foreground">
-          This area is for office staff. If you should have access, ask an
-          administrator to add the staff role to your account.
+          This area is for administrators. If you should have access, ask an
+          administrator to add the role to your account.
         </p>
         <div className="mt-6">
-          <Link
-            to="/account"
-            className={buttonVariants({ variant: "outline" })}
-          >
-            Back to my account
+          <Link to="/" className={buttonVariants({ variant: "outline" })}>
+            Back to the site
           </Link>
         </div>
       </Frame>
@@ -122,7 +115,7 @@ export function StaffShell() {
   return (
     <Frame>
       <p className="print:hidden text-[0.7rem] font-bold tracking-[0.16em] text-primary uppercase">
-        Staff area
+        Admin
       </p>
       <div className="mt-3 print:hidden">
         <AdminModeSwitch compact />

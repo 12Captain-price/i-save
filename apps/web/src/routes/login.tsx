@@ -20,7 +20,7 @@ function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  if (!loading && session) return <Navigate to="/account" />;
+  if (!loading && session) return <Navigate to="/staff" />;
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -40,13 +40,13 @@ function LoginPage() {
       return;
     }
     markWelcomePending();
-    await navigate({ to: "/account" });
+    await navigate({ to: "/staff" });
   }
 
   return (
     <AuthCard
       title="Log in"
-      lead="Use the email and password you applied with."
+      lead="For administrators. Use the email and password you were given."
     >
       <form onSubmit={onSubmit} noValidate className="grid gap-5">
         <Field

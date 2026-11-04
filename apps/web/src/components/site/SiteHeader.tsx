@@ -25,8 +25,8 @@ function GreetingChip({
   const first = firstNameOf(name);
   return (
     <a
-      href="/account"
-      aria-label={`Hi, ${first}. Open my account`}
+      href="/staff"
+      aria-label={`Hi, ${first}. Open the admin area`}
       className={cn(
         "greet-chip inline-flex items-center gap-2 rounded-full border border-border bg-card py-1 pl-1 text-sm font-semibold whitespace-nowrap hover:border-primary",
         wide ? "pr-1 2xl:pr-3" : "pr-3",
@@ -93,13 +93,13 @@ export function SiteHeader() {
             <>
               {profile && <GreetingChip name={profile.fullName} wide />}
               <a
-                href="/account"
+                href="/staff"
                 className={cn(
                   buttonVariants({ size: "sm" }),
                   "px-5 py-2.5 text-sm whitespace-nowrap",
                 )}
               >
-                My account
+                Admin
               </a>
               <Button
                 variant="outline"
@@ -173,8 +173,8 @@ export function SiteHeader() {
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {session ? (
               <>
-                <a href="/account" className={cn(buttonVariants())}>
-                  My account
+                <a href="/staff" className={cn(buttonVariants())}>
+                  Admin
                 </a>
                 <Button
                   variant="outline"
