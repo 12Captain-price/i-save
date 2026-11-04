@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { PublicLayout } from "@/components/site/PublicLayout";
 import { HeroRibbons } from "@/components/site/HeroRibbons";
+import { HomeDashboard } from "@/components/site/HomeDashboard";
 import { HomeSections } from "@/components/site/HomeSections";
 import { Reveal } from "@/components/site/Reveal";
 import { NextChapter } from "@/components/site/NextChapter";
@@ -156,6 +157,8 @@ function HomePage() {
         </section>
 
         <StatTiles />
+
+        <HomeDashboard />
 
         <section
           id="goals"

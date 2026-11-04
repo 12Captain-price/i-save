@@ -1,0 +1,194 @@
+/* Interactive dashboard on the home page. */
+.home-page .home-dash-wrap {
+  padding-block: 1rem 3rem;
+}
+.home-page .home-dash {
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: linear-gradient(160deg, var(--card), var(--surface-deep));
+}
+.home-dash-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.home-seg {
+  display: inline-flex;
+  padding: 0.2rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--background);
+}
+.home-seg button {
+  min-height: 2.25rem;
+  padding: 0.25rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+.home-seg button[aria-pressed="true"] {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+.home-dash-summary {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+.home-dash-summary > div {
+  padding: 0.9rem 1rem;
+  border-radius: 0.75rem;
+  background: var(--background);
+  border: 1px solid var(--border);
+}
+.home-dash-summary dt {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+.home-dash-summary dd {
+  margin-top: 0.15rem;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--primary);
+}
+.home-dash-chart {
+  position: relative;
+  margin-top: 1.25rem;
+}
+.home-dash-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.dash-grid {
+  stroke: var(--border);
+  stroke-dasharray: 3 4;
+}
+.dash-axis {
+  fill: var(--muted-foreground);
+  font-size: 11px;
+}
+.dash-bar {
+  cursor: pointer;
+  outline: none;
+}
+.dash-fill {
+  transform-box: fill-box;
+  transform-origin: bottom;
+  animation: dash-grow 0.6s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+  animation-delay: calc(var(--i) * 35ms);
+  transition: opacity 0.2s ease;
+}
+.dash-past .dash-fill {
+  fill: var(--primary);
+}
+.dash-current .dash-fill {
+  fill: var(--portal-warm);
+}
+.dash-upcoming .dash-fill {
+  fill: url(#dash-hatch);
+  stroke: var(--primary);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+.dash-bar:not(.is-active) .dash-fill {
+  opacity: 0.88;
+}
+.dash-bar.is-active .dash-fill,
+.dash-bar:focus-visible .dash-fill {
+  opacity: 1;
+  filter: brightness(1.12);
+}
+.dash-bar:focus-visible rect:first-child {
+  stroke: var(--ring);
+  stroke-width: 2;
+  rx: 6;
+}
+@keyframes dash-grow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+.dash-tip {
+  position: absolute;
+  top: 0;
+  z-index: 2;
+  display: grid;
+  gap: 0.1rem;
+  min-width: 9rem;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid color-mix(in oklab, var(--primary) 50%, var(--border));
+  border-radius: 0.6rem;
+  background: var(--popover);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
+  font-size: 0.8125rem;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.dash-tip-value {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+.dash-tip-phase {
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+}
+.home-dash-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  margin-top: 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+.home-dash-legend i {
+  display: inline-block;
+  width: 0.8rem;
+  height: 0.8rem;
+  margin-right: 0.4rem;
+  vertical-align: -1px;
+  border-radius: 3px;
+}
+.k-past {
+  background: var(--primary);
+}
+.k-current {
+  background: var(--portal-warm);
+}
+.k-upcoming {
+  border: 1.5px dashed var(--primary);
+  background: var(--primary-soft);
+}
+.home-dash-note {
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--muted-foreground);
+}
+@media (min-width: 640px) {
+  .home-page .home-dash {
+    padding: 1.75rem;
+  }
+  .home-dash-summary {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dash-fill {
+    animation: none;
+  }
+}
