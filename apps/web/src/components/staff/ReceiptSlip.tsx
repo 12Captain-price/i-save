@@ -38,10 +38,13 @@ export function ReceiptSlip({
       className="receipt-print mx-auto w-full max-w-md rounded-md border border-neutral-300 bg-white p-6 text-neutral-900 shadow-sm print:max-w-none print:rounded-none print:border-0 print:p-0 print:shadow-none"
     >
       <header className="border-b border-neutral-300 pb-4 text-center">
-        <p className="text-2xl font-bold tracking-tight">i-Save</p>
-        <p className="text-xs text-neutral-600">
-          Saving today for a better tomorrow
-        </p>
+        <img
+          src="/images/isave-logo-dark.webp"
+          alt="i-Save: Saving today for a better tomorrow"
+          width={600}
+          height={240}
+          className="mx-auto mb-2 h-20 w-auto rounded-md"
+        />
         {contact.map((line) => (
           <p key={line} className="text-xs text-neutral-600">
             {line}
