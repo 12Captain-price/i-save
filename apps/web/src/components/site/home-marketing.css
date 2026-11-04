@@ -1,0 +1,157 @@
+/* Phase 4: marketing touches for the home page. Loaded after homepage.css. */
+
+.home-page .home-hero {
+  position: relative;
+}
+.home-page .home-hero-copy {
+  position: relative;
+  z-index: 1;
+}
+
+/* Welcome chip above the headline */
+.home-page .home-welcome {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  padding: 0.4rem 0.9rem;
+  border: 1px solid color-mix(in oklab, var(--primary) 45%, transparent);
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.home-page .home-welcome svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Ribbons that fall once when the page opens */
+.hero-ribbons {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.hero-ribbon {
+  position: absolute;
+  top: -60px;
+  border-radius: 3px;
+  opacity: 0;
+  animation-name: ribbon-fall;
+  animation-timing-function: cubic-bezier(0.3, 0.6, 0.4, 1);
+  animation-fill-mode: forwards;
+}
+@keyframes ribbon-fall {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  10% {
+    opacity: 0.95;
+  }
+  85% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--drift), 760px, 0) rotate(var(--spin));
+  }
+}
+
+/* Stat tiles */
+.home-page .home-stats-wrap {
+  padding-block: 1rem 3rem;
+}
+.home-page .home-stats {
+  display: grid;
+  gap: 1rem;
+}
+.home-page .home-stat {
+  position: relative;
+  overflow: hidden;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 0.875rem;
+  background: linear-gradient(160deg, var(--card), var(--surface-deep));
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease;
+}
+.home-page .home-stat::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary), var(--portal-warm));
+}
+.home-page .home-stat:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in oklab, var(--primary) 55%, var(--border));
+}
+.home-page .home-stat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.625rem;
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+.home-page .home-stat-icon svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+.home-page .home-stat-number {
+  margin-top: 1rem;
+  font-family: var(--font-display);
+  font-size: clamp(2.75rem, 6vw, 3.75rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--primary);
+}
+.home-page .home-stat-label {
+  margin-top: 0.75rem;
+  font-size: 1.0625rem;
+  font-weight: 650;
+}
+.home-page .home-stat-note {
+  margin-top: 0.35rem;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--muted-foreground);
+}
+@media (min-width: 768px) {
+  .home-page .home-stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Mid-page call to action under the journey */
+.home-page .home-mid-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 1.5rem;
+  margin-top: 2rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-ribbons {
+    display: none;
+  }
+  .home-page .home-stat:hover {
+    transform: none;
+  }
+}
+@media print {
+  .hero-ribbons {
+    display: none;
+  }
+}

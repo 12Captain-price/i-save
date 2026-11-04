@@ -6,14 +6,18 @@ import {
   GraduationCap,
   Plane,
   Shield,
+  Sparkles,
 } from "lucide-react";
 import { PublicLayout } from "@/components/site/PublicLayout";
+import { HeroRibbons } from "@/components/site/HeroRibbons";
 import { HomeSections } from "@/components/site/HomeSections";
 import { Reveal } from "@/components/site/Reveal";
 import { NextChapter } from "@/components/site/NextChapter";
+import { StatTiles } from "@/components/site/StatTiles";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import "@/components/site/homepage.css";
+import "@/components/site/home-marketing.css";
 
 export const Route = createFileRoute("/")({
   component: HomePage,
@@ -84,12 +88,14 @@ function HomePage() {
     <PublicLayout>
       <div className="home-page">
         <section aria-labelledby="home-title" className="home-hero home-width">
+          <HeroRibbons />
           <div className="home-hero-copy">
             <p
-              className="home-eyebrow stagger-in"
+              className="home-welcome stagger-in"
               style={{ ["--i" as string]: 0 }}
             >
-              Saving today. Planning for tomorrow.
+              <Sparkles aria-hidden="true" />
+              Welcome to i-Save
             </p>
             <h1 id="home-title">
               {["Save", "for", "what"].map((w, i) => (
@@ -118,8 +124,9 @@ function HomePage() {
               className="home-lead stagger-in"
               style={{ ["--i" as string]: 7 }}
             >
-              From education to life’s unexpected moments, start with a goal and
-              explore your next steps with i-Save.
+              Join i-Save and start with a goal. From education to life’s
+              unexpected moments, pick what you are saving for, apply for
+              membership and take your first step today.
             </p>
             <div
               className="home-actions stagger-in"
@@ -147,6 +154,8 @@ function HomePage() {
           </div>
           <NextChapter />
         </section>
+
+        <StatTiles />
 
         <section
           id="goals"
@@ -207,11 +216,19 @@ function HomePage() {
               </li>
             ))}
           </Reveal>
-          <a href="/how-it-works" className="home-text-link">
-            Read how it works
-            <ArrowRight size={17} aria-hidden="true" />
-          </a>
+          <div className="home-mid-cta">
+            <a href="/apply" className={buttonVariants({ size: "lg" })}>
+              Apply for membership
+              <ArrowRight aria-hidden="true" />
+            </a>
+            <a href="/how-it-works" className="home-text-link">
+              Read how it works
+              <ArrowRight size={17} aria-hidden="true" />
+            </a>
+          </div>
         </section>
+
+        <HomeSections />
 
         <section aria-labelledby="home-expect-title" className="home-expect">
           <div className="home-width home-expect-layout">
@@ -233,8 +250,6 @@ function HomePage() {
             </ul>
           </div>
         </section>
-
-        <HomeSections />
 
         <section
           aria-labelledby="home-closing-title"
