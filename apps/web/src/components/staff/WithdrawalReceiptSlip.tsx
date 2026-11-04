@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { formatMoney } from "@/lib/money";
-import { OFFICE_CONTACT } from "@/lib/office-contact";
+import { OFFICE_CONTACT, type OfficeContact } from "@/lib/office-contact";
 import { formatDateTime } from "@/lib/staff-utils";
 import type { WithdrawalReceipt } from "@/lib/withdrawals";
 
@@ -11,14 +11,17 @@ import type { WithdrawalReceipt } from "@/lib/withdrawals";
 export function WithdrawalReceiptSlip({
   receipt,
   printedAt,
+  office = OFFICE_CONTACT,
 }: {
   receipt: WithdrawalReceipt;
   printedAt: string;
+  /** The live office details. Defaults to the approved starting values. */
+  office?: OfficeContact;
 }) {
   const contact = [
-    OFFICE_CONTACT.address,
-    OFFICE_CONTACT.phone,
-    OFFICE_CONTACT.email,
+    office.address,
+    office.phone,
+    office.email,
   ].filter((v): v is string => Boolean(v));
   const hasFee = Number(receipt.feeAmount) > 0;
 

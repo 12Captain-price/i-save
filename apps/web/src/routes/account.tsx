@@ -62,8 +62,8 @@ const ADMIN_TILES = [
   { to: "/staff/team", label: "Team", note: "Photos and hierarchy" },
   {
     to: "/staff/content",
-    label: "Pages and FAQs",
-    note: "Terms, privacy, questions",
+    label: "Pages, FAQs, contact",
+    note: "Terms, questions, office details",
   },
   { to: "/staff/plans", label: "Plans", note: "Savings plans" },
   { to: "/staff/accounts", label: "Staff accounts", note: "Add new staff" },

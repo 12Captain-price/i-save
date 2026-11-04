@@ -8,6 +8,7 @@ import {
   PageHeading,
   TextAreaField,
 } from "@/components/staff/FormBits";
+import { OfficeContactAdmin } from "@/components/staff/OfficeContactAdmin";
 import { useContentAction } from "@/components/staff/useContentAction";
 import { Button } from "@/components/ui/button";
 import { CheckField, Field } from "@/components/ui/field";
@@ -24,22 +25,22 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/staff/content")({
   component: () => (
-    <AdminOnly title="Pages and FAQs">
+    <AdminOnly title="Pages, FAQs and contact details">
       <ContentAdmin />
     </AdminOnly>
   ),
 });
 
 function ContentAdmin() {
-  const [tab, setTab] = useState<"pages" | "faqs">("pages");
+  const [tab, setTab] = useState<"pages" | "faqs" | "contact">("pages");
   return (
     <div>
       <PageHeading
-        title="Pages and FAQs"
-        lead="Edit the Terms, Privacy notice, Risk disclosure and the FAQs. Changes show on the website as soon as you save."
+        title="Pages, FAQs and contact details"
+        lead="Edit the Terms, Privacy notice, Risk disclosure, the FAQs and the office contact details. Changes show on the website as soon as you save."
       />
       <div role="tablist" className="mt-6 mb-8 flex gap-2">
-        {(["pages", "faqs"] as const).map((t) => (
+        {(["pages", "faqs", "contact"] as const).map((t) => (
           <button
             key={t}
             role="tab"
@@ -52,11 +53,21 @@ function ContentAdmin() {
                 : "border-input",
             )}
           >
-            {t === "pages" ? "Pages" : "FAQs"}
+            {t === "pages"
+              ? "Pages"
+              : t === "faqs"
+                ? "FAQs"
+                : "Contact details"}
           </button>
         ))}
       </div>
-      {tab === "pages" ? <PagesEditor /> : <FaqsEditor />}
+      {tab === "pages" ? (
+        <PagesEditor />
+      ) : tab === "faqs" ? (
+        <FaqsEditor />
+      ) : (
+        <OfficeContactAdmin />
+      )}
     </div>
   );
 }

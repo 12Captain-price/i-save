@@ -1,9 +1,12 @@
-import { OFFICE_CONTACT } from "@/lib/office-contact";
+import { LoadingSkeleton } from "@/components/ui/motion";
+import { useOfficeContact } from "@/lib/office-contact-db";
 
-/** The approved office details, read from office-contact.ts so they are never typed twice.
+/** The approved office details, read from the database (editable by admins) so they are never typed twice.
  *  Only details that are filled in are shown. */
 export function ContactLines() {
-  const { phones, email, address, hours, whatsapp } = OFFICE_CONTACT;
+  const contact = useOfficeContact();
+  if (!contact) return <LoadingSkeleton lines={3} />;
+  const { phones, email, address, hours, whatsapp } = contact;
   const any = phones.length || email || address || hours || whatsapp;
   if (!any) return <>Office contact details will be published here soon.</>;
   return (

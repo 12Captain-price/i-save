@@ -3,7 +3,7 @@ import { ChevronRight, Phone } from "lucide-react";
 import { WhatsAppIcon } from "@/components/whatsapp/WhatsAppIcon";
 import { Button } from "@/components/ui/button";
 import { inputClass } from "@/components/ui/field";
-import { OFFICE_CONTACT } from "@/lib/office-contact";
+import { useOfficeContact } from "@/lib/office-contact-db";
 import { useSupportContacts } from "@/lib/support-contacts";
 import {
   assistanceMessage,
@@ -38,14 +38,12 @@ export function AssistancePanel({
 
   const suggested = assistanceMessage(who, picked);
   const message = custom ?? suggested;
-  const office = OFFICE_CONTACT.whatsapp ? `+${OFFICE_CONTACT.whatsapp}` : null;
+  const contactInfo = useOfficeContact();
+  const office = contactInfo?.whatsapp ? `+${contactInfo.whatsapp}` : null;
 
   /** Untouched messages greet the person by first name; edited ones are sent exactly as written. */
   const linkFor = (phone: string, staffName?: string) =>
-    whatsappLink(
-      phone,
-      custom ?? assistanceMessage(who, picked, staffName),
-    );
+    whatsappLink(phone, custom ?? assistanceMessage(who, picked, staffName));
 
   return (
     <div className="grid gap-4">
@@ -74,7 +72,10 @@ export function AssistancePanel({
       </div>
 
       <div>
-        <label htmlFor="assist-text" className="mb-1.5 block text-sm font-medium">
+        <label
+          htmlFor="assist-text"
+          className="mb-1.5 block text-sm font-medium"
+        >
           Your message (change it or write your own)
         </label>
         <textarea
@@ -129,16 +130,16 @@ export function AssistancePanel({
           The team list could not be loaded. You can still message the office.
         </p>
       )}
-      {!office && contacts.data?.length === 0 && (
+      {contactInfo && !office && contacts.data?.length === 0 && (
         <p className="text-sm text-muted-foreground">
           No WhatsApp contacts are set up yet. Please call the office
-          {OFFICE_CONTACT.phone ? ` on ${OFFICE_CONTACT.phone}` : ""}.
+          {contactInfo?.phone ? ` on ${contactInfo.phone}` : ""}.
         </p>
       )}
-      {OFFICE_CONTACT.phone && (
+      {contactInfo?.phone && (
         <p className="flex items-center gap-2 text-xs text-muted-foreground">
           <Phone className="h-3.5 w-3.5" aria-hidden="true" />
-          Prefer to call? {OFFICE_CONTACT.phone}
+          Prefer to call? {contactInfo.phone}
         </p>
       )}
     </div>
@@ -167,7 +168,10 @@ function ContactRow({
           {disabled ? "Write a message first" : detail}
         </span>
       </span>
-      <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+      <ChevronRight
+        className="h-4 w-4 text-muted-foreground"
+        aria-hidden="true"
+      />
     </>
   );
   const base =

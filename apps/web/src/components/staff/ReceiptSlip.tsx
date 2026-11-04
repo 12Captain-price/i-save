@@ -1,6 +1,6 @@
 import { QRCodeSVG } from "qrcode.react";
 import { formatMoney } from "@/lib/money";
-import { OFFICE_CONTACT } from "@/lib/office-contact";
+import { OFFICE_CONTACT, type OfficeContact } from "@/lib/office-contact";
 import type { ReceiptDetail } from "@/lib/staff";
 import { verifyUrl } from "@/lib/receipt-link";
 import {
@@ -18,15 +18,18 @@ import {
 export function ReceiptSlip({
   receipt,
   printedAt,
+  office = OFFICE_CONTACT,
 }: {
   receipt: ReceiptDetail;
   printedAt: string;
+  /** The live office details. Defaults to the approved starting values. */
+  office?: OfficeContact;
 }) {
   const note = receiptPurposeNote(receipt.purpose);
   const contact = [
-    OFFICE_CONTACT.address,
-    OFFICE_CONTACT.phone,
-    OFFICE_CONTACT.email,
+    office.address,
+    office.phone,
+    office.email,
   ].filter((v): v is string => Boolean(v));
 
   return (

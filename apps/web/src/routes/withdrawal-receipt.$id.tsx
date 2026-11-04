@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, Navigate, createFileRoute } from "@tanstack/react-router";
 import { Printer } from "lucide-react";
 import { PublicLayout } from "@/components/site/PublicLayout";
+import { useOfficeContact } from "@/lib/office-contact-db";
 import { WithdrawalReceiptSlip } from "@/components/staff/WithdrawalReceiptSlip";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
@@ -24,6 +25,7 @@ function WithdrawalReceiptPage() {
   const { id } = Route.useParams();
   const { loading, session, roles } = useAuth();
   const receipt = useWithdrawalReceipt(id);
+  const office = useOfficeContact();
   const [openedAt] = useState(() => new Date().toISOString());
 
   if (loading) {
@@ -77,6 +79,7 @@ function WithdrawalReceiptPage() {
         <WithdrawalReceiptSlip
           receipt={receipt.data}
           printedAt={formatDateTime(openedAt)}
+          office={office ?? undefined}
         />
         <p className="text-center text-xs text-muted-foreground print:hidden">
           Printing again later gives a copy of the same receipt. The receipt

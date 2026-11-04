@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { Printer } from "lucide-react";
+import { useOfficeContact } from "@/lib/office-contact-db";
 import { ReceiptSlip } from "@/components/staff/ReceiptSlip";
 import { ReverseReceiptCard } from "@/components/staff/ReverseReceiptCard";
 import { MessageMemberButton } from "@/components/staff/MessageMemberButton";
@@ -21,6 +22,7 @@ export const Route = createFileRoute("/staff/receipts/$receiptNumber")({
 function ReceiptPage() {
   const { receiptNumber } = Route.useParams();
   const receipt = useReceiptDetail(receiptNumber);
+  const office = useOfficeContact();
   const owner = useMember(receipt.data?.memberId ?? "");
   // Fixed when the page opens, so the "Printed" line does not change while it is on screen.
   const [openedAt] = useState(() => new Date().toISOString());
@@ -97,7 +99,11 @@ function ReceiptPage() {
           </Button>
         </div>
       </div>
-      <ReceiptSlip receipt={r} printedAt={formatDateTime(openedAt)} />
+      <ReceiptSlip
+        receipt={r}
+        printedAt={formatDateTime(openedAt)}
+        office={office ?? undefined}
+      />
       <p className="text-center text-xs text-muted-foreground print:hidden">
         Printing again later gives a copy of the same receipt. The receipt
         number and the book number stay the same.
