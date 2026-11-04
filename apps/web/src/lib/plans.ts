@@ -34,6 +34,8 @@ const PlanRow = z.object({
   id: z.string(),
   name: z.string(),
   description: z.string().nullable(),
+  long_description: z.string().nullable(),
+  is_goal_based: z.boolean(),
   created_at: z.string(),
   savings_plan_versions: z.array(VersionRow),
 });
@@ -61,6 +63,10 @@ export type Plan = {
   id: string;
   name: string;
   description: string | null;
+  /** Fuller description shown on the public Plans page, or null. */
+  longDescription: string | null;
+  /** True for the one plan shown as the featured goal-based plan. */
+  isGoalBased: boolean;
   createdAt: string;
   /** Newest version first. */
   versions: PlanVersion[];
@@ -73,7 +79,7 @@ export async function fetchPlans(): Promise<Plan[]> {
   const { data, error } = await supabase
     .from("savings_plans")
     .select(
-      `id, name, description, created_at, savings_plan_versions(${VERSION_COLUMNS})`,
+      `id, name, description, long_description, is_goal_based, created_at, savings_plan_versions(${VERSION_COLUMNS})`,
     )
     .order("created_at", { ascending: true });
   if (error) throw error;
@@ -85,6 +91,8 @@ export async function fetchPlans(): Promise<Plan[]> {
       id: p.id,
       name: p.name,
       description: p.description,
+      longDescription: p.long_description,
+      isGoalBased: p.is_goal_based,
       createdAt: p.created_at,
       versions: p.savings_plan_versions
         .map(
@@ -120,18 +128,37 @@ export function usePlans() {
 /* Changes. Each throws on failure; the screen shows the message.      */
 /* ------------------------------------------------------------------ */
 
+/** The extra, public-facing details of a plan. */
+export type PlanShowcase = { longDescription: string; isGoalBased: boolean };
+
+/** Only one plan can be the goal-based plan. The database says so with a unique index. */
+function showcaseError(error: { code?: string; message?: string }): Error | typeof error {
+  if (error.code === "23505" && error.message?.includes("one_goal_based")) {
+    return new Error(
+      "Another plan is already the goal-based plan. Untick it on that plan first.",
+    );
+  }
+  return error;
+}
+
 /** Creates a plan with its first version, as a draft. */
 export async function createPlan(
   name: string,
   description: string,
   values: VersionValues,
+  showcase: PlanShowcase,
 ): Promise<void> {
   const created = await supabase
     .from("savings_plans")
-    .insert({ name: name.trim(), description: description.trim() || null })
+    .insert({
+      name: name.trim(),
+      description: description.trim() || null,
+      long_description: showcase.longDescription.trim() || null,
+      is_goal_based: showcase.isGoalBased,
+    })
     .select("id")
     .single();
-  if (created.error) throw created.error;
+  if (created.error) throw showcaseError(created.error);
 
   const planId = created.data.id as string;
   const version = await supabase
@@ -148,12 +175,18 @@ export async function updatePlanDetails(
   planId: string,
   name: string,
   description: string,
+  showcase: PlanShowcase,
 ): Promise<void> {
   const { error } = await supabase
     .from("savings_plans")
-    .update({ name: name.trim(), description: description.trim() || null })
+    .update({
+      name: name.trim(),
+      description: description.trim() || null,
+      long_description: showcase.longDescription.trim() || null,
+      is_goal_based: showcase.isGoalBased,
+    })
     .eq("id", planId);
-  if (error) throw error;
+  if (error) throw showcaseError(error);
 }
 
 /** Saves changes to a draft. Fails clearly if the version is no longer a draft. */

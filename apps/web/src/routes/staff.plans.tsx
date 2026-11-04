@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { PlanVersionForm } from "@/components/staff/PlanVersionForm";
 import { StatusPill } from "@/components/staff/StatusPill";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { TextAreaField } from "@/components/staff/FormBits";
 import { CheckField, Field, inputClass } from "@/components/ui/field";
 import { useAuth } from "@/lib/auth";
 import {
@@ -17,6 +18,7 @@ import {
   type Plan,
   type PlanVersion,
 } from "@/lib/plans";
+import { validatePlanLongDescription } from "@/lib/goal-plan-utils";
 import {
   EMPTY_VERSION_FORM,
   activationProblems,
@@ -127,19 +129,24 @@ function NewPlanPanel({
 }) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [longDescription, setLongDescription] = useState("");
+  const [isGoalBased, setIsGoalBased] = useState(false);
   const [nameError, setNameError] = useState<string | undefined>();
   const [descError, setDescError] = useState<string | undefined>();
+  const [longError, setLongError] = useState<string | undefined>();
   const [checked, setChecked] = useState(false);
 
   // The name is validated here; the amount and terms are validated by the form below.
   async function save(values: VersionValues) {
     const n = validatePlanName(name);
     const d = validatePlanDescription(description);
+    const l = validatePlanLongDescription(longDescription);
     setNameError(n ?? undefined);
     setDescError(d ?? undefined);
+    setLongError(l ?? undefined);
     setChecked(true);
-    if (n || d) throw new Error("Fix the plan name or description above first.");
-    await createPlan(name, description, values);
+    if (n || d || l) throw new Error("Fix the plan name or descriptions above first.");
+    await createPlan(name, description, values, { longDescription, isGoalBased });
     await onDone();
   }
 
@@ -171,6 +178,28 @@ function NewPlanPanel({
           onChange={(event) => setDescription(event.target.value)}
           error={checked ? descError : undefined}
         />
+        <div>
+          <TextAreaField
+            id="new-plan-long"
+            label="Full description (optional)"
+            hint="Shown on the public Plans page. Leave a blank line between paragraphs. Start a line with ## for a heading."
+            rows={8}
+            value={longDescription}
+            onChange={(event) => setLongDescription(event.target.value)}
+          />
+          {checked && longError && (
+            <p role="alert" className="mt-1.5 text-xs text-destructive">
+              {longError}
+            </p>
+          )}
+        </div>
+        <CheckField
+          id="new-plan-goal"
+          checked={isGoalBased}
+          onChange={setIsGoalBased}
+        >
+          This is the goal-based plan (shown large at the top of the Plans page)
+        </CheckField>
         <PlanVersionForm
           idPrefix="new-plan"
           initial={EMPTY_VERSION_FORM}
@@ -222,6 +251,11 @@ function PlanCard({
         <div>
           <h2 id={`plan-${plan.id}`} className="text-xl font-semibold">
             {plan.name}
+            {plan.isGoalBased && (
+              <span className="ml-3 rounded-full border border-primary/50 bg-primary/10 px-2.5 py-0.5 align-middle text-xs font-semibold text-primary">
+                Goal-based plan
+              </span>
+            )}
           </h2>
           {plan.description && (
             <p className="mt-1 text-sm text-muted-foreground">{plan.description}</p>
@@ -229,7 +263,7 @@ function PlanCard({
         </div>
         <div className="flex flex-wrap gap-2">
           <Button size="sm" variant="outline" onClick={() => setPanel({ kind: "details" })}>
-            Edit name
+            Edit details
           </Button>
           {!hasDraft && latest && (
             <Button size="sm" variant="outline" onClick={() => setPanel({ kind: "newVersion" })}>
@@ -362,8 +396,11 @@ function DetailsPanel({
 }) {
   const [name, setName] = useState(plan.name);
   const [description, setDescription] = useState(plan.description ?? "");
+  const [longDescription, setLongDescription] = useState(plan.longDescription ?? "");
+  const [isGoalBased, setIsGoalBased] = useState(plan.isGoalBased);
   const [nameError, setNameError] = useState<string | undefined>();
   const [descError, setDescError] = useState<string | undefined>();
+  const [longError, setLongError] = useState<string | undefined>();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -372,12 +409,17 @@ function DetailsPanel({
     setError(null);
     const n = validatePlanName(name);
     const d = validatePlanDescription(description);
+    const l = validatePlanLongDescription(longDescription);
     setNameError(n ?? undefined);
     setDescError(d ?? undefined);
-    if (n || d) return;
+    setLongError(l ?? undefined);
+    if (n || d || l) return;
     setBusy(true);
     try {
-      await updatePlanDetails(plan.id, name, description);
+      await updatePlanDetails(plan.id, name, description, {
+        longDescription,
+        isGoalBased,
+      });
       await onDone();
     } catch (e) {
       setError(staffErrorMessage(e));
@@ -414,6 +456,28 @@ function DetailsPanel({
           </p>
         )}
       </div>
+      <div>
+        <TextAreaField
+          id={`long-${plan.id}`}
+          label="Full description (optional)"
+          hint="Shown on the public Plans page. Leave a blank line between paragraphs. Start a line with ## for a heading."
+          rows={8}
+          value={longDescription}
+          onChange={(event) => setLongDescription(event.target.value)}
+        />
+        {longError && (
+          <p role="alert" className="mt-1.5 text-xs text-destructive">
+            {longError}
+          </p>
+        )}
+      </div>
+      <CheckField
+        id={`goal-${plan.id}`}
+        checked={isGoalBased}
+        onChange={setIsGoalBased}
+      >
+        This is the goal-based plan (shown large at the top of the Plans page)
+      </CheckField>
       {error && (
         <p role="alert" className="text-sm text-destructive">
           {error}

@@ -74,6 +74,12 @@ export type PlanTerms = {
   /** The plan version's id. This is what a member joins. */
   versionId: string;
   planName: string;
+  /** Short description written by an administrator, or null. */
+  planDescription: string | null;
+  /** Fuller description (simple page formatting), or null. */
+  planLongDescription: string | null;
+  /** True for the one plan shown as the featured goal-based plan. */
+  isGoalBased: boolean;
   version: number;
   /** Fixed amount per contribution, or null when the plan has a permitted range. */
   amount: Money | null;
@@ -95,13 +101,25 @@ const VersionShape = z.object({
   frequency: z.string(),
   duration_weeks: z.number().nullable(),
   terms_text: z.string(),
-  savings_plans: one(z.object({ name: z.string() }).nullable()),
+  savings_plans: one(
+    z
+      .object({
+        name: z.string(),
+        description: z.string().nullable(),
+        long_description: z.string().nullable(),
+        is_goal_based: z.boolean(),
+      })
+      .nullable(),
+  ),
 });
 
 function toTerms(v: z.infer<typeof VersionShape>): PlanTerms {
   return {
     versionId: v.id,
     planName: v.savings_plans?.name ?? "Savings plan",
+    planDescription: v.savings_plans?.description ?? null,
+    planLongDescription: v.savings_plans?.long_description ?? null,
+    isGoalBased: v.savings_plans?.is_goal_based ?? false,
     version: v.version,
     amount:
       v.contribution_amount == null ? null : toMoney(v.contribution_amount),
@@ -115,7 +133,7 @@ function toTerms(v: z.infer<typeof VersionShape>): PlanTerms {
 }
 
 const VERSION_COLUMNS =
-  "id, version, contribution_amount, min_amount, max_amount, currency, frequency, duration_weeks, terms_text, savings_plans(name)";
+  "id, version, contribution_amount, min_amount, max_amount, currency, frequency, duration_weeks, terms_text, savings_plans(name, description, long_description, is_goal_based)";
 
 export type MyEnrollment = {
   status: "active" | "paused";

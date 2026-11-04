@@ -68,3 +68,11 @@ export function formatMoney(value: Money, currency = "USD"): string {
   const prefix = currency === "USD" ? "$" : `${currency} `;
   return `${sign}${prefix}${grouped}.${cents}`;
 }
+
+/**
+ * Splits a total into equal amounts, one per period, rounded UP to the next cent so that
+ * paying that amount every period always reaches the total. Used by the goal planner.
+ */
+export function amountPerPeriodRoundedUp(total: Money, periods: number): Money {
+  return new D(total).div(periods).toDecimalPlaces(2, D.ROUND_UP).toFixed(2);
+}
