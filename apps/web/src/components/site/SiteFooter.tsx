@@ -11,17 +11,17 @@ export function SiteFooter() {
             Structured savings for members of a Zimbabwean savings organisation.
           </p>
           <p className="mt-6 text-sm">
-            <a href="/contact" className="text-primary hover:underline">
+            <a href="/contact" className="inline-block py-2 text-primary hover:underline">
               Contact the team
             </a>
           </p>
         </div>
         <nav aria-label="Footer">
           <h3 className="mb-4 text-sm font-semibold">Explore</h3>
-          <ul className="space-y-2 text-sm text-muted-foreground">
+          <ul className="text-sm text-muted-foreground">
             {NAV.map((n) => (
               <li key={n.href}>
-                <a href={n.href} className="hover:text-foreground">
+                <a href={n.href} className="block py-2 hover:text-foreground">
                   {n.label}
                 </a>
               </li>
@@ -30,10 +30,10 @@ export function SiteFooter() {
         </nav>
         <nav aria-label="Information">
           <h3 className="mb-4 text-sm font-semibold">Information</h3>
-          <ul className="space-y-2 text-sm text-muted-foreground">
+          <ul className="text-sm text-muted-foreground">
             {INFO_LINKS.map((n) => (
               <li key={n.href}>
-                <a href={n.href} className="hover:text-foreground">
+                <a href={n.href} className="block py-2 hover:text-foreground">
                   {n.label}
                 </a>
               </li>
@@ -41,7 +41,7 @@ export function SiteFooter() {
           </ul>
         </nav>
       </div>
-      <div className="border-t border-border py-6">
+      <div className="border-t border-border pt-6 pb-24 sm:pb-6">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-center gap-3 px-6 text-xs text-muted-foreground sm:flex-row sm:gap-4">
           <span>&copy; {new Date().getFullYear()} i-Save</span>
           <span className="hidden sm:inline" aria-hidden="true">

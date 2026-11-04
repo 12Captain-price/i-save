@@ -1,6 +1,11 @@
 import { LoadingSkeleton } from "@/components/ui/motion";
-import type { ReactNode } from "react";
-import { Link, Navigate, Outlet } from "@tanstack/react-router";
+import { useEffect, useRef, type ReactNode } from "react";
+import {
+  Link,
+  Navigate,
+  Outlet,
+  useRouterState,
+} from "@tanstack/react-router";
 import { PublicLayout } from "@/components/site/PublicLayout";
 import { buttonVariants } from "@/components/ui/button";
 import { AdminModeSwitch } from "@/components/staff/AdminModeSwitch";
@@ -9,12 +14,65 @@ import { isAdminRole, isStaffRole } from "@/lib/staff-utils";
 import { cn } from "@/lib/utils";
 
 const TAB_BASE =
-  "inline-flex min-h-11 items-center border-b-2 px-1 text-sm font-semibold transition-colors";
+  "inline-flex min-h-11 shrink-0 items-center whitespace-nowrap border-b-2 px-1 text-sm font-semibold transition-colors";
 const TAB_IDLE = cn(
   TAB_BASE,
   "border-transparent text-muted-foreground hover:text-foreground",
 );
-const TAB_ACTIVE = cn(TAB_BASE, "border-primary text-foreground");
+const TAB_ACTIVE = cn(TAB_BASE, "border-primary text-primary");
+
+const TABS = [
+  { to: "/staff", label: "Members", exact: true, admin: false },
+  { to: "/staff/dues", label: "Who is due", admin: false },
+  { to: "/staff/report", label: "Daily report", admin: false },
+  { to: "/staff/ledger", label: "Ledger", admin: false },
+  { to: "/staff/audit", label: "Audit log", admin: true },
+  { to: "/staff/plans", label: "Plans", admin: true },
+  { to: "/staff/announcements", label: "Announcements", admin: true },
+  { to: "/staff/events", label: "Events", admin: true },
+  { to: "/staff/team", label: "Team", admin: true },
+  { to: "/staff/content", label: "Pages, FAQs, contact", admin: true },
+  { to: "/staff/accounts", label: "Staff accounts", admin: true },
+] as const;
+
+/**
+ * One row of tabs. On a phone it swipes sideways instead of wrapping onto four lines that
+ * push the page down, and the current tab is scrolled into view so you can see where you are.
+ */
+function StaffTabs({ admin }: { admin: boolean }) {
+  const strip = useRef<HTMLElement>(null);
+  const path = useRouterState({ select: (s) => s.location.pathname });
+  useEffect(() => {
+    const active = strip.current?.querySelector<HTMLElement>(
+      '[aria-current="page"]',
+    );
+    if (!active || !strip.current) return;
+    const box = strip.current;
+    box.scrollLeft = Math.max(
+      0,
+      active.offsetLeft - (box.clientWidth - active.offsetWidth) / 2,
+    );
+  }, [path]);
+  return (
+    <nav
+      ref={strip}
+      aria-label="Staff"
+      className="-mx-6 mt-4 mb-8 flex gap-x-6 overflow-x-auto border-b border-border px-6 print:hidden md:mx-0 md:flex-wrap md:overflow-visible md:px-0"
+    >
+      {TABS.filter((t) => admin || !t.admin).map((t) => (
+        <Link
+          key={t.to}
+          to={t.to}
+          activeOptions={{ exact: "exact" in t && t.exact }}
+          className={TAB_IDLE}
+          activeProps={{ className: TAB_ACTIVE, "aria-current": "page" }}
+        >
+          {t.label}
+        </Link>
+      ))}
+    </nav>
+  );
+}
 
 function Frame({ children }: { children: ReactNode }) {
   return (
@@ -69,103 +127,7 @@ export function StaffShell() {
       <div className="mt-3 print:hidden">
         <AdminModeSwitch compact />
       </div>
-      <nav
-        aria-label="Staff"
-        className="mt-4 mb-8 flex flex-wrap gap-x-6 border-b border-border print:hidden"
-      >
-        <Link
-          to="/staff"
-          activeOptions={{ exact: true }}
-          className={TAB_IDLE}
-          activeProps={{ className: TAB_ACTIVE, "aria-current": "page" }}
-        >
-          Members
-        </Link>
-        <Link
-          to="/staff/dues"
-          className={TAB_IDLE}
-          activeProps={{ className: TAB_ACTIVE, "aria-current": "page" }}
-        >
-          Who is due
-        </Link>
-        <Link
-          to="/staff/report"
-          className={TAB_IDLE}
-          activeProps={{ className: TAB_ACTIVE, "aria-current": "page" }}
-        >
-          Daily report
-        </Link>
-        <Link
-          to="/staff/ledger"
-          className={TAB_IDLE}
-          activeProps={{ className: TAB_ACTIVE, "aria-current": "page" }}
-        >
-          Ledger
-        </Link>
-        {isAdminRole(roles) && (
-          <Link
-            to="/staff/audit"
-            className={TAB_IDLE}
-            activeProps={{ className: TAB_ACTIVE, "aria-current": "page" }}
-          >
-            Audit log
-          </Link>
-        )}
-        {isAdminRole(roles) && (
-          <Link
-            to="/staff/plans"
-            className={TAB_IDLE}
-            activeProps={{ className: TAB_ACTIVE, "aria-current": "page" }}
-          >
-            Plans
-          </Link>
-        )}
-        {isAdminRole(roles) && (
-          <Link
-            to="/staff/announcements"
-            className={TAB_IDLE}
-            activeProps={{ className: TAB_ACTIVE, "aria-current": "page" }}
-          >
-            Announcements
-          </Link>
-        )}
-        {isAdminRole(roles) && (
-          <Link
-            to="/staff/events"
-            className={TAB_IDLE}
-            activeProps={{ className: TAB_ACTIVE, "aria-current": "page" }}
-          >
-            Events
-          </Link>
-        )}
-        {isAdminRole(roles) && (
-          <Link
-            to="/staff/team"
-            className={TAB_IDLE}
-            activeProps={{ className: TAB_ACTIVE, "aria-current": "page" }}
-          >
-            Team
-          </Link>
-        )}
-        {isAdminRole(roles) && (
-          <Link
-            to="/staff/content"
-            className={TAB_IDLE}
-            activeProps={{ className: TAB_ACTIVE, "aria-current": "page" }}
-          >
-            Pages and FAQs
-          </Link>
-        )}
-        {isAdminRole(roles) && (
-          <Link
-            to="/staff/accounts"
-            className={TAB_IDLE}
-            activeProps={{ className: TAB_ACTIVE, "aria-current": "page" }}
-          >
-            Staff accounts
-          </Link>
-        )}
-      </nav>
+      <StaffTabs admin={isAdminRole(roles)} />
       <Outlet />
     </Frame>
   );

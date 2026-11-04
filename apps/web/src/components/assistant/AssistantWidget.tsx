@@ -127,7 +127,7 @@ export function AssistantWidget() {
                     setMessages([]);
                     setError(null);
                   }}
-                  className="rounded-md px-2 py-1 text-xs font-semibold hover:bg-primary-foreground/15"
+                  className="min-h-11 rounded-md px-2 py-1 text-xs font-semibold hover:bg-primary-foreground/15 sm:min-h-0"
                 >
                   Clear chat
                 </button>
@@ -136,7 +136,7 @@ export function AssistantWidget() {
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label="Close assistant"
-                className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-primary-foreground/15"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-md hover:bg-primary-foreground/15 sm:h-8 sm:w-8"
               >
                 <X aria-hidden="true" className="size-4" />
               </button>
@@ -210,7 +210,7 @@ export function AssistantWidget() {
               maxLength={1000}
               placeholder="Type your question"
               aria-label="Your question"
-              className="min-h-11 flex-1 rounded-md border border-input bg-background px-3 text-sm"
+              className="min-h-11 flex-1 rounded-md border border-input bg-background px-3 text-base md:text-sm"
             />
             <button
               type="submit"

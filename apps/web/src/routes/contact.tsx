@@ -33,7 +33,7 @@ function Row({
   );
 }
 
-const link = "text-primary underline underline-offset-4";
+const link = "inline-block py-2 text-primary underline underline-offset-4";
 
 function ContactPage() {
   const contact = useOfficeContact();

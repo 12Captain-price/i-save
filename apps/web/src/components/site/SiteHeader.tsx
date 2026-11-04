@@ -125,17 +125,6 @@ export function SiteHeader() {
           {session && profile && (
             <GreetingChip name={profile.fullName} compact />
           )}
-          {session && (
-            <Button
-              variant="outline"
-              className="h-11 px-3"
-              aria-label="Log out"
-              onClick={() => void logOut()}
-            >
-              <LogOut aria-hidden="true" />
-              <span className="hidden sm:inline">Log out</span>
-            </Button>
-          )}
           <button
             ref={trigger}
             type="button"
@@ -153,7 +142,7 @@ export function SiteHeader() {
         <nav
           id="mobile-nav"
           aria-label="Mobile"
-          className="max-h-[calc(100dvh-76px)] overflow-y-auto border-t border-border bg-background px-6 pb-6 xl:hidden"
+          className="max-h-[calc(100dvh-76px)] overflow-y-auto border-t border-border bg-background px-6 pb-24 xl:hidden"
         >
           <ul className="flex flex-col py-2">
             {NAV.map((n) => (
@@ -173,9 +162,19 @@ export function SiteHeader() {
           </div>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {session ? (
-              <a href="/account" className={cn(buttonVariants())}>
-                My account
-              </a>
+              <>
+                <a href="/account" className={cn(buttonVariants())}>
+                  My account
+                </a>
+                <Button
+                  variant="outline"
+                  className="sm:col-span-2"
+                  onClick={() => void logOut()}
+                >
+                  <LogOut aria-hidden="true" />
+                  Log out
+                </Button>
+              </>
             ) : (
               <>
                 <a
