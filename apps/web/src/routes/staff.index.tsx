@@ -27,13 +27,22 @@ const SHORTCUTS = [
     text: "Manage the people shown on the Our team page.",
   },
   {
+    to: "/staff/agents",
+    title: "Agents",
+    text: "Manage the registration buttons on the Apply page.",
+  },
+  {
+    to: "/staff/traffic",
+    title: "Traffic",
+    text: "See visits, Apply clicks and handoffs per agent.",
+  },
+  {
     to: "/staff/content",
     title: "Pages, FAQs, contact",
     text: "Edit the public wording and contact details.",
   },
 ] as const;
 
-// Traffic and agent figures arrive in phases 2 and 3 and will sit above these shortcuts.
 function AdminOverview() {
   return (
     <div>

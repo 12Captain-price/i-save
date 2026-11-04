@@ -3,6 +3,9 @@ import { PageShell } from "@/components/site/PageShell";
 import { buttonVariants } from "@/components/ui/button";
 import { LoadingSkeleton } from "@/components/ui/motion";
 import { useAgents } from "@/lib/agents";
+import { useAuth } from "@/lib/auth";
+import { isStaffRole } from "@/lib/staff-utils";
+import { recordTraffic } from "@/lib/traffic";
 
 export const Route = createFileRoute("/apply")({
   component: ApplyPage,
@@ -10,6 +13,11 @@ export const Route = createFileRoute("/apply")({
 
 function ApplyPage() {
   const { data, isPending, isError } = useAgents();
+  const { roles } = useAuth();
+  // A click on an agent button is the count for that agent. Staff testing the links are not counted.
+  const countClick = (agentId: string) => {
+    if (!isStaffRole(roles)) void recordTraffic("agent_click", "/apply", agentId);
+  };
   return (
     <PageShell
       eyebrow="Apply"
@@ -46,6 +54,7 @@ function ApplyPage() {
               href={agent.registration_url}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => countClick(agent.id)}
               className={buttonVariants({ size: "lg" })}
             >
               Register with {agent.name}

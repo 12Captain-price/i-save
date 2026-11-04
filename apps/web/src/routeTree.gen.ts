@@ -34,6 +34,7 @@ import { Route as StaffContentRouteImport } from './routes/staff.content'
 import { Route as StaffEventsRouteImport } from './routes/staff.events'
 import { Route as StaffPlansRouteImport } from './routes/staff.plans'
 import { Route as StaffTeamRouteImport } from './routes/staff.team'
+import { Route as StaffTrafficRouteImport } from './routes/staff.traffic'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -160,6 +161,11 @@ const StaffTeamRoute = StaffTeamRouteImport.update({
   path: '/team',
   getParentRoute: () => StaffRoute,
 } as any)
+const StaffTrafficRoute = StaffTrafficRouteImport.update({
+  id: '/traffic',
+  path: '/traffic',
+  getParentRoute: () => StaffRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -186,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/staff/events': typeof StaffEventsRoute
   '/staff/plans': typeof StaffPlansRoute
   '/staff/team': typeof StaffTeamRoute
+  '/staff/traffic': typeof StaffTrafficRoute
   '/staff/': typeof StaffIndexRoute
 }
 export interface FileRoutesByTo {
@@ -212,6 +219,7 @@ export interface FileRoutesByTo {
   '/staff/events': typeof StaffEventsRoute
   '/staff/plans': typeof StaffPlansRoute
   '/staff/team': typeof StaffTeamRoute
+  '/staff/traffic': typeof StaffTrafficRoute
   '/staff': typeof StaffIndexRoute
 }
 export interface FileRoutesById {
@@ -240,6 +248,7 @@ export interface FileRoutesById {
   '/staff/events': typeof StaffEventsRoute
   '/staff/plans': typeof StaffPlansRoute
   '/staff/team': typeof StaffTeamRoute
+  '/staff/traffic': typeof StaffTrafficRoute
   '/staff/': typeof StaffIndexRoute
 }
 export interface FileRouteTypes {
@@ -269,6 +278,7 @@ export interface FileRouteTypes {
     | '/staff/events'
     | '/staff/plans'
     | '/staff/team'
+    | '/staff/traffic'
     | '/staff/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -295,6 +305,7 @@ export interface FileRouteTypes {
     | '/staff/events'
     | '/staff/plans'
     | '/staff/team'
+    | '/staff/traffic'
     | '/staff'
   id:
     | '__root__'
@@ -322,6 +333,7 @@ export interface FileRouteTypes {
     | '/staff/events'
     | '/staff/plans'
     | '/staff/team'
+    | '/staff/traffic'
     | '/staff/'
   fileRoutesById: FileRoutesById
 }
@@ -522,6 +534,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffTeamRouteImport
       parentRoute: typeof StaffRoute
     }
+    '/staff/traffic': {
+      id: '/staff/traffic'
+      path: '/traffic'
+      fullPath: '/staff/traffic'
+      preLoaderRoute: typeof StaffTrafficRouteImport
+      parentRoute: typeof StaffRoute
+    }
   }
 }
 
@@ -543,6 +562,7 @@ interface StaffRouteChildren {
   StaffEventsRoute: typeof StaffEventsRoute
   StaffPlansRoute: typeof StaffPlansRoute
   StaffTeamRoute: typeof StaffTeamRoute
+  StaffTrafficRoute: typeof StaffTrafficRoute
   StaffIndexRoute: typeof StaffIndexRoute
 }
 
@@ -553,6 +573,7 @@ const StaffRouteChildren: StaffRouteChildren = {
   StaffEventsRoute: StaffEventsRoute,
   StaffPlansRoute: StaffPlansRoute,
   StaffTeamRoute: StaffTeamRoute,
+  StaffTrafficRoute: StaffTrafficRoute,
   StaffIndexRoute: StaffIndexRoute,
 }
 
