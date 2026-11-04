@@ -15,19 +15,29 @@ import { firstNameOf } from "@/lib/welcome";
 function GreetingChip({
   name,
   compact = false,
+  wide = false,
 }: {
   name: string;
   compact?: boolean;
+  /** On desktop, show the greeting text only when the screen is very wide. */
+  wide?: boolean;
 }) {
   const first = firstNameOf(name);
   return (
     <a
       href="/account"
       aria-label={`Hi, ${first}. Open my account`}
-      className="greet-chip inline-flex items-center gap-2 rounded-full border border-border bg-card py-1 pr-3 pl-1 text-sm font-semibold hover:border-primary"
+      className={cn(
+        "greet-chip inline-flex items-center gap-2 rounded-full border border-border bg-card py-1 pl-1 text-sm font-semibold whitespace-nowrap hover:border-primary",
+        wide ? "pr-1 2xl:pr-3" : "pr-3",
+      )}
     >
       <Avatar name={name} size={32} />
-      <span className={compact ? "hidden sm:inline" : undefined}>
+      <span
+        className={
+          wide ? "hidden 2xl:inline" : compact ? "hidden sm:inline" : undefined
+        }
+      >
         Hi, {first} <span aria-hidden="true">👋</span>
       </span>
     </a>
@@ -61,10 +71,10 @@ export function SiteHeader() {
 
   return (
     <header className="print:hidden sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-md">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+      <div className="mx-auto flex max-w-[96rem] items-center justify-between gap-6 px-6 py-4">
         <Logo />
         <nav aria-label="Main" className="hidden xl:block">
-          <ul className="flex gap-6 text-sm font-medium text-muted-foreground">
+          <ul className="flex gap-5 text-sm font-medium whitespace-nowrap text-muted-foreground 2xl:gap-7">
             {NAV.map((n) => (
               <li key={n.href}>
                 <a
@@ -77,16 +87,16 @@ export function SiteHeader() {
             ))}
           </ul>
         </nav>
-        <div className="hidden items-center gap-6 xl:flex">
-          <InstallButton />
+        <div className="hidden shrink-0 items-center gap-3 xl:flex 2xl:gap-4">
+          <InstallButton compact />
           {session ? (
             <>
-              {profile && <GreetingChip name={profile.fullName} />}
+              {profile && <GreetingChip name={profile.fullName} wide />}
               <a
                 href="/account"
                 className={cn(
                   buttonVariants({ size: "sm" }),
-                  "px-5 py-2.5 text-sm",
+                  "px-5 py-2.5 text-sm whitespace-nowrap",
                 )}
               >
                 My account
@@ -94,7 +104,7 @@ export function SiteHeader() {
               <Button
                 variant="outline"
                 size="sm"
-                className="px-4 py-2.5 text-sm"
+                className="px-4 py-2.5 text-sm whitespace-nowrap"
                 onClick={() => void logOut()}
               >
                 <LogOut aria-hidden="true" />
@@ -105,7 +115,7 @@ export function SiteHeader() {
             <>
               <a
                 href="/login"
-                className="text-sm font-semibold hover:text-primary"
+                className="text-sm font-semibold whitespace-nowrap hover:text-primary"
               >
                 Log in
               </a>
@@ -113,7 +123,7 @@ export function SiteHeader() {
                 href="/apply"
                 className={cn(
                   buttonVariants({ size: "sm" }),
-                  "px-5 py-2.5 text-sm",
+                  "px-5 py-2.5 text-sm whitespace-nowrap",
                 )}
               >
                 Apply for membership

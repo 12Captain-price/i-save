@@ -13,10 +13,13 @@ export function InstallButton({
   className,
   size = "sm",
   variant = "outline",
+  compact = false,
 }: {
   className?: string;
   size?: "sm" | "default" | "lg";
   variant?: "default" | "outline";
+  /** Icon only on mid-size desktops, so the header does not run out of room. */
+  compact?: boolean;
 }) {
   const { installed, ios, canPrompt, prompt } = useInstall();
   const [help, setHelp] = useState(false);
@@ -27,7 +30,13 @@ export function InstallButton({
     <div className="relative inline-block print:hidden">
       <button
         type="button"
-        className={cn(buttonVariants({ size, variant }), className)}
+        className={cn(
+          buttonVariants({ size, variant }),
+          "whitespace-nowrap",
+          className,
+        )}
+        aria-label="Install app"
+        title="Install app"
         aria-expanded={help}
         onClick={() => {
           if (canPrompt) void prompt();
@@ -35,7 +44,9 @@ export function InstallButton({
         }}
       >
         <Download aria-hidden="true" />
-        Install app
+        <span className={compact ? "hidden 2xl:inline" : undefined}>
+          Install app
+        </span>
       </button>
       {help && (
         <div
