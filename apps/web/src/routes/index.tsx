@@ -7,7 +7,6 @@ import {
   GraduationCap,
   Plane,
   Shield,
-  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 import { PublicLayout } from "@/components/site/PublicLayout";
@@ -23,6 +22,7 @@ import { GOAL_CONTENT, type GoalKey } from "@/lib/goal-content";
 import { cn } from "@/lib/utils";
 import "@/components/site/homepage.css";
 import "@/components/site/home-marketing.css";
+import "@/components/site/home-goals.css";
 
 export const Route = createFileRoute("/")({
   component: HomePage,
@@ -80,7 +80,6 @@ function HomePage() {
               className="home-welcome stagger-in"
               style={{ ["--i" as string]: 0 }}
             >
-              <Sparkles aria-hidden="true" />
               Welcome to i-Save
             </p>
             <h1 id="home-title" className="hero-title">
@@ -183,24 +182,30 @@ function HomePage() {
                       aria-haspopup="dialog"
                       aria-label={g.label + ": open details"}
                       onClick={() => setOpenGoal(g.key)}
-                      className="home-goal w-full text-left"
+                      className="home-goal"
+                      data-goal={g.key}
                     >
-                      <Icon className="home-goal-icon" aria-hidden="true" />
-                      <div>
+                      <span className="home-goal-chip" aria-hidden="true">
+                        <Icon className="home-goal-icon" />
+                      </span>
+                      <span className="home-goal-text">
                         <h3>{g.label}</h3>
                         <p>{g.purpose}</p>
-                      </div>
-                      <ArrowRight
-                        className="home-goal-arrow"
-                        aria-hidden="true"
-                      />
+                      </span>
+                      <span className="home-goal-cta">
+                        See how it works
+                        <ArrowRight
+                          className="home-goal-arrow"
+                          aria-hidden="true"
+                        />
+                      </span>
                     </button>
                   </Reveal>
                 );
               })}
             </ul>
             <p className="home-interest-note">
-              Open a goal to see how it works. Plan amounts and terms are shown
+              Tap a goal to see how it works, what members say and the plans that fit it. Plan amounts and terms are shown
               on the Plans page once the organisation approves them.
             </p>
           </div>

@@ -1,15 +1,44 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { ArrowRight } from "lucide-react";
 import { PlanCard } from "@/components/site/PlanCard";
 import { PublicLayout } from "@/components/site/PublicLayout";
 import { buttonVariants } from "@/components/ui/button";
-import { useAvailablePlans } from "@/lib/member";
+import { cn } from "@/lib/utils";
+import { GOAL_CONTENT } from "@/lib/goal-content";
+import { useAvailablePlans, type PlanTerms } from "@/lib/member";
+
+type Filter = "all" | "combo" | (typeof GOAL_CONTENT)[number]["key"];
+const FILTERS: { value: Filter; label: string }[] = [
+  { value: "all", label: "All plans" },
+  ...GOAL_CONTENT.map((g) => ({ value: g.key as Filter, label: g.label })),
+  { value: "combo", label: "Combo" },
+];
+
+function matches(plan: PlanTerms, filter: Filter): boolean {
+  if (filter === "all") return true;
+  if (filter === "combo") return plan.isGoalBased;
+  const label = GOAL_CONTENT.find((g) => g.key === filter)?.label.toLowerCase();
+  return (
+    plan.theme === filter ||
+    plan.comboGoals.some((g) => g.toLowerCase() === label)
+  );
+}
 
 export const Route = createFileRoute("/plans")({
+  validateSearch: (search: Record<string, unknown>): { goal?: Filter } => {
+    const found = FILTERS.find((f) => f.value === search.goal);
+    return found && found.value !== "all" ? { goal: found.value } : {};
+  },
   component: PlansPage,
 });
 
 function PlansPage() {
   const plans = useAvailablePlans();
+  const { goal } = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const filter: Filter = goal ?? "all";
+  const shown = plans.data?.filter((p) => matches(p, filter)) ?? [];
+  const activeLabel = FILTERS.find((f) => f.value === filter)?.label ?? "";
   return (
     <PublicLayout>
       <div className="mx-auto max-w-6xl px-6 py-12 md:py-16">
@@ -20,12 +49,40 @@ function PlansPage() {
           Choose a plan that fits you.
         </h1>
         <p className="mt-5 max-w-2xl text-lg text-muted-foreground">
-          Pick the plan that fits your goal and click it to see it in action.
-          These plans are illustrative: your registration agent confirms the
-          final amounts and terms when you apply.
+          Pick the plan that fits your goal and click its picture to see it in
+          action. These plans are illustrative: your registration agent
+          confirms the final amounts and terms when you apply.
         </p>
 
-        <div className="mt-10">
+        <div
+          className="mt-8 flex flex-wrap gap-2"
+          role="group"
+          aria-label="Filter plans by goal"
+        >
+          {FILTERS.map((f) => (
+            <button
+              key={f.value}
+              type="button"
+              aria-pressed={filter === f.value}
+              onClick={() =>
+                navigate({
+                  search: f.value === "all" ? {} : { goal: f.value },
+                  replace: true,
+                })
+              }
+              className={cn(
+                "min-h-11 rounded-full border px-4 text-sm font-semibold transition-colors",
+                filter === f.value
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-card hover:border-primary hover:text-primary",
+              )}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-8">
           {plans.isPending && (
             <p role="status" className="text-sm text-muted-foreground">
               Loading plans…
@@ -50,12 +107,35 @@ function PlansPage() {
             </p>
           )}
 
-          {plans.data && plans.data.length > 0 && (
-            <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {plans.data.map((p) => (
-                <PlanCard key={p.versionId} plan={p} />
-              ))}
-            </ul>
+          {plans.data && plans.data.length > 0 && shown.length === 0 && (
+            <div className="rounded-xl border border-dashed border-border bg-card p-6 text-sm">
+              <p>
+                There are no {activeLabel} plans yet. Check back soon, or look
+                at the other goals.
+              </p>
+              <button
+                type="button"
+                className="mt-3 inline-flex items-center gap-1.5 font-semibold text-primary underline underline-offset-4"
+                onClick={() => navigate({ search: {}, replace: true })}
+              >
+                Show all plans
+                <ArrowRight size={15} aria-hidden="true" />
+              </button>
+            </div>
+          )}
+
+          {shown.length > 0 && (
+            <>
+              <p className="mb-4 text-sm text-muted-foreground" aria-live="polite">
+                Showing {shown.length} {filter === "all" ? "" : activeLabel + " "}
+                {shown.length === 1 ? "plan" : "plans"}
+              </p>
+              <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {shown.map((p) => (
+                  <PlanCard key={p.versionId} plan={p} />
+                ))}
+              </ul>
+            </>
           )}
         </div>
 

@@ -1,0 +1,139 @@
+/* "What are you saving for?" tiles. Loaded after homepage.css so it replaces the old list look. */
+
+.home-page .home-goals {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+@media (min-width: 40rem) {
+  .home-page .home-goals {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 64rem) {
+  .home-page .home-goals {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  .home-page .home-goals li {
+    grid-column: span 2;
+  }
+  /* Five goals: three on top, two centred below. */
+  .home-page .home-goals li:nth-child(4) {
+    grid-column: 2 / span 2;
+  }
+  .home-page .home-goals li:nth-child(5) {
+    grid-column: 4 / span 2;
+  }
+}
+.home-page .home-goals li,
+.home-page .home-goals li:first-child {
+  border: 0;
+}
+
+.home-page .home-goal {
+  --goal: var(--primary);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 1.4rem;
+  overflow: hidden;
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: 1.1rem;
+  background: var(--card);
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+.home-page .home-goals li:first-child .home-goal {
+  padding: 1.4rem;
+}
+.home-page .home-goal[data-goal="asset"] { --goal: oklch(0.8 0.14 85); }
+.home-page .home-goal[data-goal="holiday"] { --goal: oklch(0.8 0.12 220); }
+.home-page .home-goal[data-goal="emergency"] { --goal: oklch(0.74 0.17 25); }
+.home-page .home-goal[data-goal="retrenchment"] { --goal: oklch(0.78 0.13 300); }
+.home-page .home-goal[data-goal="education"] { --goal: oklch(0.86 0.19 163); }
+
+.home-page .home-goal::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: var(--goal);
+  transform: scaleX(0.25);
+  transform-origin: left;
+  transition: transform 0.35s ease;
+}
+.home-page .home-goal:hover,
+.home-page .home-goal:focus-visible {
+  transform: translateY(-4px);
+  border-color: color-mix(in oklab, var(--goal) 60%, var(--border));
+  box-shadow: 0 14px 34px -14px color-mix(in oklab, var(--goal) 55%, transparent);
+}
+.home-page .home-goal:hover::before,
+.home-page .home-goal:focus-visible::before {
+  transform: scaleX(1);
+}
+.home-page .home-goal:focus-visible {
+  outline: 2px solid var(--goal);
+  outline-offset: 3px;
+}
+
+.home-page .home-goal-chip {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.9rem;
+  background: color-mix(in oklab, var(--goal) 16%, transparent);
+  color: var(--goal);
+}
+.home-page .home-goal-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--goal);
+  stroke-width: 1.6;
+}
+.home-page .home-goal-text {
+  display: block;
+  flex: 1;
+}
+.home-page .home-goal:hover h3 {
+  color: inherit;
+}
+.home-page .home-goal h3 {
+  font-size: 1.125rem;
+}
+.home-page .home-goal-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: auto;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--goal);
+}
+.home-page .home-goal-arrow {
+  align-self: auto;
+  margin: 0;
+  width: 1rem;
+  height: 1rem;
+  color: var(--goal);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-page .home-goal,
+  .home-page .home-goal::before {
+    transition: none;
+  }
+  .home-page .home-goal:hover,
+  .home-page .home-goal:focus-visible {
+    transform: none;
+  }
+}
