@@ -1,25 +1,27 @@
 import { useEffect, useRef } from "react";
 import { Link } from "@tanstack/react-router";
 import { X } from "lucide-react";
-import { GOAL_CONTENT_IS_SAMPLE, type GoalContent } from "@/lib/goal-content";
+import { type GoalContent } from "@/lib/goal-content";
+import { useLiveGoal } from "@/lib/goal-content-db";
 import "./goal-panel.css";
 
 /** A savings goal opened from the home page: purpose, how it works, records and member words. */
 export function GoalPanel({
-  goal,
+  goal: baseGoal,
   onClose,
 }: {
   goal: GoalContent | null;
   onClose: () => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
+  const goal = useLiveGoal(baseGoal);
 
   useEffect(() => {
     const el = dialog.current;
     if (!el) return;
-    if (goal && !el.open) el.showModal();
-    if (!goal && el.open) el.close();
-  }, [goal]);
+    if (baseGoal && !el.open) el.showModal();
+    if (!baseGoal && el.open) el.close();
+  }, [baseGoal]);
 
   return (
     <dialog
@@ -43,7 +45,7 @@ export function GoalPanel({
           </button>
           <h2 id="goal-panel-title">{goal.label} savings</h2>
           <p className="goal-panel-lead">{goal.about}</p>
-          {GOAL_CONTENT_IS_SAMPLE && (
+          {!goal.real && (
             <p className="goal-panel-sample">
               Sample content. Figures and quotes below are illustrative.
             </p>

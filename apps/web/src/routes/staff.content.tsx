@@ -9,6 +9,7 @@ import {
   TextAreaField,
 } from "@/components/staff/FormBits";
 import { DashboardFiguresAdmin } from "@/components/staff/DashboardFiguresAdmin";
+import { GoalContentAdmin } from "@/components/staff/GoalContentAdmin";
 import { OfficeContactAdmin } from "@/components/staff/OfficeContactAdmin";
 import { useContentAction } from "@/components/staff/useContentAction";
 import { Button } from "@/components/ui/button";
@@ -33,38 +34,42 @@ export const Route = createFileRoute("/staff/content")({
 });
 
 function ContentAdmin() {
-  const [tab, setTab] = useState<"pages" | "faqs" | "contact" | "dashboard">(
-    "pages",
-  );
+  const [tab, setTab] = useState<
+    "pages" | "faqs" | "contact" | "dashboard" | "goals"
+  >("pages");
   return (
     <div>
       <PageHeading
         title="Pages, FAQs and contact details"
-        lead="Edit the Terms, Privacy notice, Risk disclosure, the FAQs, the office contact details and the home page dashboard figures. Changes show on the website as soon as you save."
+        lead="Edit the Terms, Privacy notice, Risk disclosure, the FAQs, the office contact details, the home page dashboard figures and the savings-goal panels. Changes show on the website as soon as you save."
       />
       <div role="tablist" className="mt-6 mb-8 flex gap-2">
-        {(["pages", "faqs", "contact", "dashboard"] as const).map((t) => (
-          <button
-            key={t}
-            role="tab"
-            aria-selected={tab === t}
-            onClick={() => setTab(t)}
-            className={cn(
-              "min-h-11 rounded-md border px-4 text-sm font-semibold",
-              tab === t
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-input",
-            )}
-          >
-            {t === "pages"
-              ? "Pages"
-              : t === "faqs"
-                ? "FAQs"
-                : t === "contact"
-                  ? "Contact details"
-                  : "Dashboard figures"}
-          </button>
-        ))}
+        {(["pages", "faqs", "contact", "dashboard", "goals"] as const).map(
+          (t) => (
+            <button
+              key={t}
+              role="tab"
+              aria-selected={tab === t}
+              onClick={() => setTab(t)}
+              className={cn(
+                "min-h-11 rounded-md border px-4 text-sm font-semibold",
+                tab === t
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-input",
+              )}
+            >
+              {t === "pages"
+                ? "Pages"
+                : t === "faqs"
+                  ? "FAQs"
+                  : t === "contact"
+                    ? "Contact details"
+                    : t === "dashboard"
+                      ? "Dashboard figures"
+                      : "Savings goals"}
+            </button>
+          ),
+        )}
       </div>
       {tab === "pages" ? (
         <PagesEditor />
@@ -72,8 +77,10 @@ function ContentAdmin() {
         <FaqsEditor />
       ) : tab === "contact" ? (
         <OfficeContactAdmin />
-      ) : (
+      ) : tab === "dashboard" ? (
         <DashboardFiguresAdmin />
+      ) : (
+        <GoalContentAdmin />
       )}
     </div>
   );
