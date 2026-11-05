@@ -60,7 +60,7 @@ function EventPage() {
                   src={mediaUrl(img.path) ?? undefined}
                   alt={img.caption ?? data.title}
                   loading="lazy"
-                  className="w-full rounded-md border border-border object-cover"
+                  className="h-auto w-full rounded-md border border-border bg-muted object-contain"
                 />
               </a>
               {img.caption && (

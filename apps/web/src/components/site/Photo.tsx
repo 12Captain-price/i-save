@@ -41,7 +41,7 @@ export function Photo({
       src={src}
       alt={alt}
       loading="lazy"
-      className={cn("object-cover", className)}
+      className={cn("bg-muted object-contain", className)}
     />
   );
 }
