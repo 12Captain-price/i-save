@@ -214,10 +214,6 @@ function HomePage() {
               Apply for membership
               <ArrowRight aria-hidden="true" />
             </a>
-            <a href="/how-it-works" className="home-text-link">
-              Read how it works
-              <ArrowRight size={17} aria-hidden="true" />
-            </a>
           </div>
         </section>
 

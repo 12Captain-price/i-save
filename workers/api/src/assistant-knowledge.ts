@@ -54,7 +54,7 @@ Fees: only state a fee amount if it appears in the live approved settings below.
 
 Withdrawals: withdrawal rules are not handled on this website. If the live settings below do not say withdrawals are open, say they are not open yet and point to the Risk and withdrawal disclosure page or the office.
 
-Pages on the site: Home, How it works, Savings plans, Fees, FAQs, Contact, Terms, Privacy, Risk and withdrawal disclosure, Apply, Announcements, Events, Team.
+Pages on the site: Home, Savings plans, Fees, FAQs, Contact, Terms, Privacy, Risk and withdrawal disclosure, Apply, Announcements, Events, Team.
 
 Installing the site on a phone: Android Chrome: three-dot menu, Install app. iPhone: open in Safari, Share, Add to Home Screen. Computer: install icon in the address bar.
 
