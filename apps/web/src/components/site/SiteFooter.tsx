@@ -1,4 +1,5 @@
 import { Logo } from "./Logo";
+import { INFO_LINKS } from "./nav";
 
 export function SiteFooter() {
   return (
@@ -9,6 +10,20 @@ export function SiteFooter() {
           Saving today for a better tomorrow
         </p>
       </div>
+      <nav
+        aria-label="More"
+        className="mx-auto flex max-w-7xl flex-wrap justify-center gap-x-6 gap-y-2 px-6 pb-10 text-sm"
+      >
+        {INFO_LINKS.map((l) => (
+          <a
+            key={l.href}
+            href={l.href}
+            className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+          >
+            {l.label}
+          </a>
+        ))}
+      </nav>
       <div className="border-t border-border pt-6 pb-24 sm:pb-6">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-center gap-3 px-6 text-xs text-muted-foreground sm:flex-row sm:gap-4">
           <span>&copy; {new Date().getFullYear()} i-Save</span>
