@@ -1,9 +1,11 @@
 import { ArrowRight } from "lucide-react";
 import { EventCard } from "@/components/site/EventCard";
 import { Reveal } from "@/components/site/Reveal";
+import { ReviewCard } from "@/components/site/ReviewCard";
 import { RichText } from "@/components/site/RichText";
 import { TeamCard } from "@/components/site/TeamCard";
 import { useAnnouncements, useEvents, useTeam } from "@/lib/content";
+import { useApprovedReviews } from "@/lib/reviews";
 import { formatDate } from "@/lib/staff-utils";
 import { groupByLevel } from "@/lib/team-utils";
 
@@ -36,6 +38,7 @@ function Heading({
 export function HomeSections() {
   const announcements = useAnnouncements(false, 3).data ?? [];
   const events = useEvents(false, 3).data ?? [];
+  const reviews = useApprovedReviews(3).data ?? [];
   const team = useTeam().data ?? [];
   const leaders = groupByLevel(team)[0] ?? [];
 
@@ -89,6 +92,24 @@ export function HomeSections() {
             {events.map((e, i) => (
               <Reveal key={e.id} index={i} className="h-full">
                 <EventCard event={e} />
+              </Reveal>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {reviews.length > 0 && (
+        <section aria-label="Reviews" className="home-width py-12">
+          <Heading
+            eyebrow="In their words"
+            title="What members say"
+            href="/reviews"
+            linkText="All reviews"
+          />
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            {reviews.map((r, i) => (
+              <Reveal key={r.id} index={i} className="h-full">
+                <ReviewCard review={r} />
               </Reveal>
             ))}
           </div>

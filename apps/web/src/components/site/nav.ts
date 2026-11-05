@@ -11,6 +11,8 @@ export const NAV = [
 ] as const;
 
 export const INFO_LINKS = [
+  { label: "Member reviews", href: "/reviews" },
+  { label: "Send us feedback", href: "/feedback" },
   { label: "FAQs", href: "/faqs" },
   { label: "Terms", href: "/terms" },
   { label: "Privacy", href: "/privacy" },

@@ -1,3 +1,4 @@
+import { useConfirm } from "@/components/ui/confirm";
 import { LoadingSkeleton } from "@/components/ui/motion";
 import { useState, type FormEvent } from "react";
 import { ErrorLine } from "@/components/staff/FormBits";
@@ -17,6 +18,7 @@ import {
 export function SupportContactsAdmin() {
   const { data, isPending, isError } = useSupportContacts();
   const [editing, setEditing] = useState<SupportContact | "new" | null>(null);
+  const ask = useConfirm();
   const { run, error } = useContentAction();
 
   return (
@@ -82,12 +84,15 @@ export function SupportContactsAdmin() {
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    if (
-                      window.confirm(
-                        `Remove ${c.full_name} from the WhatsApp contacts?`,
-                      )
-                    )
-                      void run(() => deleteSupportContact(c.id));
+                    void ask({
+                      title: `Remove ${c.full_name}?`,
+                      message:
+                        "They will no longer appear in the WhatsApp contacts members can message.",
+                      confirmLabel: "Yes, remove",
+                      tone: "danger",
+                    }).then((ok) => {
+                      if (ok) void run(() => deleteSupportContact(c.id));
+                    });
                   }}
                 >
                   Remove

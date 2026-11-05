@@ -14,6 +14,8 @@ export function useContentAction() {
     try {
       await change();
       await queryClient.invalidateQueries({ queryKey: ["content"] });
+      // The waiting-for-you badges in the staff menu depend on reviews and feedback.
+      await queryClient.invalidateQueries({ queryKey: ["feedback"] });
       return true;
     } catch (e) {
       setError(staffErrorMessage(e));

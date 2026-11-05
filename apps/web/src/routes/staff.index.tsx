@@ -9,10 +9,13 @@ import {
   Users,
   UserRoundCheck,
   BarChart3,
+  MessageSquareText,
+  Star,
 } from "lucide-react";
 import type { ComponentType } from "react";
 import { buttonVariants } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
+import { useWaitingCounts } from "@/lib/feedback";
 import { useTrafficSummary } from "@/lib/traffic";
 import {
   PRESET_LABEL,
@@ -37,13 +40,60 @@ type Tile = {
 };
 
 const TILES: Tile[] = [
-  { to: "/staff/announcements", title: "Announcements", text: "Post news for visitors and members.", icon: Megaphone },
-  { to: "/staff/events", title: "Events", text: "Add and update upcoming and past events.", icon: Calendar },
-  { to: "/staff/plans", title: "Savings plans", text: "Plan descriptions, themes and the combo plan.", icon: PiggyBank },
-  { to: "/staff/team", title: "Team", text: "The people shown on the Our team page.", icon: Users },
-  { to: "/staff/agents", title: "Agents", text: "Photos and links for the Apply page.", icon: UserRoundCheck },
-  { to: "/staff/traffic", title: "Traffic report", text: "What happened on the site: visits, Apply clicks, agents and trends.", icon: BarChart3 },
-  { to: "/staff/content", title: "Home page, goals, pages, FAQs", text: "Dashboard figures, savings goals, public wording and contact details.", icon: FileText },
+  {
+    to: "/staff/feedback",
+    title: "Feedback inbox",
+    text: "Messages and requests from members, with a WhatsApp reply button.",
+    icon: MessageSquareText,
+  },
+  {
+    to: "/staff/reviews",
+    title: "Reviews",
+    text: "Approve, edit or add the reviews shown on the home page.",
+    icon: Star,
+  },
+  {
+    to: "/staff/announcements",
+    title: "Announcements",
+    text: "Post news for visitors and members.",
+    icon: Megaphone,
+  },
+  {
+    to: "/staff/events",
+    title: "Events",
+    text: "Add and update upcoming and past events.",
+    icon: Calendar,
+  },
+  {
+    to: "/staff/plans",
+    title: "Savings plans",
+    text: "Plan descriptions, themes and the combo plan.",
+    icon: PiggyBank,
+  },
+  {
+    to: "/staff/team",
+    title: "Team",
+    text: "The people shown on the Our team page.",
+    icon: Users,
+  },
+  {
+    to: "/staff/agents",
+    title: "Agents",
+    text: "Photos and links for the Apply page.",
+    icon: UserRoundCheck,
+  },
+  {
+    to: "/staff/traffic",
+    title: "Traffic report",
+    text: "What happened on the site: visits, Apply clicks, agents and trends.",
+    icon: BarChart3,
+  },
+  {
+    to: "/staff/content",
+    title: "Home page, goals, pages, FAQs",
+    text: "Dashboard figures, savings goals, public wording and contact details.",
+    icon: FileText,
+  },
 ];
 
 const PRESETS: RangePreset[] = ["7d", "30d", "90d"];
@@ -59,6 +109,13 @@ function greeting(): string {
 function AdminOverview() {
   const { profile, roles } = useAuth();
   const admin = isAdminRole(roles);
+  const waiting = useWaitingCounts(true).data;
+  const badgeFor = (to: string) =>
+    to === "/staff/feedback"
+      ? (waiting?.feedback ?? 0)
+      : to === "/staff/reviews"
+        ? (waiting?.reviews ?? 0)
+        : 0;
   const firstName = profile?.fullName?.split(/\s+/)[0];
 
   return (
@@ -82,8 +139,16 @@ function AdminOverview() {
             to={to}
             className="group flex min-h-32 flex-col rounded-xl border border-border bg-card p-5 transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <Icon className="h-5 w-5" aria-hidden />
+            <span className="flex items-start justify-between">
+              <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Icon className="h-5 w-5" aria-hidden />
+              </span>
+              {badgeFor(to) > 0 && (
+                <span className="rounded-full bg-destructive px-2.5 py-0.5 text-xs font-bold text-destructive-foreground">
+                  {badgeFor(to)}{" "}
+                  {to === "/staff/feedback" ? "new" : "to approve"}
+                </span>
+              )}
             </span>
             <h2 className="mt-3 text-lg font-semibold group-hover:underline">
               {title}
@@ -120,7 +185,11 @@ function Report() {
 
   return (
     <div className="mt-6">
-      <div className="flex flex-wrap gap-2" role="group" aria-label="Report period">
+      <div
+        className="flex flex-wrap gap-2"
+        role="group"
+        aria-label="Report period"
+      >
         {PRESETS.map((p) => (
           <button
             key={p}
@@ -144,8 +213,8 @@ function Report() {
       )}
       {isError && (
         <p role="alert" className="mt-4 text-sm text-destructive">
-          The figures could not be loaded. Run 018_traffic.sql in Supabase if you
-          have not yet.
+          The figures could not be loaded. Run 018_traffic.sql in Supabase if
+          you have not yet.
         </p>
       )}
 
@@ -165,10 +234,16 @@ function Report() {
           <div className="mt-5 rounded-xl border border-border bg-card p-4">
             <div className="flex items-baseline justify-between gap-3">
               <h2 className="flex items-center gap-2 text-sm font-semibold">
-                <MousePointerClick className="h-4 w-4 text-primary" aria-hidden />
+                <MousePointerClick
+                  className="h-4 w-4 text-primary"
+                  aria-hidden
+                />
                 Page views per day
               </h2>
-              <p className="min-h-5 text-xs text-muted-foreground" aria-live="polite">
+              <p
+                className="min-h-5 text-xs text-muted-foreground"
+                aria-live="polite"
+              >
                 {shown
                   ? `${shown.day}: ${shown.views} views, ${shown.apply_clicks} Apply clicks`
                   : "Hover or tap a bar"}
@@ -202,7 +277,9 @@ function Report() {
                         "w-full rounded-t-sm transition-colors",
                         hover === i ? "bg-primary" : "bg-primary/50",
                       )}
-                      style={{ height: `${Math.max(4, barWidth(d.views, max))}%` }}
+                      style={{
+                        height: `${Math.max(4, barWidth(d.views, max))}%`,
+                      }}
                     />
                   </button>
                 ))}

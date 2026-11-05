@@ -56,6 +56,8 @@ export const STAFF_TEMPLATES = {
     `Hello ${m}, this is the iSave office. A friendly reminder that your contribution${amount ? ` of ${amount}` : ""} is due on ${dueOn}. You can pay at the office. Thank you.`,
   confirmation: (m: string, what: string) =>
     `Hello ${m}, this is the iSave office. We are confirming ${what}. Please reply if anything looks wrong.`,
+  feedback: (m: string, kind: string, subject: string) =>
+    `Hello ${m}, this is the iSave office. Thank you for your ${kind.toLowerCase()} about “${subject}”. We have read it and would like to follow up with you.`,
 } as const;
 
 export const memberFirstName = firstName;

@@ -1,3 +1,4 @@
+import { useConfirm } from "@/components/ui/confirm";
 import { LoadingSkeleton } from "@/components/ui/motion";
 import { useState, type FormEvent } from "react";
 import { createFileRoute } from "@tanstack/react-router";
@@ -41,6 +42,7 @@ const LEVELS = [
 function TeamAdmin() {
   const { data, isPending, isError } = useTeam(true);
   const [editing, setEditing] = useState<TeamMember | "new" | null>(null);
+  const ask = useConfirm();
   const { run, error } = useContentAction();
   return (
     <div>
@@ -106,12 +108,15 @@ function TeamAdmin() {
                           variant="outline"
                           size="sm"
                           onClick={() => {
-                            if (
-                              window.confirm(
-                                `Remove ${m.full_name} from the team page?`,
-                              )
-                            )
-                              void run(() => deleteTeamMember(m));
+                            void ask({
+                              title: `Remove ${m.full_name}?`,
+                              message:
+                                "They will disappear from the Our team page. Their photo is deleted too.",
+                              confirmLabel: "Yes, remove",
+                              tone: "danger",
+                            }).then((ok) => {
+                              if (ok) void run(() => deleteTeamMember(m));
+                            });
                           }}
                         >
                           Remove

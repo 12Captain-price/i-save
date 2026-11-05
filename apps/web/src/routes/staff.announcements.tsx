@@ -9,6 +9,7 @@ import {
 } from "@/components/staff/FormBits";
 import { useContentAction } from "@/components/staff/useContentAction";
 import { Button } from "@/components/ui/button";
+import { useConfirm } from "@/components/ui/confirm";
 import { CheckField, Field } from "@/components/ui/field";
 import {
   deleteAnnouncement,
@@ -34,6 +35,7 @@ export const Route = createFileRoute("/staff/announcements")({
 function AnnouncementsAdmin() {
   const { data, isPending, isError } = useAnnouncements(true);
   const [editing, setEditing] = useState<Announcement | "new" | null>(null);
+  const ask = useConfirm();
   const { run, busy, error } = useContentAction();
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -45,12 +47,12 @@ function AnnouncementsAdmin() {
     ]
       .filter(Boolean)
       .join(", ");
-    if (
-      !window.confirm(
-        `Send "${a.title}" to all active members by ${channels}? This cannot be undone.`,
-      )
-    )
-      return;
+    const yes = await ask({
+      title: `Send "${a.title}"?`,
+      message: `It goes to all active members by ${channels}. This cannot be undone.`,
+      confirmLabel: "Yes, send it",
+    });
+    if (!yes) return;
     setNotice(null);
     let summary = "";
     const ok = await run(async () => {
@@ -157,11 +159,16 @@ function AnnouncementsAdmin() {
                     size="sm"
                     disabled={busy}
                     onClick={() => {
-                      const message = a.sent_at
-                        ? `Delete "${a.title}" from this list and the website? Members who already received it keep their copy.`
-                        : "Delete this announcement?";
-                      if (window.confirm(message))
-                        void run(() => deleteAnnouncement(a.id));
+                      void ask({
+                        title: `Delete "${a.title}"?`,
+                        message: a.sent_at
+                          ? "It is removed from this list and the website. Members who already received it keep their copy."
+                          : "This announcement has not been sent. It will be removed.",
+                        confirmLabel: "Yes, delete",
+                        tone: "danger",
+                      }).then((ok) => {
+                        if (ok) void run(() => deleteAnnouncement(a.id));
+                      });
                     }}
                   >
                     Delete
@@ -253,6 +260,7 @@ function AnnouncementForm({
 /** Queued WhatsApp announcement messages. Staff open each chat, press send, then mark it sent. */
 function Outbox() {
   const { data, isPending, isError } = useWhatsappOutbox();
+  const ask = useConfirm();
   const { run, busy, error } = useContentAction();
   return (
     <section className="mt-12" aria-labelledby="outbox-title">
@@ -281,8 +289,15 @@ function Outbox() {
                 size="sm"
                 disabled={busy}
                 onClick={() => {
-                  if (window.confirm(`Mark all ${data.length} as sent?`))
-                    void run(() => markWhatsappSent(data.map((d) => d.id)));
+                  void ask({
+                    title: `Mark all ${data.length} as sent?`,
+                    message:
+                      "Only do this once the messages have really been sent on WhatsApp.",
+                    confirmLabel: "Yes, mark as sent",
+                  }).then((ok) => {
+                    if (ok)
+                      void run(() => markWhatsappSent(data.map((d) => d.id)));
+                  });
                 }}
               >
                 Mark all {data.length} as sent
@@ -292,14 +307,17 @@ function Outbox() {
                 size="sm"
                 disabled={busy}
                 onClick={() => {
-                  if (
-                    window.confirm(
-                      `Throw away all ${data.length} waiting WhatsApp messages? They will not be sent.`,
-                    )
-                  )
-                    void run(() =>
-                      discardWhatsappOutbox(data.map((d) => d.id)),
-                    );
+                  void ask({
+                    title: `Clear all ${data.length} waiting messages?`,
+                    message: "They will be thrown away and will not be sent.",
+                    confirmLabel: "Yes, clear the outbox",
+                    tone: "danger",
+                  }).then((ok) => {
+                    if (ok)
+                      void run(() =>
+                        discardWhatsappOutbox(data.map((d) => d.id)),
+                      );
+                  });
                 }}
               >
                 Clear the outbox
@@ -347,12 +365,15 @@ function Outbox() {
                     size="sm"
                     disabled={busy}
                     onClick={() => {
-                      if (
-                        window.confirm(
-                          "Throw away this message without sending it?",
-                        )
-                      )
-                        void run(() => discardWhatsappOutbox([item.id]));
+                      void ask({
+                        title: "Remove this message?",
+                        message: "It will be thrown away without being sent.",
+                        confirmLabel: "Yes, remove",
+                        tone: "danger",
+                      }).then((ok) => {
+                        if (ok)
+                          void run(() => discardWhatsappOutbox([item.id]));
+                      });
                     }}
                   >
                     Remove

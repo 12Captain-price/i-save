@@ -16,12 +16,14 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as DisclosuresRouteImport } from './routes/disclosures'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as FaqsRouteImport } from './routes/faqs'
+import { Route as FeedbackRouteImport } from './routes/feedback'
 import { Route as FeesRouteImport } from './routes/fees'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PlansRouteImport } from './routes/plans'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as ReviewsRouteImport } from './routes/reviews'
 import { Route as StaffRouteImport } from './routes/staff'
 import { Route as TeamRouteImport } from './routes/team'
 import { Route as TermsRouteImport } from './routes/terms'
@@ -31,7 +33,9 @@ import { Route as StaffAgentsRouteImport } from './routes/staff.agents'
 import { Route as StaffAnnouncementsRouteImport } from './routes/staff.announcements'
 import { Route as StaffContentRouteImport } from './routes/staff.content'
 import { Route as StaffEventsRouteImport } from './routes/staff.events'
+import { Route as StaffFeedbackRouteImport } from './routes/staff.feedback'
 import { Route as StaffPlansRouteImport } from './routes/staff.plans'
+import { Route as StaffReviewsRouteImport } from './routes/staff.reviews'
 import { Route as StaffTeamRouteImport } from './routes/staff.team'
 import { Route as StaffTrafficRouteImport } from './routes/staff.traffic'
 
@@ -70,6 +74,11 @@ const FaqsRoute = FaqsRouteImport.update({
   path: '/faqs',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FeedbackRoute = FeedbackRouteImport.update({
+  id: '/feedback',
+  path: '/feedback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FeesRoute = FeesRouteImport.update({
   id: '/fees',
   path: '/fees',
@@ -98,6 +107,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReviewsRoute = ReviewsRouteImport.update({
+  id: '/reviews',
+  path: '/reviews',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StaffRoute = StaffRouteImport.update({
@@ -145,9 +159,19 @@ const StaffEventsRoute = StaffEventsRouteImport.update({
   path: '/events',
   getParentRoute: () => StaffRoute,
 } as any)
+const StaffFeedbackRoute = StaffFeedbackRouteImport.update({
+  id: '/feedback',
+  path: '/feedback',
+  getParentRoute: () => StaffRoute,
+} as any)
 const StaffPlansRoute = StaffPlansRouteImport.update({
   id: '/plans',
   path: '/plans',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffReviewsRoute = StaffReviewsRouteImport.update({
+  id: '/reviews',
+  path: '/reviews',
   getParentRoute: () => StaffRoute,
 } as any)
 const StaffTeamRoute = StaffTeamRouteImport.update({
@@ -169,12 +193,14 @@ export interface FileRoutesByFullPath {
   '/disclosures': typeof DisclosuresRoute
   '/events': typeof EventsRouteWithChildren
   '/faqs': typeof FaqsRoute
+  '/feedback': typeof FeedbackRoute
   '/fees': typeof FeesRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/plans': typeof PlansRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/reviews': typeof ReviewsRoute
   '/staff': typeof StaffRouteWithChildren
   '/team': typeof TeamRoute
   '/terms': typeof TermsRoute
@@ -183,7 +209,9 @@ export interface FileRoutesByFullPath {
   '/staff/announcements': typeof StaffAnnouncementsRoute
   '/staff/content': typeof StaffContentRoute
   '/staff/events': typeof StaffEventsRoute
+  '/staff/feedback': typeof StaffFeedbackRoute
   '/staff/plans': typeof StaffPlansRoute
+  '/staff/reviews': typeof StaffReviewsRoute
   '/staff/team': typeof StaffTeamRoute
   '/staff/traffic': typeof StaffTrafficRoute
   '/staff/': typeof StaffIndexRoute
@@ -196,12 +224,14 @@ export interface FileRoutesByTo {
   '/disclosures': typeof DisclosuresRoute
   '/events': typeof EventsRouteWithChildren
   '/faqs': typeof FaqsRoute
+  '/feedback': typeof FeedbackRoute
   '/fees': typeof FeesRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/plans': typeof PlansRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/reviews': typeof ReviewsRoute
   '/team': typeof TeamRoute
   '/terms': typeof TermsRoute
   '/events/$eventId': typeof EventsEventIdRoute
@@ -209,7 +239,9 @@ export interface FileRoutesByTo {
   '/staff/announcements': typeof StaffAnnouncementsRoute
   '/staff/content': typeof StaffContentRoute
   '/staff/events': typeof StaffEventsRoute
+  '/staff/feedback': typeof StaffFeedbackRoute
   '/staff/plans': typeof StaffPlansRoute
+  '/staff/reviews': typeof StaffReviewsRoute
   '/staff/team': typeof StaffTeamRoute
   '/staff/traffic': typeof StaffTrafficRoute
   '/staff': typeof StaffIndexRoute
@@ -223,12 +255,14 @@ export interface FileRoutesById {
   '/disclosures': typeof DisclosuresRoute
   '/events': typeof EventsRouteWithChildren
   '/faqs': typeof FaqsRoute
+  '/feedback': typeof FeedbackRoute
   '/fees': typeof FeesRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/plans': typeof PlansRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/reviews': typeof ReviewsRoute
   '/staff': typeof StaffRouteWithChildren
   '/team': typeof TeamRoute
   '/terms': typeof TermsRoute
@@ -237,7 +271,9 @@ export interface FileRoutesById {
   '/staff/announcements': typeof StaffAnnouncementsRoute
   '/staff/content': typeof StaffContentRoute
   '/staff/events': typeof StaffEventsRoute
+  '/staff/feedback': typeof StaffFeedbackRoute
   '/staff/plans': typeof StaffPlansRoute
+  '/staff/reviews': typeof StaffReviewsRoute
   '/staff/team': typeof StaffTeamRoute
   '/staff/traffic': typeof StaffTrafficRoute
   '/staff/': typeof StaffIndexRoute
@@ -252,12 +288,14 @@ export interface FileRouteTypes {
     | '/disclosures'
     | '/events'
     | '/faqs'
+    | '/feedback'
     | '/fees'
     | '/forgot-password'
     | '/login'
     | '/plans'
     | '/privacy'
     | '/reset-password'
+    | '/reviews'
     | '/staff'
     | '/team'
     | '/terms'
@@ -266,7 +304,9 @@ export interface FileRouteTypes {
     | '/staff/announcements'
     | '/staff/content'
     | '/staff/events'
+    | '/staff/feedback'
     | '/staff/plans'
+    | '/staff/reviews'
     | '/staff/team'
     | '/staff/traffic'
     | '/staff/'
@@ -279,12 +319,14 @@ export interface FileRouteTypes {
     | '/disclosures'
     | '/events'
     | '/faqs'
+    | '/feedback'
     | '/fees'
     | '/forgot-password'
     | '/login'
     | '/plans'
     | '/privacy'
     | '/reset-password'
+    | '/reviews'
     | '/team'
     | '/terms'
     | '/events/$eventId'
@@ -292,7 +334,9 @@ export interface FileRouteTypes {
     | '/staff/announcements'
     | '/staff/content'
     | '/staff/events'
+    | '/staff/feedback'
     | '/staff/plans'
+    | '/staff/reviews'
     | '/staff/team'
     | '/staff/traffic'
     | '/staff'
@@ -305,12 +349,14 @@ export interface FileRouteTypes {
     | '/disclosures'
     | '/events'
     | '/faqs'
+    | '/feedback'
     | '/fees'
     | '/forgot-password'
     | '/login'
     | '/plans'
     | '/privacy'
     | '/reset-password'
+    | '/reviews'
     | '/staff'
     | '/team'
     | '/terms'
@@ -319,7 +365,9 @@ export interface FileRouteTypes {
     | '/staff/announcements'
     | '/staff/content'
     | '/staff/events'
+    | '/staff/feedback'
     | '/staff/plans'
+    | '/staff/reviews'
     | '/staff/team'
     | '/staff/traffic'
     | '/staff/'
@@ -333,12 +381,14 @@ export interface RootRouteChildren {
   DisclosuresRoute: typeof DisclosuresRoute
   EventsRoute: typeof EventsRouteWithChildren
   FaqsRoute: typeof FaqsRoute
+  FeedbackRoute: typeof FeedbackRoute
   FeesRoute: typeof FeesRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
   PlansRoute: typeof PlansRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ReviewsRoute: typeof ReviewsRoute
   StaffRoute: typeof StaffRouteWithChildren
   TeamRoute: typeof TeamRoute
   TermsRoute: typeof TermsRoute
@@ -395,6 +445,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FaqsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/feedback': {
+      id: '/feedback'
+      path: '/feedback'
+      fullPath: '/feedback'
+      preLoaderRoute: typeof FeedbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/fees': {
       id: '/fees'
       path: '/fees'
@@ -435,6 +492,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reviews': {
+      id: '/reviews'
+      path: '/reviews'
+      fullPath: '/reviews'
+      preLoaderRoute: typeof ReviewsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/staff': {
@@ -500,11 +564,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffEventsRouteImport
       parentRoute: typeof StaffRoute
     }
+    '/staff/feedback': {
+      id: '/staff/feedback'
+      path: '/feedback'
+      fullPath: '/staff/feedback'
+      preLoaderRoute: typeof StaffFeedbackRouteImport
+      parentRoute: typeof StaffRoute
+    }
     '/staff/plans': {
       id: '/staff/plans'
       path: '/plans'
       fullPath: '/staff/plans'
       preLoaderRoute: typeof StaffPlansRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/staff/reviews': {
+      id: '/staff/reviews'
+      path: '/reviews'
+      fullPath: '/staff/reviews'
+      preLoaderRoute: typeof StaffReviewsRouteImport
       parentRoute: typeof StaffRoute
     }
     '/staff/team': {
@@ -540,7 +618,9 @@ interface StaffRouteChildren {
   StaffAnnouncementsRoute: typeof StaffAnnouncementsRoute
   StaffContentRoute: typeof StaffContentRoute
   StaffEventsRoute: typeof StaffEventsRoute
+  StaffFeedbackRoute: typeof StaffFeedbackRoute
   StaffPlansRoute: typeof StaffPlansRoute
+  StaffReviewsRoute: typeof StaffReviewsRoute
   StaffTeamRoute: typeof StaffTeamRoute
   StaffTrafficRoute: typeof StaffTrafficRoute
   StaffIndexRoute: typeof StaffIndexRoute
@@ -551,7 +631,9 @@ const StaffRouteChildren: StaffRouteChildren = {
   StaffAnnouncementsRoute: StaffAnnouncementsRoute,
   StaffContentRoute: StaffContentRoute,
   StaffEventsRoute: StaffEventsRoute,
+  StaffFeedbackRoute: StaffFeedbackRoute,
   StaffPlansRoute: StaffPlansRoute,
+  StaffReviewsRoute: StaffReviewsRoute,
   StaffTeamRoute: StaffTeamRoute,
   StaffTrafficRoute: StaffTrafficRoute,
   StaffIndexRoute: StaffIndexRoute,
@@ -567,12 +649,14 @@ const rootRouteChildren: RootRouteChildren = {
   DisclosuresRoute: DisclosuresRoute,
   EventsRoute: EventsRouteWithChildren,
   FaqsRoute: FaqsRoute,
+  FeedbackRoute: FeedbackRoute,
   FeesRoute: FeesRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
   PlansRoute: PlansRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ReviewsRoute: ReviewsRoute,
   StaffRoute: StaffRouteWithChildren,
   TeamRoute: TeamRoute,
   TermsRoute: TermsRoute,

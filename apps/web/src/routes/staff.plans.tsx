@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { PlanVersionForm } from "@/components/staff/PlanVersionForm";
 import { StatusPill } from "@/components/staff/StatusPill";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { useConfirm } from "@/components/ui/confirm";
 import { TextAreaField } from "@/components/staff/FormBits";
 import { CheckField, Field, inputClass } from "@/components/ui/field";
 import { useAuth } from "@/lib/auth";
@@ -246,9 +247,8 @@ function NewPlanPanel({
 type Panel =
   | { kind: "details" }
   | { kind: "newVersion" }
-  | { kind: "deletePlan" }
   | {
-      kind: "edit" | "activate" | "retire" | "terms" | "deleteDraft";
+      kind: "edit" | "activate" | "terms";
       versionId: string;
     };
 
@@ -260,12 +260,52 @@ function PlanCard({
   onChanged: () => Promise<void>;
 }) {
   const [panel, setPanel] = useState<Panel | null>(null);
+  const ask = useConfirm();
   const hasDraft = plan.versions.some((v) => v.status === "draft");
   const latest = plan.versions[0];
 
   async function done() {
     setPanel(null);
     await onChanged();
+  }
+
+  function confirmDeletePlan() {
+    void ask({
+      title: `Delete “${plan.name}”?`,
+      message:
+        "The plan and all of its versions are removed for good. This only works if no member has ever joined it. If members have, use “Stop new sign-ups” instead to hide it from the website.",
+      confirmLabel: "Yes, delete the plan",
+      tone: "danger",
+      run: () => deletePlan(plan.id),
+    }).then(async (ok) => {
+      if (ok) await done();
+    });
+  }
+
+  function confirmDeleteDraft(v: PlanVersion) {
+    void ask({
+      title: `Delete draft version ${v.version}?`,
+      message:
+        "Only this draft is removed. The plan and its other versions stay as they are.",
+      confirmLabel: "Yes, delete the draft",
+      tone: "danger",
+      run: () => deleteDraftVersion(v.id),
+    }).then(async (ok) => {
+      if (ok) await done();
+    });
+  }
+
+  function confirmRetire(v: PlanVersion) {
+    void ask({
+      title: `Stop new sign-ups for version ${v.version}?`,
+      message:
+        "New members will no longer be able to join it. People already on it keep their plan and their terms. If no other version is live, members will see no plan to choose.",
+      confirmLabel: "Stop new sign-ups",
+      tone: "danger",
+      run: () => retireVersion(v.id),
+    }).then(async (ok) => {
+      if (ok) await done();
+    });
   }
 
   const target =
@@ -311,11 +351,7 @@ function PlanCard({
               New version
             </Button>
           )}
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setPanel({ kind: "deletePlan" })}
-          >
+          <Button size="sm" variant="outline" onClick={confirmDeletePlan}>
             Delete plan
           </Button>
         </div>
@@ -366,9 +402,7 @@ function PlanCard({
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() =>
-                        setPanel({ kind: "deleteDraft", versionId: v.id })
-                      }
+                      onClick={() => confirmDeleteDraft(v)}
                     >
                       Delete draft
                     </Button>
@@ -379,7 +413,7 @@ function PlanCard({
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => setPanel({ kind: "retire", versionId: v.id })}
+                  onClick={() => confirmRetire(v)}
                 >
                   Stop new sign-ups
                 </Button>
@@ -470,33 +504,6 @@ function PlanCard({
           onDone={done}
           onCancel={() => setPanel(null)}
           onEdit={() => setPanel({ kind: "edit", versionId: target.id })}
-        />
-      )}
-      {panel?.kind === "deletePlan" && (
-        <ConfirmDelete
-          title={`Delete “${plan.name}”?`}
-          body="The plan and all of its versions are removed for good. This only works if no member has ever joined it. If members have, use “Stop new sign-ups” instead to hide it from the website."
-          confirmLabel="Yes, delete the plan"
-          run={() => deletePlan(plan.id)}
-          onDone={done}
-          onCancel={() => setPanel(null)}
-        />
-      )}
-      {panel?.kind === "deleteDraft" && target && (
-        <ConfirmDelete
-          title={`Delete draft version ${target.version}?`}
-          body="Only this draft is removed. The plan and its other versions stay as they are."
-          confirmLabel="Yes, delete the draft"
-          run={() => deleteDraftVersion(target.id)}
-          onDone={done}
-          onCancel={() => setPanel(null)}
-        />
-      )}
-      {panel?.kind === "retire" && target && (
-        <RetirePanel
-          version={target}
-          onDone={done}
-          onCancel={() => setPanel(null)}
         />
       )}
     </section>
@@ -756,110 +763,6 @@ function ActivatePanel({
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-function RetirePanel({
-  version,
-  onDone,
-  onCancel,
-}: {
-  version: PlanVersion;
-  onDone: () => Promise<void>;
-  onCancel: () => void;
-}) {
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  async function go() {
-    setError(null);
-    setBusy(true);
-    try {
-      await retireVersion(version.id);
-      await onDone();
-    } catch (e) {
-      setError(staffErrorMessage(e));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <div className="mt-5 border-t border-border pt-5">
-      <h3 className="text-base font-semibold">
-        Stop new sign-ups for version {version.version}?
-      </h3>
-      <p className="mt-2 text-sm text-muted-foreground">
-        New members will no longer be able to join it. People already on it keep
-        their plan and their terms. If no other version is live, members will
-        see no plan to choose.
-      </p>
-      {error && (
-        <p role="alert" className="mt-3 text-sm text-destructive">
-          {error}
-        </p>
-      )}
-      <div className="mt-4 flex flex-wrap gap-3">
-        <Button variant="destructive" onClick={go} disabled={busy}>
-          {busy ? "Working…" : "Stop new sign-ups"}
-        </Button>
-        <Button variant="outline" onClick={onCancel} disabled={busy}>
-          Cancel
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-function ConfirmDelete({
-  title,
-  body,
-  confirmLabel,
-  run,
-  onDone,
-  onCancel,
-}: {
-  title: string;
-  body: string;
-  confirmLabel: string;
-  run: () => Promise<void>;
-  onDone: () => Promise<void>;
-  onCancel: () => void;
-}) {
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  async function go() {
-    setError(null);
-    setBusy(true);
-    try {
-      await run();
-      await onDone();
-    } catch (e) {
-      setError(staffErrorMessage(e));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <div className="mt-5 border-t border-border pt-5">
-      <h3 className="text-base font-semibold">{title}</h3>
-      <p className="mt-2 text-sm text-muted-foreground">{body}</p>
-      {error && (
-        <p role="alert" className="mt-3 text-sm text-destructive">
-          {error}
-        </p>
-      )}
-      <div className="mt-4 flex flex-wrap gap-3">
-        <Button variant="destructive" onClick={go} disabled={busy}>
-          {busy ? "Deleting…" : confirmLabel}
-        </Button>
-        <Button variant="outline" onClick={onCancel} disabled={busy}>
-          Keep it
-        </Button>
-      </div>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { useConfirm } from "@/components/ui/confirm";
 import { useState, type FormEvent } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { AdminOnly } from "@/components/staff/AdminOnly";
@@ -22,6 +23,7 @@ export const Route = createFileRoute("/staff/agents")({
 function AgentsAdmin() {
   const { data, isPending, isError } = useAgents(true);
   const [editing, setEditing] = useState<Agent | "new" | null>(null);
+  const ask = useConfirm();
   const { run, error } = useContentAction();
   return (
     <div>
@@ -97,12 +99,14 @@ function AgentsAdmin() {
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    if (
-                      window.confirm(
-                        `Remove ${a.name}? Its button will disappear from the Apply page.`,
-                      )
-                    )
-                      void run(() => deleteAgent(a));
+                    void ask({
+                      title: `Remove ${a.name}?`,
+                      message: "Its button will disappear from the Apply page.",
+                      confirmLabel: "Yes, remove",
+                      tone: "danger",
+                    }).then((ok) => {
+                      if (ok) void run(() => deleteAgent(a));
+                    });
                   }}
                 >
                   Remove

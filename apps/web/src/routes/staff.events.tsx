@@ -1,3 +1,4 @@
+import { useConfirm } from "@/components/ui/confirm";
 import { LoadingSkeleton } from "@/components/ui/motion";
 import { useState, type FormEvent } from "react";
 import { createFileRoute } from "@tanstack/react-router";
@@ -34,6 +35,7 @@ export const Route = createFileRoute("/staff/events")({
 function EventsAdmin() {
   const { data, isPending, isError } = useEvents(true);
   const [editing, setEditing] = useState<SiteEvent | "new" | null>(null);
+  const ask = useConfirm();
   const { run, error } = useContentAction();
   return (
     <div>
@@ -90,10 +92,15 @@ function EventsAdmin() {
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    if (
-                      window.confirm(`Delete "${ev.title}" and its pictures?`)
-                    )
-                      void run(() => deleteEvent(ev));
+                    void ask({
+                      title: `Delete "${ev.title}"?`,
+                      message:
+                        "The event and all of its pictures will be removed. This cannot be undone.",
+                      confirmLabel: "Yes, delete",
+                      tone: "danger",
+                    }).then((ok) => {
+                      if (ok) void run(() => deleteEvent(ev));
+                    });
                   }}
                 >
                   Delete
@@ -114,6 +121,7 @@ function EventForm({
   initial: SiteEvent | null;
   onDone: () => void;
 }) {
+  const ask = useConfirm();
   const { run, busy, error, setError } = useContentAction();
   const [title, setTitle] = useState(initial?.title ?? "");
   const [date, setDate] = useState(
@@ -220,8 +228,14 @@ function EventForm({
                   type="button"
                   className="mt-1 text-xs text-destructive underline"
                   onClick={() => {
-                    if (window.confirm("Delete this picture?"))
-                      void run(() => deleteEventPicture(img));
+                    void ask({
+                      title: "Delete this picture?",
+                      message: "It will be removed from the event.",
+                      confirmLabel: "Yes, delete",
+                      tone: "danger",
+                    }).then((ok) => {
+                      if (ok) void run(() => deleteEventPicture(img));
+                    });
                   }}
                 >
                   Delete

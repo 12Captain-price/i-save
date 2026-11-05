@@ -1,3 +1,4 @@
+import { useConfirm } from "@/components/ui/confirm";
 import { LoadingSkeleton } from "@/components/ui/motion";
 import { useState, type FormEvent } from "react";
 import { createFileRoute } from "@tanstack/react-router";
@@ -189,6 +190,7 @@ function PageForm({ page, onDone }: { page: SitePage; onDone: () => void }) {
 function FaqsEditor() {
   const { data, isPending, isError } = useFaqs(true);
   const [editing, setEditing] = useState<Faq | "new" | null>(null);
+  const ask = useConfirm();
   const { run, error } = useContentAction();
   if (isPending) return <LoadingSkeleton />;
   if (isError || !data)
@@ -242,8 +244,14 @@ function FaqsEditor() {
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  if (window.confirm("Delete this question?"))
-                    void run(() => deleteFaq(faq.id));
+                  void ask({
+                    title: "Delete this question?",
+                    message: faq.question,
+                    confirmLabel: "Yes, delete",
+                    tone: "danger",
+                  }).then((ok) => {
+                    if (ok) void run(() => deleteFaq(faq.id));
+                  });
                 }}
               >
                 Delete

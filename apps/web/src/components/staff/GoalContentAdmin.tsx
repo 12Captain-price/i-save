@@ -1,3 +1,4 @@
+import { useConfirm } from "@/components/ui/confirm";
 import { useState, type FormEvent } from "react";
 import { ArrowDown, ArrowUp, Eye, EyeOff, Plus, Trash2 } from "lucide-react";
 import { ErrorLine, TextAreaField } from "@/components/staff/FormBits";
@@ -112,7 +113,9 @@ export function GoalContentAdmin() {
                   variant="outline"
                   size="sm"
                   disabled={busy}
-                  onClick={() => void run(() => setGoalActive(g.key, !g.active))}
+                  onClick={() =>
+                    void run(() => setGoalActive(g.key, !g.active))
+                  }
                 >
                   {g.active ? (
                     <EyeOff size={16} aria-hidden="true" />
@@ -466,35 +469,27 @@ function GoalForm({
 
 function DeleteGoal({ goal }: { goal: LiveGoal }) {
   const { run, busy } = useContentAction();
-  const [sure, setSure] = useState(false);
-  if (!sure)
-    return (
-      <Button
-        type="button"
-        variant="outline"
-        className="ml-auto"
-        onClick={() => setSure(true)}
-      >
-        <Trash2 size={16} aria-hidden="true" />
-        Delete goal
-      </Button>
-    );
+  const ask = useConfirm();
   return (
-    <span className="ml-auto flex flex-wrap items-center gap-2 text-sm">
-      Delete “{goal.label}” for good? Plans filed under it stay, but lose their
-      filter. Hiding it is safer.
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        disabled={busy}
-        onClick={() => void run(() => deleteGoal(goal.key))}
-      >
-        Yes, delete
-      </Button>
-      <Button type="button" size="sm" onClick={() => setSure(false)}>
-        Keep it
-      </Button>
-    </span>
+    <Button
+      type="button"
+      variant="outline"
+      className="ml-auto"
+      disabled={busy}
+      onClick={() => {
+        void ask({
+          title: `Delete “${goal.label}”?`,
+          message:
+            "Plans filed under it stay, but lose their filter. Hiding the goal is the safer choice if you might want it back.",
+          confirmLabel: "Yes, delete the goal",
+          tone: "danger",
+        }).then((ok) => {
+          if (ok) void run(() => deleteGoal(goal.key));
+        });
+      }}
+    >
+      <Trash2 size={16} aria-hidden="true" />
+      Delete goal
+    </Button>
   );
 }

@@ -1,15 +1,11 @@
 import { LoadingSkeleton } from "@/components/ui/motion";
 import { useEffect, useRef, type ReactNode } from "react";
-import {
-  Link,
-  Navigate,
-  Outlet,
-  useRouterState,
-} from "@tanstack/react-router";
+import { Link, Navigate, Outlet, useRouterState } from "@tanstack/react-router";
 import { PublicLayout } from "@/components/site/PublicLayout";
 import { buttonVariants } from "@/components/ui/button";
 import { AdminModeSwitch } from "@/components/staff/AdminModeSwitch";
 import { useAuth } from "@/lib/auth";
+import { useWaitingCounts } from "@/lib/feedback";
 import { isAdminRole, isStaffRole } from "@/lib/staff-utils";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +19,8 @@ const TAB_ACTIVE = cn(TAB_BASE, "border-primary text-primary");
 
 const TABS = [
   { to: "/staff", label: "Overview", exact: true, admin: false },
+  { to: "/staff/feedback", label: "Feedback", admin: false, badge: "feedback" },
+  { to: "/staff/reviews", label: "Reviews", admin: false, badge: "reviews" },
   { to: "/staff/announcements", label: "Announcements", admin: true },
   { to: "/staff/events", label: "Events", admin: true },
   { to: "/staff/plans", label: "Plans", admin: true },
@@ -39,6 +37,7 @@ const TABS = [
 function StaffTabs({ admin }: { admin: boolean }) {
   const strip = useRef<HTMLElement>(null);
   const path = useRouterState({ select: (s) => s.location.pathname });
+  const waiting = useWaitingCounts(true).data;
   useEffect(() => {
     const active = strip.current?.querySelector<HTMLElement>(
       '[aria-current="page"]',
@@ -65,6 +64,15 @@ function StaffTabs({ admin }: { admin: boolean }) {
           activeProps={{ className: TAB_ACTIVE, "aria-current": "page" }}
         >
           {t.label}
+          {"badge" in t && waiting && waiting[t.badge] > 0 && (
+            <span
+              className="ml-2 inline-flex min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[0.7rem] leading-5 font-bold text-destructive-foreground"
+              title={`${waiting[t.badge]} waiting for you`}
+            >
+              <span aria-hidden="true">{waiting[t.badge]}</span>
+              <span className="sr-only">{waiting[t.badge]} waiting</span>
+            </span>
+          )}
         </Link>
       ))}
     </nav>
