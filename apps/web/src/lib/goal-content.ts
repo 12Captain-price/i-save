@@ -8,13 +8,17 @@
 
 export const GOAL_CONTENT_IS_SAMPLE = true;
 
-export type GoalKey =
-  "asset" | "holiday" | "emergency" | "retrenchment" | "education";
+/** A goal's short code, for example "asset". Admins can add more, so any short code is valid. */
+export type GoalKey = string;
 
 export type GoalContent = {
   key: GoalKey;
   label: string;
   purpose: string;
+  /** Icon code, see lib/goal-style.ts. */
+  icon: string;
+  /** Colour code, see lib/goal-style.ts. */
+  accent: string;
   about: string;
   how: string[];
   past: string[];
@@ -26,6 +30,8 @@ export type GoalContent = {
 export const GOAL_CONTENT: GoalContent[] = [
   {
     key: "asset",
+    icon: "building",
+    accent: "gold",
     label: "Asset",
     purpose: "Save towards an asset or a significant purchase.",
     about:
@@ -60,6 +66,8 @@ export const GOAL_CONTENT: GoalContent[] = [
   },
   {
     key: "holiday",
+    icon: "plane",
+    accent: "blue",
     label: "Holiday",
     purpose: "Save towards a future holiday or travel goal.",
     about:
@@ -94,6 +102,8 @@ export const GOAL_CONTENT: GoalContent[] = [
   },
   {
     key: "emergency",
+    icon: "shield",
+    accent: "red",
     label: "Emergency",
     purpose: "Set money aside for unexpected needs.",
     about:
@@ -128,6 +138,8 @@ export const GOAL_CONTENT: GoalContent[] = [
   },
   {
     key: "retrenchment",
+    icon: "briefcase",
+    accent: "purple",
     label: "Retrenchment",
     purpose: "Prepare a savings cushion for a possible loss of employment.",
     about:
@@ -162,6 +174,8 @@ export const GOAL_CONTENT: GoalContent[] = [
   },
   {
     key: "education",
+    icon: "graduation",
+    accent: "green",
     label: "Education",
     purpose: "Save towards future education costs.",
     about:

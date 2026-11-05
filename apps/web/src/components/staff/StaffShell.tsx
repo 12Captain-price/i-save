@@ -28,8 +28,8 @@ const TABS = [
   { to: "/staff/plans", label: "Plans", admin: true },
   { to: "/staff/team", label: "Team", admin: true },
   { to: "/staff/agents", label: "Agents", admin: true },
-  { to: "/staff/traffic", label: "Traffic", admin: true },
-  { to: "/staff/content", label: "Pages, FAQs, contact", admin: true },
+  { to: "/staff/traffic", label: "Traffic report", admin: true },
+  { to: "/staff/content", label: "Home page, goals, pages", admin: true },
 ] as const;
 
 /**

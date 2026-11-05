@@ -1,28 +1,24 @@
 /* "What are you saving for?" tiles. Loaded after homepage.css so it replaces the old list look. */
 
 .home-page .home-goals {
-  display: grid;
-  grid-template-columns: 1fr;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 1rem;
 }
+.home-page .home-goals li {
+  flex: 1 1 100%;
+  min-width: 0;
+}
 @media (min-width: 40rem) {
-  .home-page .home-goals {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .home-page .home-goals li {
+    flex: 0 1 calc(50% - 0.5rem);
   }
 }
 @media (min-width: 64rem) {
-  .home-page .home-goals {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-  }
+  /* Three across; any left over on the last row are centred. */
   .home-page .home-goals li {
-    grid-column: span 2;
-  }
-  /* Five goals: three on top, two centred below. */
-  .home-page .home-goals li:nth-child(4) {
-    grid-column: 2 / span 2;
-  }
-  .home-page .home-goals li:nth-child(5) {
-    grid-column: 4 / span 2;
+    flex: 0 1 calc(33.333% - 0.7rem);
   }
 }
 .home-page .home-goals li,
@@ -54,11 +50,6 @@
 .home-page .home-goals li:first-child .home-goal {
   padding: 1.4rem;
 }
-.home-page .home-goal[data-goal="asset"] { --goal: oklch(0.8 0.14 85); }
-.home-page .home-goal[data-goal="holiday"] { --goal: oklch(0.8 0.12 220); }
-.home-page .home-goal[data-goal="emergency"] { --goal: oklch(0.74 0.17 25); }
-.home-page .home-goal[data-goal="retrenchment"] { --goal: oklch(0.78 0.13 300); }
-.home-page .home-goal[data-goal="education"] { --goal: oklch(0.86 0.19 163); }
 
 .home-page .home-goal::before {
   content: "";

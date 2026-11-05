@@ -42,8 +42,8 @@ const TILES: Tile[] = [
   { to: "/staff/plans", title: "Savings plans", text: "Plan descriptions, themes and the combo plan.", icon: PiggyBank },
   { to: "/staff/team", title: "Team", text: "The people shown on the Our team page.", icon: Users },
   { to: "/staff/agents", title: "Agents", text: "Photos and links for the Apply page.", icon: UserRoundCheck },
-  { to: "/staff/traffic", title: "Traffic", text: "Visits, Apply clicks and handoffs per agent.", icon: BarChart3 },
-  { to: "/staff/content", title: "Pages, FAQs, contact", text: "Edit the public wording and contact details.", icon: FileText },
+  { to: "/staff/traffic", title: "Traffic report", text: "What happened on the site: visits, Apply clicks, agents and trends.", icon: BarChart3 },
+  { to: "/staff/content", title: "Home page, goals, pages, FAQs", text: "Dashboard figures, savings goals, public wording and contact details.", icon: FileText },
 ];
 
 const PRESETS: RangePreset[] = ["7d", "30d", "90d"];

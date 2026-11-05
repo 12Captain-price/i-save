@@ -1,5 +1,6 @@
 import { Field, inputClass } from "@/components/ui/field";
-import { PLAN_THEMES, type PlanTheme } from "@/lib/plan-theme";
+import { useGoals } from "@/lib/goal-content-db";
+import type { PlanTheme } from "@/lib/plan-theme";
 
 /** The animation theme and the combo goal chips for a plan. */
 export function PlanThemeFields({
@@ -17,6 +18,15 @@ export function PlanThemeFields({
   onGoals: (v: string) => void;
   goalsError?: string;
 }) {
+  const { goals: goalList } = useGoals(true);
+  const options: { value: string; label: string }[] = [
+    ...goalList.map((g) => ({ value: g.key, label: g.label })),
+    { value: "combo", label: "Combo" },
+    { value: "other", label: "Other" },
+  ];
+  // Keep the plan's current theme selectable even if its goal was deleted.
+  if (!options.some((o) => o.value === theme))
+    options.unshift({ value: theme, label: theme });
   return (
     <>
       <div>
@@ -24,7 +34,7 @@ export function PlanThemeFields({
           htmlFor={`${idPrefix}-theme`}
           className="mb-1.5 block text-sm font-medium"
         >
-          Animation theme
+          Goal / theme
         </label>
         <select
           id={`${idPrefix}-theme`}
@@ -32,14 +42,16 @@ export function PlanThemeFields({
           onChange={(e) => onTheme(e.target.value as PlanTheme)}
           className={inputClass}
         >
-          {PLAN_THEMES.map((t) => (
+          {options.map((t) => (
             <option key={t.value} value={t.value}>
               {t.label}
             </option>
           ))}
         </select>
         <p className="mt-1 text-xs text-muted-foreground">
-          The short animation that plays when a visitor clicks this plan.
+          The savings goal this plan belongs to. It decides the short animation
+          that plays when a visitor clicks the plan, and which goal filter on the
+          Plans page lists it.
         </p>
       </div>
       <Field

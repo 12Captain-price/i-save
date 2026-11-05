@@ -1,14 +1,6 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  ArrowRight,
-  Briefcase,
-  Building2,
-  GraduationCap,
-  Plane,
-  Shield,
-  type LucideIcon,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { PublicLayout } from "@/components/site/PublicLayout";
 import { HeroRibbons } from "@/components/site/HeroRibbons";
 import { GoalPanel } from "@/components/site/GoalPanel";
@@ -18,7 +10,8 @@ import { Reveal } from "@/components/site/Reveal";
 import { NextChapter } from "@/components/site/NextChapter";
 import { StatTiles } from "@/components/site/StatTiles";
 import { buttonVariants } from "@/components/ui/button";
-import { GOAL_CONTENT, type GoalKey } from "@/lib/goal-content";
+import { useGoals } from "@/lib/goal-content-db";
+import { goalColor, goalIcon } from "@/lib/goal-style";
 import { cn } from "@/lib/utils";
 import "@/components/site/homepage.css";
 import "@/components/site/home-marketing.css";
@@ -27,15 +20,6 @@ import "@/components/site/home-goals.css";
 export const Route = createFileRoute("/")({
   component: HomePage,
 });
-
-// Icons for the goal tiles. The wording and sample figures live in lib/goal-content.ts.
-const GOAL_ICONS: Record<GoalKey, LucideIcon> = {
-  asset: Building2,
-  holiday: Plane,
-  emergency: Shield,
-  retrenchment: Briefcase,
-  education: GraduationCap,
-};
 
 const STEPS = [
   ["Apply for membership.", "Apply online, or ask the office to register you."],
@@ -69,7 +53,8 @@ const EXPECT = [
 ];
 
 function HomePage() {
-  const [openGoal, setOpenGoal] = useState<GoalKey | null>(null);
+  const [openGoal, setOpenGoal] = useState<string | null>(null);
+  const { goals } = useGoals();
   return (
     <PublicLayout>
       <div className="home-page">
@@ -173,8 +158,8 @@ function HomePage() {
               <h2 id="home-goals-title">What are you saving for?</h2>
             </Reveal>
             <ul className="home-goals">
-              {GOAL_CONTENT.map((g, i) => {
-                const Icon = GOAL_ICONS[g.key];
+              {goals.map((g, i) => {
+                const Icon = goalIcon(g.icon);
                 return (
                   <Reveal as="li" index={i} key={g.key}>
                     <button
@@ -183,7 +168,7 @@ function HomePage() {
                       aria-label={g.label + ": open details"}
                       onClick={() => setOpenGoal(g.key)}
                       className="home-goal"
-                      data-goal={g.key}
+                      style={{ ["--goal" as string]: goalColor(g.accent) }}
                     >
                       <span className="home-goal-chip" aria-hidden="true">
                         <Icon className="home-goal-icon" />
@@ -291,7 +276,7 @@ function HomePage() {
         </section>
       </div>
       <GoalPanel
-        goal={GOAL_CONTENT.find((g) => g.key === openGoal) ?? null}
+        goal={goals.find((g) => g.key === openGoal) ?? null}
         onClose={() => setOpenGoal(null)}
       />
     </PublicLayout>

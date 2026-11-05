@@ -10,10 +10,16 @@ export const PLAN_THEMES = [
   { value: "other", label: "Other" },
 ] as const;
 
-export type PlanTheme = (typeof PLAN_THEMES)[number]["value"];
+/**
+ * A plan's theme is "combo", "other", or the short code of a savings goal (for example "asset" or
+ * a goal an admin added). Goals the built-in animations do not know get the generic animation.
+ */
+export type PlanTheme = string;
+
+const THEME_CODE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
 export function toPlanTheme(value: string | null | undefined): PlanTheme {
-  return PLAN_THEMES.find((t) => t.value === value)?.value ?? "other";
+  return value && value.length <= 30 && THEME_CODE.test(value) ? value : "other";
 }
 
 export const MAX_COMBO_GOALS = 6;

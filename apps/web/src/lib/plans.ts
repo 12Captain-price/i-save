@@ -296,3 +296,20 @@ export async function retireVersion(versionId: string): Promise<void> {
     throw new Error("This version is not live, so there is nothing to retire.");
   }
 }
+
+/**
+ * Deletes a plan and all its versions. The database refuses if any member has joined it, so a
+ * plan with members is never lost: stop new sign-ups on it instead.
+ */
+export async function deletePlan(planId: string): Promise<void> {
+  const { error } = await supabase.rpc("delete_plan", { p_plan_id: planId });
+  if (error) throw error;
+}
+
+/** Deletes a draft version. Live and retired versions are kept on record. */
+export async function deleteDraftVersion(versionId: string): Promise<void> {
+  const { error } = await supabase.rpc("delete_draft_version", {
+    p_version_id: versionId,
+  });
+  if (error) throw error;
+}

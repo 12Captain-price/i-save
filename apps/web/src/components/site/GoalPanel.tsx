@@ -1,27 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import {
-  ArrowRight,
-  Briefcase,
-  Building2,
-  Flag,
-  GraduationCap,
-  Plane,
-  Shield,
-  X,
-  type LucideIcon,
-} from "lucide-react";
-import { type GoalContent, type GoalKey } from "@/lib/goal-content";
-import { useLiveGoal } from "@/lib/goal-content-db";
+import { ArrowRight, Flag, X } from "lucide-react";
+import type { LiveGoal } from "@/lib/goal-content-db";
+import { goalColor, goalIcon } from "@/lib/goal-style";
 import "./goal-panel.css";
-
-const ICONS: Record<GoalKey, LucideIcon> = {
-  asset: Building2,
-  holiday: Plane,
-  emergency: Shield,
-  retrenchment: Briefcase,
-  education: GraduationCap,
-};
 
 type Tab = "how" | "record" | "voices";
 const TABS: { id: Tab; label: string }[] = [
@@ -64,31 +46,30 @@ function StatList({ title, lines }: { title: string; lines: string[] }) {
 
 /** A savings goal opened from the home page: how it works, the record, scheduled targets and member words. */
 export function GoalPanel({
-  goal: baseGoal,
+  goal,
   onClose,
 }: {
-  goal: GoalContent | null;
+  goal: LiveGoal | null;
   onClose: () => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
-  const goal = useLiveGoal(baseGoal);
   const [tab, setTab] = useState<Tab>("how");
 
   useEffect(() => {
     const el = dialog.current;
     if (!el) return;
-    if (baseGoal && !el.open) el.showModal();
-    if (!baseGoal && el.open) el.close();
+    if (goal && !el.open) el.showModal();
+    if (!goal && el.open) el.close();
     setTab("how");
-  }, [baseGoal]);
+  }, [goal]);
 
-  const Icon = goal ? ICONS[goal.key] : null;
+  const Icon = goal ? goalIcon(goal.icon) : null;
 
   return (
     <dialog
       ref={dialog}
       className="goal-panel"
-      data-goal={goal?.key}
+      style={{ ["--goal" as string]: goalColor(goal?.accent) }}
       aria-labelledby="goal-panel-title"
       onClose={onClose}
       onClick={(e) => {
@@ -103,7 +84,7 @@ export function GoalPanel({
             </span>
             <div>
               <h2 id="goal-panel-title">{goal.label} savings</h2>
-              <p className="goal-panel-lead">{goal.about}</p>
+              <p className="goal-panel-lead">{goal.about || goal.purpose}</p>
               {!goal.real && (
                 <p className="goal-panel-sample">
                   Sample content. Figures and quotes are illustrative.
@@ -144,16 +125,28 @@ export function GoalPanel({
             id={`gp-view-${tab}`}
             aria-labelledby={`gp-tab-${tab}`}
           >
-            {tab === "how" && (
-              <ol className="goal-panel-steps">
-                {goal.how.map((h) => (
-                  <li key={h}>{h}</li>
-                ))}
-              </ol>
-            )}
+            {tab === "how" &&
+              (goal.how.length > 0 ? (
+                <ol className="goal-panel-steps">
+                  {goal.how.map((h) => (
+                    <li key={h}>{h}</li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="goal-panel-empty">
+                  Details for this goal are coming soon. Pick a plan below or
+                  ask the office how it works.
+                </p>
+              ))}
 
             {tab === "record" && (
               <>
+                {goal.past.length + goal.present.length + goal.ahead.length ===
+                  0 && (
+                  <p className="goal-panel-empty">
+                    No records have been added for this goal yet.
+                  </p>
+                )}
                 <div className="goal-panel-columns">
                   <StatList title="Past records" lines={goal.past} />
                   <StatList title="Right now" lines={goal.present} />
@@ -176,6 +169,11 @@ export function GoalPanel({
 
             {tab === "voices" && (
               <div className="goal-panel-quotes">
+                {goal.quotes.length === 0 && (
+                  <p className="goal-panel-empty">
+                    No member stories have been added for this goal yet.
+                  </p>
+                )}
                 {goal.quotes.map((q) => (
                   <figure key={q.text}>
                     <blockquote>{q.text}</blockquote>

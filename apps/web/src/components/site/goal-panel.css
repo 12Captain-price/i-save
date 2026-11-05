@@ -135,11 +135,6 @@
 
 /* ---- Redesign: accent header, tabs, stat tiles ---- */
 .goal-panel { --goal: var(--primary); }
-.goal-panel[data-goal="asset"] { --goal: oklch(0.8 0.14 85); }
-.goal-panel[data-goal="holiday"] { --goal: oklch(0.8 0.12 220); }
-.goal-panel[data-goal="emergency"] { --goal: oklch(0.74 0.17 25); }
-.goal-panel[data-goal="retrenchment"] { --goal: oklch(0.78 0.13 300); }
-.goal-panel[data-goal="education"] { --goal: oklch(0.86 0.19 163); }
 
 .goal-panel-body { padding: 0; }
 .goal-panel-head {
@@ -253,3 +248,5 @@
 .goal-panel-primary { background: var(--goal); border-color: var(--goal); color: #111; gap: 0.5rem; }
 .goal-panel-link:focus-visible { outline: 2px solid var(--goal); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .goal-panel-view { animation: none; } }
+
+.goal-panel-empty { padding: 1rem 0; font-size: 0.9375rem; color: var(--muted-foreground); }

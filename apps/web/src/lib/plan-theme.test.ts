@@ -2,10 +2,14 @@ import { describe, expect, it } from "vitest";
 import { parseComboGoals, toPlanTheme, validateComboGoals } from "./plan-theme";
 
 describe("toPlanTheme", () => {
-  it("keeps a known theme and falls back to other", () => {
+  it("keeps a valid theme code, including goals an admin added", () => {
     expect(toPlanTheme("holiday")).toBe("holiday");
-    expect(toPlanTheme("nonsense")).toBe("other");
+    expect(toPlanTheme("wedding-fund")).toBe("wedding-fund");
+  });
+  it("falls back to other for empty or malformed values", () => {
+    expect(toPlanTheme("Not A Code!")).toBe("other");
     expect(toPlanTheme(null)).toBe("other");
+    expect(toPlanTheme("")).toBe("other");
   });
 });
 

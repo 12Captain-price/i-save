@@ -11,6 +11,8 @@ import {
   activateVersion,
   createNextVersion,
   createPlan,
+  deleteDraftVersion,
+  deletePlan,
   retireVersion,
   saveDraftVersion,
   updatePlanDetails,
@@ -244,7 +246,11 @@ function NewPlanPanel({
 type Panel =
   | { kind: "details" }
   | { kind: "newVersion" }
-  | { kind: "edit" | "activate" | "retire" | "terms"; versionId: string };
+  | { kind: "deletePlan" }
+  | {
+      kind: "edit" | "activate" | "retire" | "terms" | "deleteDraft";
+      versionId: string;
+    };
 
 function PlanCard({
   plan,
@@ -305,6 +311,13 @@ function PlanCard({
               New version
             </Button>
           )}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setPanel({ kind: "deletePlan" })}
+          >
+            Delete plan
+          </Button>
         </div>
       </div>
 
@@ -349,6 +362,17 @@ function PlanCard({
                   >
                     Make live
                   </Button>
+                  {plan.versions.length > 1 && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() =>
+                        setPanel({ kind: "deleteDraft", versionId: v.id })
+                      }
+                    >
+                      Delete draft
+                    </Button>
+                  )}
                 </>
               )}
               {v.status === "active" && (
@@ -361,6 +385,13 @@ function PlanCard({
                 </Button>
               )}
             </div>
+            {v.status !== "draft" && (
+              <p className="mt-2 text-xs text-muted-foreground">
+                {v.status === "active"
+                  ? "To change the amount or terms of a live version, start a new version. Members keep the terms they accepted."
+                  : "This version has been live, so it stays on record and cannot be changed."}
+              </p>
+            )}
           </li>
         ))}
       </ul>
@@ -439,6 +470,26 @@ function PlanCard({
           onDone={done}
           onCancel={() => setPanel(null)}
           onEdit={() => setPanel({ kind: "edit", versionId: target.id })}
+        />
+      )}
+      {panel?.kind === "deletePlan" && (
+        <ConfirmDelete
+          title={`Delete “${plan.name}”?`}
+          body="The plan and all of its versions are removed for good. This only works if no member has ever joined it. If members have, use “Stop new sign-ups” instead to hide it from the website."
+          confirmLabel="Yes, delete the plan"
+          run={() => deletePlan(plan.id)}
+          onDone={done}
+          onCancel={() => setPanel(null)}
+        />
+      )}
+      {panel?.kind === "deleteDraft" && target && (
+        <ConfirmDelete
+          title={`Delete draft version ${target.version}?`}
+          body="Only this draft is removed. The plan and its other versions stay as they are."
+          confirmLabel="Yes, delete the draft"
+          run={() => deleteDraftVersion(target.id)}
+          onDone={done}
+          onCancel={() => setPanel(null)}
         />
       )}
       {panel?.kind === "retire" && target && (
@@ -755,6 +806,58 @@ function RetirePanel({
         </Button>
         <Button variant="outline" onClick={onCancel} disabled={busy}>
           Cancel
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function ConfirmDelete({
+  title,
+  body,
+  confirmLabel,
+  run,
+  onDone,
+  onCancel,
+}: {
+  title: string;
+  body: string;
+  confirmLabel: string;
+  run: () => Promise<void>;
+  onDone: () => Promise<void>;
+  onCancel: () => void;
+}) {
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function go() {
+    setError(null);
+    setBusy(true);
+    try {
+      await run();
+      await onDone();
+    } catch (e) {
+      setError(staffErrorMessage(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="mt-5 border-t border-border pt-5">
+      <h3 className="text-base font-semibold">{title}</h3>
+      <p className="mt-2 text-sm text-muted-foreground">{body}</p>
+      {error && (
+        <p role="alert" className="mt-3 text-sm text-destructive">
+          {error}
+        </p>
+      )}
+      <div className="mt-4 flex flex-wrap gap-3">
+        <Button variant="destructive" onClick={go} disabled={busy}>
+          {busy ? "Deleting…" : confirmLabel}
+        </Button>
+        <Button variant="outline" onClick={onCancel} disabled={busy}>
+          Keep it
         </Button>
       </div>
     </div>

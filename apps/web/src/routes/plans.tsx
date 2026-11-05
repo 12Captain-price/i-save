@@ -4,30 +4,26 @@ import { PlanCard } from "@/components/site/PlanCard";
 import { PublicLayout } from "@/components/site/PublicLayout";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { GOAL_CONTENT } from "@/lib/goal-content";
+import { useGoals } from "@/lib/goal-content-db";
 import { useAvailablePlans, type PlanTerms } from "@/lib/member";
 
-type Filter = "all" | "combo" | (typeof GOAL_CONTENT)[number]["key"];
-const FILTERS: { value: Filter; label: string }[] = [
-  { value: "all", label: "All plans" },
-  ...GOAL_CONTENT.map((g) => ({ value: g.key as Filter, label: g.label })),
-  { value: "combo", label: "Combo" },
-];
+type Filter = string;
 
-function matches(plan: PlanTerms, filter: Filter): boolean {
+function matches(plan: PlanTerms, filter: Filter, label: string): boolean {
   if (filter === "all") return true;
   if (filter === "combo") return plan.isGoalBased;
-  const label = GOAL_CONTENT.find((g) => g.key === filter)?.label.toLowerCase();
   return (
     plan.theme === filter ||
-    plan.comboGoals.some((g) => g.toLowerCase() === label)
+    plan.comboGoals.some((g) => g.toLowerCase() === label.toLowerCase())
   );
 }
 
 export const Route = createFileRoute("/plans")({
   validateSearch: (search: Record<string, unknown>): { goal?: Filter } => {
-    const found = FILTERS.find((f) => f.value === search.goal);
-    return found && found.value !== "all" ? { goal: found.value } : {};
+    const g = search.goal;
+    return typeof g === "string" && /^[a-z0-9-]{2,30}$/.test(g) && g !== "all"
+      ? { goal: g }
+      : {};
   },
   component: PlansPage,
 });
@@ -36,9 +32,17 @@ function PlansPage() {
   const plans = useAvailablePlans();
   const { goal } = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
-  const filter: Filter = goal ?? "all";
-  const shown = plans.data?.filter((p) => matches(p, filter)) ?? [];
-  const activeLabel = FILTERS.find((f) => f.value === filter)?.label ?? "";
+  const { goals } = useGoals();
+  const filters: { value: Filter; label: string }[] = [
+    { value: "all", label: "All plans" },
+    ...goals.map((g) => ({ value: g.key, label: g.label })),
+    { value: "combo", label: "Combo" },
+  ];
+  // A link to a goal that no longer exists just shows everything.
+  const filter: Filter = filters.some((f) => f.value === goal) ? goal! : "all";
+  const activeLabel = filters.find((f) => f.value === filter)?.label ?? "";
+  const shown =
+    plans.data?.filter((p) => matches(p, filter, activeLabel)) ?? [];
   return (
     <PublicLayout>
       <div className="mx-auto max-w-6xl px-6 py-12 md:py-16">
@@ -59,7 +63,7 @@ function PlansPage() {
           role="group"
           aria-label="Filter plans by goal"
         >
-          {FILTERS.map((f) => (
+          {filters.map((f) => (
             <button
               key={f.value}
               type="button"
