@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
+import { toPlanTheme, type PlanTheme } from "@/lib/plan-theme";
 import { supabase } from "@/lib/supabase";
 import { toMoney, type Money } from "@/lib/money";
 
@@ -80,6 +81,10 @@ export type PlanTerms = {
   planLongDescription: string | null;
   /** True for the one plan shown as the featured goal-based plan. */
   isGoalBased: boolean;
+  /** Picks the click animation on the plan card. */
+  theme: PlanTheme;
+  /** Goal names shown as chips on a combo plan. */
+  comboGoals: string[];
   version: number;
   /** Fixed amount per contribution, or null when the plan has a permitted range. */
   amount: Money | null;
@@ -108,6 +113,8 @@ const VersionShape = z.object({
         description: z.string().nullable(),
         long_description: z.string().nullable(),
         is_goal_based: z.boolean(),
+        theme: z.string(),
+        combo_goals: z.array(z.string()),
       })
       .nullable(),
   ),
@@ -120,6 +127,8 @@ function toTerms(v: z.infer<typeof VersionShape>): PlanTerms {
     planDescription: v.savings_plans?.description ?? null,
     planLongDescription: v.savings_plans?.long_description ?? null,
     isGoalBased: v.savings_plans?.is_goal_based ?? false,
+    theme: toPlanTheme(v.savings_plans?.theme),
+    comboGoals: v.savings_plans?.combo_goals ?? [],
     version: v.version,
     amount:
       v.contribution_amount == null ? null : toMoney(v.contribution_amount),
@@ -133,7 +142,7 @@ function toTerms(v: z.infer<typeof VersionShape>): PlanTerms {
 }
 
 const VERSION_COLUMNS =
-  "id, version, contribution_amount, min_amount, max_amount, currency, frequency, duration_weeks, terms_text, savings_plans(name, description, long_description, is_goal_based)";
+  "id, version, contribution_amount, min_amount, max_amount, currency, frequency, duration_weeks, terms_text, savings_plans(name, description, long_description, is_goal_based, theme, combo_goals)";
 
 export type MyEnrollment = {
   status: "active" | "paused";

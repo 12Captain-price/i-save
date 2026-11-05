@@ -19,6 +19,12 @@ import {
   type PlanVersion,
 } from "@/lib/plans";
 import { validatePlanLongDescription } from "@/lib/goal-plan-utils";
+import { PlanThemeFields } from "@/components/staff/PlanThemeFields";
+import {
+  parseComboGoals,
+  validateComboGoals,
+  type PlanTheme,
+} from "@/lib/plan-theme";
 import {
   EMPTY_VERSION_FORM,
   activationProblems,
@@ -29,11 +35,7 @@ import {
   versionToFormInput,
   type VersionValues,
 } from "@/lib/plan-utils";
-import {
-  formatDate,
-  isAdminRole,
-  staffErrorMessage,
-} from "@/lib/staff-utils";
+import { formatDate, isAdminRole, staffErrorMessage } from "@/lib/staff-utils";
 
 export const Route = createFileRoute("/staff/plans")({
   component: PlansPage,
@@ -74,12 +76,14 @@ function PlansAdmin() {
         <div>
           <h1 className="text-3xl font-semibold md:text-4xl">Savings plans</h1>
           <p className="mt-3 max-w-2xl text-muted-foreground">
-            A plan only goes live once it has the amount and terms the owner approved. A
-            live version cannot be edited: start a new version instead, so members keep
-            the terms they accepted.
+            A plan only goes live once it has the amount and terms the owner
+            approved. A live version cannot be edited: start a new version
+            instead, so members keep the terms they accepted.
           </p>
         </div>
-        {!creating && <Button onClick={() => setCreating(true)}>Add a plan</Button>}
+        {!creating && (
+          <Button onClick={() => setCreating(true)}>Add a plan</Button>
+        )}
       </div>
 
       {creating && (
@@ -131,6 +135,8 @@ function NewPlanPanel({
   const [description, setDescription] = useState("");
   const [longDescription, setLongDescription] = useState("");
   const [isGoalBased, setIsGoalBased] = useState(false);
+  const [theme, setTheme] = useState<PlanTheme>("other");
+  const [goalsText, setGoalsText] = useState("");
   const [nameError, setNameError] = useState<string | undefined>();
   const [descError, setDescError] = useState<string | undefined>();
   const [longError, setLongError] = useState<string | undefined>();
@@ -145,8 +151,16 @@ function NewPlanPanel({
     setDescError(d ?? undefined);
     setLongError(l ?? undefined);
     setChecked(true);
-    if (n || d || l) throw new Error("Fix the plan name or descriptions above first.");
-    await createPlan(name, description, values, { longDescription, isGoalBased });
+    const g = validateComboGoals(goalsText);
+    if (n || d || l || g) {
+      throw new Error(g ?? "Fix the plan name or descriptions above first.");
+    }
+    await createPlan(name, description, values, {
+      longDescription,
+      isGoalBased,
+      theme,
+      comboGoals: parseComboGoals(goalsText),
+    });
     await onDone();
   }
 
@@ -159,7 +173,8 @@ function NewPlanPanel({
         Add a plan
       </h2>
       <p className="mt-2 text-sm text-muted-foreground">
-        It is saved as a draft. Nothing is shown to members until you make it live.
+        It is saved as a draft. Nothing is shown to members until you make it
+        live.
       </p>
       <div className="mt-6 grid gap-5">
         <Field
@@ -177,6 +192,16 @@ function NewPlanPanel({
           value={description}
           onChange={(event) => setDescription(event.target.value)}
           error={checked ? descError : undefined}
+        />
+        <PlanThemeFields
+          idPrefix="new-plan"
+          theme={theme}
+          onTheme={setTheme}
+          goals={goalsText}
+          onGoals={setGoalsText}
+          goalsError={
+            checked ? (validateComboGoals(goalsText) ?? undefined) : undefined
+          }
         />
         <div>
           <TextAreaField
@@ -198,7 +223,7 @@ function NewPlanPanel({
           checked={isGoalBased}
           onChange={setIsGoalBased}
         >
-          This is the goal-based plan (shown large at the top of the Plans page)
+          Show the gold "Combo" ribbon on this plan
         </CheckField>
         <PlanVersionForm
           idPrefix="new-plan"
@@ -253,20 +278,30 @@ function PlanCard({
             {plan.name}
             {plan.isGoalBased && (
               <span className="ml-3 rounded-full border border-primary/50 bg-primary/10 px-2.5 py-0.5 align-middle text-xs font-semibold text-primary">
-                Goal-based plan
+                Combo
               </span>
             )}
           </h2>
           {plan.description && (
-            <p className="mt-1 text-sm text-muted-foreground">{plan.description}</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {plan.description}
+            </p>
           )}
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button size="sm" variant="outline" onClick={() => setPanel({ kind: "details" })}>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setPanel({ kind: "details" })}
+          >
             Edit details
           </Button>
           {!hasDraft && latest && (
-            <Button size="sm" variant="outline" onClick={() => setPanel({ kind: "newVersion" })}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setPanel({ kind: "newVersion" })}
+            >
               New version
             </Button>
           )}
@@ -290,21 +325,38 @@ function PlanCard({
                 : `Draft, last changed ${formatDate(v.updatedAt)}`}
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
-              <Button size="sm" variant="ghost" onClick={() => setPanel({ kind: "terms", versionId: v.id })}>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setPanel({ kind: "terms", versionId: v.id })}
+              >
                 Read terms
               </Button>
               {v.status === "draft" && (
                 <>
-                  <Button size="sm" variant="outline" onClick={() => setPanel({ kind: "edit", versionId: v.id })}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setPanel({ kind: "edit", versionId: v.id })}
+                  >
                     Edit draft
                   </Button>
-                  <Button size="sm" onClick={() => setPanel({ kind: "activate", versionId: v.id })}>
+                  <Button
+                    size="sm"
+                    onClick={() =>
+                      setPanel({ kind: "activate", versionId: v.id })
+                    }
+                  >
                     Make live
                   </Button>
                 </>
               )}
               {v.status === "active" && (
-                <Button size="sm" variant="outline" onClick={() => setPanel({ kind: "retire", versionId: v.id })}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPanel({ kind: "retire", versionId: v.id })}
+                >
                   Stop new sign-ups
                 </Button>
               )}
@@ -314,7 +366,11 @@ function PlanCard({
       </ul>
 
       {panel?.kind === "details" && (
-        <DetailsPanel plan={plan} onDone={done} onCancel={() => setPanel(null)} />
+        <DetailsPanel
+          plan={plan}
+          onDone={done}
+          onCancel={() => setPanel(null)}
+        />
       )}
       {panel?.kind === "newVersion" && latest && (
         <div className="mt-5 border-t border-border pt-5">
@@ -322,15 +378,20 @@ function PlanCard({
             New version {latest.version + 1}
           </h3>
           <p className="mt-1 mb-4 text-sm text-muted-foreground">
-            Starts as a draft, filled in from version {latest.version}. Change what the
-            owner changed, then make it live.
+            Starts as a draft, filled in from version {latest.version}. Change
+            what the owner changed, then make it live.
           </p>
           <PlanVersionForm
             idPrefix={`nv-${plan.id}`}
             initial={versionToFormInput(latest)}
             submitLabel="Save as draft"
             onSubmit={async (values) => {
-              await createNextVersion(plan, values, latest.frequency, latest.currency);
+              await createNextVersion(
+                plan,
+                values,
+                latest.frequency,
+                latest.currency,
+              );
               await done();
             }}
             onCancel={() => setPanel(null)}
@@ -339,7 +400,9 @@ function PlanCard({
       )}
       {panel?.kind === "edit" && target && (
         <div className="mt-5 border-t border-border pt-5">
-          <h3 className="mb-4 text-base font-semibold">Edit version {target.version}</h3>
+          <h3 className="mb-4 text-base font-semibold">
+            Edit version {target.version}
+          </h3>
           <PlanVersionForm
             idPrefix={`ed-${target.id}`}
             initial={versionToFormInput(target)}
@@ -354,9 +417,13 @@ function PlanCard({
       )}
       {panel?.kind === "terms" && target && (
         <div className="mt-5 border-t border-border pt-5">
-          <h3 className="text-base font-semibold">Terms for version {target.version}</h3>
+          <h3 className="text-base font-semibold">
+            Terms for version {target.version}
+          </h3>
           <p className="mt-3 text-sm whitespace-pre-wrap">
-            {target.termsText.trim() === "" ? "No terms written yet." : target.termsText}
+            {target.termsText.trim() === ""
+              ? "No terms written yet."
+              : target.termsText}
           </p>
           <div className="mt-4">
             <Button size="sm" variant="outline" onClick={() => setPanel(null)}>
@@ -375,7 +442,11 @@ function PlanCard({
         />
       )}
       {panel?.kind === "retire" && target && (
-        <RetirePanel version={target} onDone={done} onCancel={() => setPanel(null)} />
+        <RetirePanel
+          version={target}
+          onDone={done}
+          onCancel={() => setPanel(null)}
+        />
       )}
     </section>
   );
@@ -396,8 +467,13 @@ function DetailsPanel({
 }) {
   const [name, setName] = useState(plan.name);
   const [description, setDescription] = useState(plan.description ?? "");
-  const [longDescription, setLongDescription] = useState(plan.longDescription ?? "");
+  const [longDescription, setLongDescription] = useState(
+    plan.longDescription ?? "",
+  );
   const [isGoalBased, setIsGoalBased] = useState(plan.isGoalBased);
+  const [theme, setTheme] = useState<PlanTheme>(plan.theme);
+  const [goalsText, setGoalsText] = useState(plan.comboGoals.join(", "));
+  const [goalsError, setGoalsError] = useState<string | undefined>();
   const [nameError, setNameError] = useState<string | undefined>();
   const [descError, setDescError] = useState<string | undefined>();
   const [longError, setLongError] = useState<string | undefined>();
@@ -413,12 +489,16 @@ function DetailsPanel({
     setNameError(n ?? undefined);
     setDescError(d ?? undefined);
     setLongError(l ?? undefined);
-    if (n || d || l) return;
+    const g = validateComboGoals(goalsText);
+    setGoalsError(g ?? undefined);
+    if (n || d || l || g) return;
     setBusy(true);
     try {
       await updatePlanDetails(plan.id, name, description, {
         longDescription,
         isGoalBased,
+        theme,
+        comboGoals: parseComboGoals(goalsText),
       });
       await onDone();
     } catch (e) {
@@ -429,7 +509,11 @@ function DetailsPanel({
   }
 
   return (
-    <form onSubmit={submit} noValidate className="mt-5 grid gap-5 border-t border-border pt-5">
+    <form
+      onSubmit={submit}
+      noValidate
+      className="mt-5 grid gap-5 border-t border-border pt-5"
+    >
       <Field
         id={`name-${plan.id}`}
         label="Plan name"
@@ -439,7 +523,10 @@ function DetailsPanel({
         error={nameError}
       />
       <div>
-        <label htmlFor={`desc-${plan.id}`} className="mb-1.5 block text-sm font-medium">
+        <label
+          htmlFor={`desc-${plan.id}`}
+          className="mb-1.5 block text-sm font-medium"
+        >
           Short description (optional)
         </label>
         <textarea
@@ -456,6 +543,14 @@ function DetailsPanel({
           </p>
         )}
       </div>
+      <PlanThemeFields
+        idPrefix={`theme-${plan.id}`}
+        theme={theme}
+        onTheme={setTheme}
+        goals={goalsText}
+        onGoals={setGoalsText}
+        goalsError={goalsError}
+      />
       <div>
         <TextAreaField
           id={`long-${plan.id}`}
@@ -476,7 +571,7 @@ function DetailsPanel({
         checked={isGoalBased}
         onChange={setIsGoalBased}
       >
-        This is the goal-based plan (shown large at the top of the Plans page)
+        Show the gold "Combo" ribbon on this plan
       </CheckField>
       {error && (
         <p role="alert" className="text-sm text-destructive">
@@ -487,7 +582,12 @@ function DetailsPanel({
         <Button type="submit" disabled={busy}>
           {busy ? "Saving…" : "Save"}
         </Button>
-        <Button type="button" variant="outline" onClick={onCancel} disabled={busy}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          disabled={busy}
+        >
           Cancel
         </Button>
       </div>
@@ -525,7 +625,9 @@ function ActivatePanel({
   async function go() {
     setError(null);
     if (!approved) {
-      setApprovedError("Tick this to confirm the owner approved the amount and terms.");
+      setApprovedError(
+        "Tick this to confirm the owner approved the amount and terms.",
+      );
       return;
     }
     setApprovedError(undefined);
@@ -542,14 +644,22 @@ function ActivatePanel({
 
   return (
     <div className="mt-5 border-t border-border pt-5">
-      <h3 className="text-base font-semibold">Make version {version.version} live</h3>
+      <h3 className="text-base font-semibold">
+        Make version {version.version} live
+      </h3>
       <p className="mt-2 text-sm">
-        {describeAmount(version)}, {describeDuration(version.durationWeeks).toLowerCase()}.
+        {describeAmount(version)},{" "}
+        {describeDuration(version.durationWeeks).toLowerCase()}.
       </p>
 
       {problems.length > 0 ? (
-        <div role="alert" className="mt-4 rounded-md border border-destructive/40 p-4 text-sm">
-          <p className="font-semibold text-destructive">This draft is not ready yet.</p>
+        <div
+          role="alert"
+          className="mt-4 rounded-md border border-destructive/40 p-4 text-sm"
+        >
+          <p className="font-semibold text-destructive">
+            This draft is not ready yet.
+          </p>
           <ul className="mt-2 list-disc pl-5">
             {problems.map((p) => (
               <li key={p}>{p}</li>
@@ -626,11 +736,13 @@ function RetirePanel({
 
   return (
     <div className="mt-5 border-t border-border pt-5">
-      <h3 className="text-base font-semibold">Stop new sign-ups for version {version.version}?</h3>
+      <h3 className="text-base font-semibold">
+        Stop new sign-ups for version {version.version}?
+      </h3>
       <p className="mt-2 text-sm text-muted-foreground">
-        New members will no longer be able to join it. People already on it keep their
-        plan and their terms. If no other version is live, members will see no plan to
-        choose.
+        New members will no longer be able to join it. People already on it keep
+        their plan and their terms. If no other version is live, members will
+        see no plan to choose.
       </p>
       {error && (
         <p role="alert" className="mt-3 text-sm text-destructive">

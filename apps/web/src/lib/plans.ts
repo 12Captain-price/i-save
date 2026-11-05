@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { supabase } from "@/lib/supabase";
+import { toPlanTheme, type PlanTheme } from "@/lib/plan-theme";
 import { toMoney, type Money } from "@/lib/money";
 import { nextVersionNumber, type VersionValues } from "@/lib/plan-utils";
 
@@ -36,6 +37,8 @@ const PlanRow = z.object({
   description: z.string().nullable(),
   long_description: z.string().nullable(),
   is_goal_based: z.boolean(),
+  theme: z.string(),
+  combo_goals: z.array(z.string()),
   created_at: z.string(),
   savings_plan_versions: z.array(VersionRow),
 });
@@ -67,6 +70,8 @@ export type Plan = {
   longDescription: string | null;
   /** True for the one plan shown as the featured goal-based plan. */
   isGoalBased: boolean;
+  theme: PlanTheme;
+  comboGoals: string[];
   createdAt: string;
   /** Newest version first. */
   versions: PlanVersion[];
@@ -79,7 +84,7 @@ export async function fetchPlans(): Promise<Plan[]> {
   const { data, error } = await supabase
     .from("savings_plans")
     .select(
-      `id, name, description, long_description, is_goal_based, created_at, savings_plan_versions(${VERSION_COLUMNS})`,
+      `id, name, description, long_description, is_goal_based, theme, combo_goals, created_at, savings_plan_versions(${VERSION_COLUMNS})`,
     )
     .order("created_at", { ascending: true });
   if (error) throw error;
@@ -93,26 +98,26 @@ export async function fetchPlans(): Promise<Plan[]> {
       description: p.description,
       longDescription: p.long_description,
       isGoalBased: p.is_goal_based,
+      theme: toPlanTheme(p.theme),
+      comboGoals: p.combo_goals,
       createdAt: p.created_at,
       versions: p.savings_plan_versions
-        .map(
-          (v): PlanVersion => ({
-            id: v.id,
-            planId: v.plan_id,
-            version: v.version,
-            status: v.status,
-            contributionAmount: v.contribution_amount,
-            minAmount: v.min_amount,
-            maxAmount: v.max_amount,
-            currency: v.currency,
-            frequency: v.frequency,
-            durationWeeks: v.duration_weeks,
-            termsText: v.terms_text,
-            approvedAt: v.approved_at,
-            createdAt: v.created_at,
-            updatedAt: v.updated_at,
-          }),
-        )
+        .map((v): PlanVersion => ({
+          id: v.id,
+          planId: v.plan_id,
+          version: v.version,
+          status: v.status,
+          contributionAmount: v.contribution_amount,
+          minAmount: v.min_amount,
+          maxAmount: v.max_amount,
+          currency: v.currency,
+          frequency: v.frequency,
+          durationWeeks: v.duration_weeks,
+          termsText: v.terms_text,
+          approvedAt: v.approved_at,
+          createdAt: v.created_at,
+          updatedAt: v.updated_at,
+        }))
         .sort((a, b) => b.version - a.version),
     }));
 }
@@ -129,10 +134,19 @@ export function usePlans() {
 /* ------------------------------------------------------------------ */
 
 /** The extra, public-facing details of a plan. */
-export type PlanShowcase = { longDescription: string; isGoalBased: boolean };
+export type PlanShowcase = {
+  longDescription: string;
+  /** Show the gold Combo ribbon. */
+  isGoalBased: boolean;
+  theme: PlanTheme;
+  comboGoals: string[];
+};
 
-/** Only one plan can be the goal-based plan. The database says so with a unique index. */
-function showcaseError(error: { code?: string; message?: string }): Error | typeof error {
+/** Kept for older databases that still have the one-combo-plan index (before migration 021). */
+function showcaseError(error: {
+  code?: string;
+  message?: string;
+}): Error | typeof error {
   if (error.code === "23505" && error.message?.includes("one_goal_based")) {
     return new Error(
       "Another plan is already the goal-based plan. Untick it on that plan first.",
@@ -155,6 +169,8 @@ export async function createPlan(
       description: description.trim() || null,
       long_description: showcase.longDescription.trim() || null,
       is_goal_based: showcase.isGoalBased,
+      theme: showcase.theme,
+      combo_goals: showcase.comboGoals,
     })
     .select("id")
     .single();
@@ -184,6 +200,8 @@ export async function updatePlanDetails(
       description: description.trim() || null,
       long_description: showcase.longDescription.trim() || null,
       is_goal_based: showcase.isGoalBased,
+      theme: showcase.theme,
+      combo_goals: showcase.comboGoals,
     })
     .eq("id", planId);
   if (error) throw showcaseError(error);
@@ -247,7 +265,9 @@ export async function activateVersion(version: PlanVersion): Promise<void> {
     .select("id");
   if (live.error) throw live.error;
   if (!live.data || live.data.length === 0) {
-    throw new Error("This version is no longer a draft, so it cannot be activated.");
+    throw new Error(
+      "This version is no longer a draft, so it cannot be activated.",
+    );
   }
 
   const retired = await supabase

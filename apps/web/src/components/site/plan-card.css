@@ -1,0 +1,67 @@
+/* Plan card: gold Combo ribbon and the click animations. */
+
+.plan-ribbon {
+  position: absolute;
+  top: 18px;
+  right: -38px;
+  width: 140px;
+  transform: rotate(45deg);
+  background: #e0a526;
+  color: #2a1d00;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 3px 0;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.25);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.pa-stage {
+  display: block;
+  width: 100%;
+  aspect-ratio: 20 / 9;
+  background: var(--muted);
+  cursor: pointer;
+}
+.pa-stage:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -4px;
+}
+
+.pa * {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* Everything below only runs while the card is playing (about three seconds). */
+.pa.is-playing .pa-fly   { animation: pa-fly 2.6s ease-out both; }
+.pa.is-playing .pa-wave  { animation: pa-wave 1.1s ease-in-out infinite alternate; }
+.pa.is-playing .pa-slow  { animation-duration: 1.7s; }
+.pa.is-playing .pa-rise  { animation: pa-rise 0.7s ease-out both; }
+.pa.is-playing .pa-roof  { animation: pa-roof 0.7s 1.5s ease-in both; }
+.pa.is-playing .pa-pop   { animation: pa-pop 0.8s cubic-bezier(0.3, 1.6, 0.5, 1) both; }
+.pa.is-playing .pa-late  { animation-delay: 1.5s; }
+.pa.is-playing .pa-drop  { animation: pa-drop 1s ease-in both; }
+.pa.is-playing .pa-float { animation: pa-float 1.8s ease-out both; }
+.pa.is-playing .pa-toss  { animation: pa-toss 2.2s ease-in-out both; }
+.pa.is-playing .pa-book  { animation: pa-pop 0.9s 1.6s ease-out both; }
+.pa.is-playing .pa-merge { animation: pa-merge 1.4s ease-in-out both; }
+
+@keyframes pa-fly   { from { transform: translateX(-130px) translateY(14px); } to { transform: none; } }
+@keyframes pa-wave  { from { transform: translateX(-14px); } to { transform: translateX(14px); } }
+@keyframes pa-rise  { from { transform: translateY(26px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes pa-roof  { from { transform: translateY(-40px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes pa-pop   { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes pa-drop  { 0% { transform: translateY(-34px); opacity: 0; } 20% { opacity: 1; } 85% { transform: translateY(12px); opacity: 1; } 100% { transform: translateY(12px); opacity: 0; } }
+@keyframes pa-float { from { transform: translateY(46px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes pa-toss  { 0% { transform: none; } 40% { transform: translateY(-34px) rotate(200deg); } 100% { transform: rotate(360deg); } }
+@keyframes pa-merge { from { transform: translate(var(--dx), var(--dy)); } to { transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .pa *,
+  .pa.is-playing * {
+    animation: none !important;
+  }
+}

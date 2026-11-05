@@ -1,11 +1,8 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { GoalPlanShowcase } from "@/components/site/GoalPlanShowcase";
+import { PlanCard } from "@/components/site/PlanCard";
 import { PublicLayout } from "@/components/site/PublicLayout";
-import { RichText } from "@/components/site/RichText";
 import { buttonVariants } from "@/components/ui/button";
-import { splitGoalPlan } from "@/lib/goal-plan-utils";
 import { useAvailablePlans } from "@/lib/member";
-import { describeDuration, describePlanAmount } from "@/lib/plan-utils";
 
 export const Route = createFileRoute("/plans")({
   component: PlansPage,
@@ -13,7 +10,6 @@ export const Route = createFileRoute("/plans")({
 
 function PlansPage() {
   const plans = useAvailablePlans();
-  const { goal, others } = splitGoalPlan(plans.data ?? []);
   return (
     <PublicLayout>
       <div className="mx-auto max-w-6xl px-6 py-12 md:py-16">
@@ -24,8 +20,8 @@ function PlansPage() {
           Choose a plan that fits you.
         </h1>
         <p className="mt-5 max-w-2xl text-lg text-muted-foreground">
-          Plans are set by the organisation. You read the terms and agree to
-          them before you join, and you pay at the office.
+          Plans are set by the organisation. Click a plan to see it in action,
+          and read its terms before you apply.
         </p>
 
         <div className="mt-10">
@@ -53,46 +49,10 @@ function PlansPage() {
             </p>
           )}
 
-          {goal && <GoalPlanShowcase plan={goal} />}
-
-          {others.length > 0 && (
-            <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {others.map((p) => (
-                <li
-                  key={p.versionId}
-                  className="rounded-md border border-border bg-card p-6"
-                >
-                  <h2 className="text-lg font-semibold">{p.planName}</h2>
-                  {p.planDescription && (
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {p.planDescription}
-                    </p>
-                  )}
-                  <p className="mt-3 font-display text-2xl font-semibold text-primary">
-                    {describePlanAmount(p)}
-                  </p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {describeDuration(p.durationWeeks)}
-                    {p.durationWeeks === null ? "" : " in total"}
-                  </p>
-                  {p.planLongDescription && (
-                    <details className="mt-4 text-sm">
-                      <summary className="cursor-pointer text-primary underline underline-offset-4">
-                        About this plan
-                      </summary>
-                      <RichText
-                        text={p.planLongDescription}
-                        className="mt-2 space-y-3 text-sm"
-                      />
-                    </details>
-                  )}
-                  <details className="mt-3 text-sm">
-                    <summary className="cursor-pointer text-primary underline underline-offset-4">
-                      Read the terms
-                    </summary>
-                    <p className="mt-2 whitespace-pre-wrap">{p.termsText}</p>
-                  </details>
-                </li>
+          {plans.data && plans.data.length > 0 && (
+            <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {plans.data.map((p) => (
+                <PlanCard key={p.versionId} plan={p} />
               ))}
             </ul>
           )}
@@ -102,9 +62,6 @@ function PlansPage() {
           <Link to="/apply" className={buttonVariants()}>
             Apply to join
           </Link>
-          <p className="text-sm text-muted-foreground">
-            Already a member? Log in to your account to choose a plan.
-          </p>
         </div>
       </div>
     </PublicLayout>
