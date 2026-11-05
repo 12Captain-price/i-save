@@ -17,10 +17,10 @@ const COPY: Record<
   home: {
     title: "Ask i-Save",
     hello:
-      "Hello! I can answer questions about i-Save: how to join, fees, savings plans and how payments work.",
+      "Hello! I can answer questions about i-Save: how to join, the savings goals and plans, goal-based saving and fees.",
     ideas: [
       "How do I join?",
-      "What fees will I pay?",
+      "How does goal-based saving work?",
       "Do you pay interest?",
       "How do I install the app?",
     ],
@@ -28,23 +28,23 @@ const COPY: Record<
   member: {
     title: "Member help",
     hello:
-      "Hello! I can explain anything on your account page: your plan, receipts, statement, subscription and withdrawals.",
+      "Hello! I can explain the savings goals, plans, fees and how to reach the office. For your balance or payments, your registration agent or the office can help.",
     ideas: [
-      "How do I download my statement?",
-      "Why is my account pending?",
-      "How do withdrawals work?",
-      "How do I check a receipt?",
+      "How do I join a plan?",
+      "How does goal-based saving work?",
+      "What fees will I pay?",
+      "How do I contact the office?",
     ],
   },
   staff: {
     title: "Staff help",
     hello:
-      "Hello! I can walk you through the staff and admin screens: registering, recording payments, reversals, dues, withdrawals and reports.",
+      "Hello! I can walk you through the admin screens: agents, traffic, plans, announcements, events, team and pages.",
     ideas: [
-      "How do I record a payment?",
-      "How do I reverse a receipt?",
-      "What is admin mode?",
-      "How do withdrawals work?",
+      "How do I add a registration agent?",
+      "How do I read the Traffic page?",
+      "How do I set up the goal-based plan?",
+      "How do I publish a plan?",
     ],
   },
 };

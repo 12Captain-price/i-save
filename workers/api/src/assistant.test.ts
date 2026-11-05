@@ -127,6 +127,40 @@ describe("POST /assistant", () => {
     expect(staff.prompts[0]).toContain("office staff using the staff area");
   });
 
+  it("describes the site as it is now: agents for joining, no office payments", async () => {
+    const f = fake();
+    await handleRequest(req(ask("home")), { ...env, AI: f.ai }, f.doFetch);
+    const prompt = f.prompts[0] ?? "";
+    expect(prompt).toContain("registration agent");
+    expect(prompt).toContain("goal-based");
+    // Things that used to exist and must not be described as if they still do.
+    expect(prompt).not.toContain("numbered receipt");
+    expect(prompt).not.toContain("My account page");
+    expect(prompt).not.toContain("pay your weekly contributions at the office");
+    // The no-returns rule stays.
+    expect(prompt).toContain("does NOT offer interest");
+  });
+
+  it("gives staff the current admin screens and nothing about payments", async () => {
+    const staff = fake({ roles: ["admin"] });
+    await handleRequest(
+      req(ask("staff"), { Authorization: "Bearer t" }),
+      { ...env, AI: staff.ai },
+      staff.doFetch,
+    );
+    const prompt = staff.prompts[0] ?? "";
+    for (const word of [
+      "Agents:",
+      "Traffic:",
+      "Goal-based plan",
+      "Placeholder link",
+    ]) {
+      expect(prompt, word).toContain(word);
+    }
+    expect(prompt).not.toContain("Recording a payment");
+    expect(prompt).not.toContain("Reverse receipt");
+  });
+
   it("rejects empty or oversized messages", async () => {
     const f = fake();
     const res = await handleRequest(
