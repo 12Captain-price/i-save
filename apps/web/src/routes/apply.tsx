@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageShell } from "@/components/site/PageShell";
+import { Photo } from "@/components/site/Photo";
 import { buttonVariants } from "@/components/ui/button";
 import { LoadingSkeleton } from "@/components/ui/motion";
 import { useAgents } from "@/lib/agents";
@@ -16,7 +17,8 @@ function ApplyPage() {
   const { roles } = useAuth();
   // A click on an agent button is the count for that agent. Staff testing the links are not counted.
   const countClick = (agentId: string) => {
-    if (!isStaffRole(roles)) void recordTraffic("agent_click", "/apply", agentId);
+    if (!isStaffRole(roles))
+      void recordTraffic("agent_click", "/apply", agentId);
   };
   return (
     <PageShell
@@ -40,26 +42,34 @@ function ApplyPage() {
         {data?.map((agent) => (
           <li
             key={agent.id}
-            className="flex flex-col justify-between gap-4 rounded-md border border-border p-5"
+            className="zoom-photo flex flex-col overflow-hidden rounded-xl border border-border bg-card"
           >
-            <div>
-              <h2 className="text-lg font-semibold">{agent.name}</h2>
-              {agent.note && (
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {agent.note}
-                </p>
-              )}
+            <Photo
+              path={agent.photo_path}
+              alt={`${agent.name}`}
+              fallbackName={agent.name}
+              className="aspect-[4/3] w-full text-5xl"
+            />
+            <div className="flex flex-1 flex-col justify-between gap-4 p-5">
+              <div>
+                <h2 className="text-lg font-semibold">{agent.name}</h2>
+                {agent.note && (
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {agent.note}
+                  </p>
+                )}
+              </div>
+              <a
+                href={agent.registration_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => countClick(agent.id)}
+                className={buttonVariants({ size: "lg" })}
+              >
+                Register with {agent.name}
+                <span className="sr-only"> (opens in a new tab)</span>
+              </a>
             </div>
-            <a
-              href={agent.registration_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => countClick(agent.id)}
-              className={buttonVariants({ size: "lg" })}
-            >
-              Register with {agent.name}
-              <span className="sr-only"> (opens in a new tab)</span>
-            </a>
           </li>
         ))}
       </ul>

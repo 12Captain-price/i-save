@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
+import { removePictures, uploadPicture } from "@/lib/content";
 import { supabase } from "@/lib/supabase";
 
 // Registration agents. Visitors can read published agents only; administrators can read and
@@ -10,6 +11,7 @@ const AgentRow = z.object({
   name: z.string(),
   registration_url: z.string(),
   note: z.string().nullable(),
+  photo_path: z.string().nullable(),
   sort_order: z.number(),
   published: z.boolean(),
 });
@@ -23,7 +25,8 @@ export type AgentValues = {
   published: boolean;
 };
 
-const AGENT_COLUMNS = "id, name, registration_url, note, sort_order, published";
+const AGENT_COLUMNS =
+  "id, name, registration_url, note, photo_path, sort_order, published";
 
 async function fetchAgents(all: boolean): Promise<Agent[]> {
   let q = supabase
@@ -44,14 +47,26 @@ export const useAgents = (all = false) =>
     queryFn: () => fetchAgents(all),
   });
 
-export async function saveAgent(values: AgentValues, id?: string) {
-  const { error } = id
-    ? await supabase.from("agents").update(values).eq("id", id)
-    : await supabase.from("agents").insert(values);
-  if (error) throw error;
+export async function saveAgent(
+  values: AgentValues,
+  opts: { id?: string; photo?: File | null; oldPhotoPath?: string | null } = {},
+) {
+  const photo_path = opts.photo
+    ? await uploadPicture("agents", opts.photo)
+    : undefined;
+  const row = photo_path ? { ...values, photo_path } : values;
+  const { error } = opts.id
+    ? await supabase.from("agents").update(row).eq("id", opts.id)
+    : await supabase.from("agents").insert(row);
+  if (error) {
+    await removePictures([photo_path]);
+    throw error;
+  }
+  if (photo_path) await removePictures([opts.oldPhotoPath]);
 }
 
 export async function deleteAgent(agent: Agent) {
   const { error } = await supabase.from("agents").delete().eq("id", agent.id);
   if (error) throw error;
+  await removePictures([agent.photo_path]);
 }

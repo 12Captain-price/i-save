@@ -6,6 +6,8 @@ import { useContentAction } from "@/components/staff/useContentAction";
 import { Button } from "@/components/ui/button";
 import { CheckField, Field } from "@/components/ui/field";
 import { LoadingSkeleton } from "@/components/ui/motion";
+import { Photo } from "@/components/site/Photo";
+import { checkImageFile } from "@/lib/images";
 import { deleteAgent, saveAgent, useAgents, type Agent } from "@/lib/agents";
 import { isPlaceholderUrl, normalizeAgentUrl } from "@/lib/agent-utils";
 
@@ -48,16 +50,18 @@ function AgentsAdmin() {
       <div className="mt-6 grid gap-3">
         {data?.map((a) =>
           editing && editing !== "new" && editing.id === a.id ? (
-            <AgentForm
-              key={a.id}
-              initial={a}
-              onDone={() => setEditing(null)}
-            />
+            <AgentForm key={a.id} initial={a} onDone={() => setEditing(null)} />
           ) : (
             <div
               key={a.id}
               className="flex flex-wrap items-center gap-4 rounded-md border border-border p-4"
             >
+              <Photo
+                path={a.photo_path}
+                alt=""
+                fallbackName={a.name}
+                className="h-14 w-14 rounded-md border border-border text-lg"
+              />
               <div className="min-w-0 flex-1">
                 <p className="font-medium">
                   {a.name}
@@ -126,6 +130,19 @@ function AgentForm({
   const [order, setOrder] = useState(String(initial?.sort_order ?? 100));
   const [published, setPublished] = useState(initial?.published ?? true);
   const [urlError, setUrlError] = useState<string | undefined>();
+  const [photo, setPhoto] = useState<File | null>(null);
+
+  function pick(file: File | null) {
+    if (file) {
+      const problem = checkImageFile(file);
+      if (problem) {
+        setError(problem);
+        return;
+      }
+    }
+    setError(null);
+    setPhoto(file);
+  }
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -149,7 +166,7 @@ function AgentForm({
           sort_order: Number(order) || 100,
           published,
         },
-        initial?.id,
+        { id: initial?.id, photo, oldPhotoPath: initial?.photo_path },
       ),
     );
     if (ok) onDone();
@@ -160,6 +177,34 @@ function AgentForm({
       onSubmit={submit}
       className="grid gap-4 rounded-md border border-primary/40 p-5"
     >
+      <div className="flex items-center gap-4">
+        <Photo
+          path={initial?.photo_path ?? null}
+          alt=""
+          fallbackName={name}
+          className="h-20 w-20 rounded-md border border-border"
+        />
+        <div>
+          <label
+            htmlFor="ag-photo"
+            className="mb-1.5 block text-sm font-medium"
+          >
+            Photo (optional)
+          </label>
+          <input
+            id="ag-photo"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={(e) => pick(e.target.files?.[0] ?? null)}
+            className="text-sm"
+          />
+          <p className="mt-1 text-xs text-muted-foreground">
+            {photo
+              ? `Selected: ${photo.name}`
+              : "The whole picture is shown, nothing is cropped. Without a photo the card shows the agent's initials."}
+          </p>
+        </div>
+      </div>
       <Field
         id="ag-name"
         label="Agent name"

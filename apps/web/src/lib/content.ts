@@ -332,7 +332,7 @@ export function whatsappLink(
 
 /* Pictures */
 
-async function uploadPicture(folder: string, file: File): Promise<string> {
+export async function uploadPicture(folder: string, file: File): Promise<string> {
   const blob = await shrinkImage(file);
   const path = newImagePath(folder);
   const { error } = await supabase.storage
@@ -344,7 +344,7 @@ async function uploadPicture(folder: string, file: File): Promise<string> {
   check(error);
   return path;
 }
-async function removePictures(paths: Array<string | null | undefined>) {
+export async function removePictures(paths: Array<string | null | undefined>) {
   const real = paths.filter((p): p is string => Boolean(p));
   if (real.length) await supabase.storage.from(MEDIA_BUCKET).remove(real);
 }
