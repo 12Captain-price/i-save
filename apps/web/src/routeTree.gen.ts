@@ -18,7 +18,6 @@ import { Route as EventsRouteImport } from './routes/events'
 import { Route as FaqsRouteImport } from './routes/faqs'
 import { Route as FeesRouteImport } from './routes/fees'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
-import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PlansRouteImport } from './routes/plans'
 import { Route as PrivacyRouteImport } from './routes/privacy'
@@ -79,11 +78,6 @@ const FeesRoute = FeesRouteImport.update({
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HowItWorksRoute = HowItWorksRouteImport.update({
-  id: '/how-it-works',
-  path: '/how-it-works',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -177,7 +171,6 @@ export interface FileRoutesByFullPath {
   '/faqs': typeof FaqsRoute
   '/fees': typeof FeesRoute
   '/forgot-password': typeof ForgotPasswordRoute
-  '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRoute
   '/plans': typeof PlansRoute
   '/privacy': typeof PrivacyRoute
@@ -205,7 +198,6 @@ export interface FileRoutesByTo {
   '/faqs': typeof FaqsRoute
   '/fees': typeof FeesRoute
   '/forgot-password': typeof ForgotPasswordRoute
-  '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRoute
   '/plans': typeof PlansRoute
   '/privacy': typeof PrivacyRoute
@@ -233,7 +225,6 @@ export interface FileRoutesById {
   '/faqs': typeof FaqsRoute
   '/fees': typeof FeesRoute
   '/forgot-password': typeof ForgotPasswordRoute
-  '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRoute
   '/plans': typeof PlansRoute
   '/privacy': typeof PrivacyRoute
@@ -263,7 +254,6 @@ export interface FileRouteTypes {
     | '/faqs'
     | '/fees'
     | '/forgot-password'
-    | '/how-it-works'
     | '/login'
     | '/plans'
     | '/privacy'
@@ -291,7 +281,6 @@ export interface FileRouteTypes {
     | '/faqs'
     | '/fees'
     | '/forgot-password'
-    | '/how-it-works'
     | '/login'
     | '/plans'
     | '/privacy'
@@ -318,7 +307,6 @@ export interface FileRouteTypes {
     | '/faqs'
     | '/fees'
     | '/forgot-password'
-    | '/how-it-works'
     | '/login'
     | '/plans'
     | '/privacy'
@@ -347,7 +335,6 @@ export interface RootRouteChildren {
   FaqsRoute: typeof FaqsRoute
   FeesRoute: typeof FeesRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
-  HowItWorksRoute: typeof HowItWorksRoute
   LoginRoute: typeof LoginRoute
   PlansRoute: typeof PlansRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -420,13 +407,6 @@ declare module '@tanstack/react-router' {
       path: '/forgot-password'
       fullPath: '/forgot-password'
       preLoaderRoute: typeof ForgotPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/how-it-works': {
-      id: '/how-it-works'
-      path: '/how-it-works'
-      fullPath: '/how-it-works'
-      preLoaderRoute: typeof HowItWorksRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -589,7 +569,6 @@ const rootRouteChildren: RootRouteChildren = {
   FaqsRoute: FaqsRoute,
   FeesRoute: FeesRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
-  HowItWorksRoute: HowItWorksRoute,
   LoginRoute: LoginRoute,
   PlansRoute: PlansRoute,
   PrivacyRoute: PrivacyRoute,
