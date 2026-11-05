@@ -20,8 +20,9 @@ function PlansPage() {
           Choose a plan that fits you.
         </h1>
         <p className="mt-5 max-w-2xl text-lg text-muted-foreground">
-          Plans are set by the organisation. Click a plan to see it in action,
-          and read its terms before you apply.
+          Pick the plan that fits your goal and click it to see it in action.
+          These plans are illustrative: your registration agent confirms the
+          final amounts and terms when you apply.
         </p>
 
         <div className="mt-10">
