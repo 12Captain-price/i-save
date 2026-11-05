@@ -1,45 +1,13 @@
 import { Logo } from "./Logo";
-import { INFO_LINKS, NAV } from "./nav";
 
 export function SiteFooter() {
   return (
     <footer className="print:hidden border-t border-border bg-surface-deep">
-      <div className="mx-auto grid max-w-7xl gap-10 px-6 py-14 md:grid-cols-[1.5fr_1fr_1fr]">
-        <div>
-          <Logo />
-          <p className="mt-4 max-w-xs text-sm text-muted-foreground">
-            Structured savings for members of a Zimbabwean savings organisation.
-          </p>
-          <p className="mt-6 text-sm">
-            <a href="/contact" className="inline-block py-2 text-primary hover:underline">
-              Contact the team
-            </a>
-          </p>
-        </div>
-        <nav aria-label="Footer">
-          <h3 className="mb-4 text-sm font-semibold">Explore</h3>
-          <ul className="text-sm text-muted-foreground">
-            {NAV.map((n) => (
-              <li key={n.href}>
-                <a href={n.href} className="block py-2 hover:text-foreground">
-                  {n.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        <nav aria-label="Information">
-          <h3 className="mb-4 text-sm font-semibold">Information</h3>
-          <ul className="text-sm text-muted-foreground">
-            {INFO_LINKS.map((n) => (
-              <li key={n.href}>
-                <a href={n.href} className="block py-2 hover:text-foreground">
-                  {n.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
+      <div className="mx-auto flex max-w-7xl flex-col items-center gap-4 px-6 py-14 text-center">
+        <Logo />
+        <p className="font-display text-2xl font-semibold sm:text-3xl">
+          Saving today for a better tomorrow
+        </p>
       </div>
       <div className="border-t border-border pt-6 pb-24 sm:pb-6">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-center gap-3 px-6 text-xs text-muted-foreground sm:flex-row sm:gap-4">
