@@ -2,7 +2,6 @@
 // because the typed router Link only accepts routes that exist in the route tree.
 export const NAV = [
   { label: "Home", href: "/" },
-  { label: "How it works", href: "/how-it-works" },
   { label: "Savings goals", href: "/plans" },
   { label: "Fees", href: "/fees" },
   { label: "Announcements", href: "/announcements" },
