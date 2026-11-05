@@ -57,7 +57,7 @@ function ReviewsAdmin() {
     <div>
       <PageHeading
         title="Reviews"
-        lead="Members write reviews on the Reviews page. They stay hidden until you approve them. You can also add a review yourself, fix spelling, or take one down."
+        lead="Visitors and clients write reviews on the Reviews page. They stay hidden until you approve them. You can also add a review yourself, fix spelling, or take one down."
       />
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
         <div

@@ -2,8 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { supabase } from "@/lib/supabase";
 
-// Member reviews. Visitors read approved ones only. Signed-in members can send one, which waits
-// for staff approval. Staff and admins can add, edit, approve, reject and delete. The database
+// Reviews. Anyone can read approved ones, and anyone (no sign-in) can send one, which waits for
+// staff approval. Staff and admins can add, edit, approve, reject and delete. The database
 // enforces all of this; the screens only decide what to show.
 
 const COLUMNS =
@@ -62,22 +62,6 @@ export const useAllReviews = () =>
     },
   });
 
-/** A member's own reviews, so they can see theirs is waiting. */
-export const useMyReviews = (userId: string | undefined) =>
-  useQuery({
-    queryKey: ["content", "reviews", "mine", userId],
-    enabled: !!userId,
-    queryFn: async (): Promise<Review[]> => {
-      const { data, error } = await supabase
-        .from("reviews")
-        .select(COLUMNS)
-        .eq("submitted_by", userId as string)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return z.array(ReviewRow).parse(data ?? []);
-    },
-  });
-
 export type ReviewValues = {
   author_name: string;
   author_title: string | null;
@@ -85,11 +69,11 @@ export type ReviewValues = {
   body: string;
 };
 
-/** A signed-in member sends a review. It always starts as pending. */
-export async function submitReview(values: ReviewValues, userId: string) {
+/** A visitor or client sends a review. No account needed. It always starts as pending. */
+export async function submitReview(values: ReviewValues) {
   const { error } = await supabase
     .from("reviews")
-    .insert({ ...values, status: "pending", submitted_by: userId });
+    .insert({ ...values, status: "pending" });
   if (error) throw error;
 }
 

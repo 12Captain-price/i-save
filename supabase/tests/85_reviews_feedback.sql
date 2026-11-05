@@ -76,5 +76,24 @@ begin
   get diagnostics n = row_count;
   perform t.assert(n = 1, 'an admin can delete feedback');
 
+  -- Migration 027: visitors with no account can send a review (pending) and feedback (with contact).
+  perform t.as_user(null);
+  insert into public.reviews (author_name, body, status, submitted_by)
+    values ('Visitor Vee', 'Friendly office and clear explanations.', 'approved', m1);
+  perform t.as_owner();
+  perform t.assert((select status from public.reviews where author_name = 'Visitor Vee') = 'pending', 'a visitor review is pending');
+  perform t.assert((select submitted_by from public.reviews where author_name = 'Visitor Vee') is null, 'a visitor review has no account attached');
+  perform t.as_user(null);
+  perform t.assert((select count(*) from public.reviews where author_name = 'Visitor Vee') = 0, 'visitors cannot see a pending review');
+
+  insert into public.feedback (kind, subject, message, sender_name, sender_phone)
+    values ('idea', 'Text reminders', 'A text reminder before the due date would help.', 'Visitor Vee', '+263 78 000 0000');
+  perform t.expect_error($q$insert into public.feedback (subject, message, sender_name) values ('No contact', 'There is no way to reply to this one.', 'Vee')$q$, '%phone number or an email%');
+  perform t.expect_error($q$insert into public.feedback (subject, message, sender_phone) values ('No name', 'There is no name on this one at all.', '+263780000000')$q$, '%your name%');
+  perform t.assert((select count(*) from public.feedback) = 0, 'a visitor cannot read the inbox');
+
+  perform t.as_user(fin);
+  perform t.assert((select count(*) from public.feedback where sender_name = 'Visitor Vee' and user_id is null) = 1, 'staff see the visitor message');
+
   perform t.as_owner();
 end $$;

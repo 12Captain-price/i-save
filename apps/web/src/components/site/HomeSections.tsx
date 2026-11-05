@@ -102,7 +102,7 @@ export function HomeSections() {
       <section aria-label="Reviews" className="home-width py-12">
         <Heading
           eyebrow="In their words"
-          title="What members say"
+          title="What our clients say"
           href="/reviews"
           linkText={reviews.length > 0 ? "All reviews" : "Reviews page"}
         />
@@ -125,7 +125,7 @@ export function HomeSections() {
               </span>
               <p className="text-lg font-semibold">Be the first to review us</p>
               <p className="max-w-md text-sm text-muted-foreground">
-                Saving with i-Save? Tell others what it is like. It takes a
+                Used i-Save? Tell others what it is like. It takes a
                 minute.
               </p>
             </div>

@@ -2,8 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { supabase } from "@/lib/supabase";
 
-// The feedback inbox. Members send feedback, requests, ideas and complaints. Staff read them
-// all, see who sent each one, and can reply on WhatsApp. A member sees only their own messages.
+// The feedback inbox. Visitors and clients (no sign-in) send feedback, requests, ideas and
+// complaints with their name and a phone or email. Only staff can read them, see who sent each
+// one, and reply on WhatsApp or email.
 
 export const FEEDBACK_KINDS = [
   { key: "feedback", label: "Feedback", hint: "Tell us what you think" },
@@ -32,10 +33,14 @@ const Sender = z.object({
   phone: z.string().nullable(),
   email: z.string().nullable(),
 });
+export type FeedbackSender = z.infer<typeof Sender>;
 
 const FeedbackRow = z.object({
   id: z.string(),
-  user_id: z.string(),
+  user_id: z.string().nullable(),
+  sender_name: z.string().nullable(),
+  sender_phone: z.string().nullable(),
+  sender_email: z.string().nullable(),
   kind: z.enum(["feedback", "request", "idea", "complaint"]),
   subject: z.string(),
   message: z.string(),
@@ -48,7 +53,7 @@ const FeedbackRow = z.object({
 export type FeedbackItem = z.infer<typeof FeedbackRow>;
 
 const STAFF_SELECT =
-  "id, user_id, kind, subject, message, status, staff_note, handled_at, created_at, sender:profiles(full_name, member_number, phone, email)";
+  "id, user_id, sender_name, sender_phone, sender_email, kind, subject, message, status, staff_note, handled_at, created_at, sender:profiles(full_name, member_number, phone, email)";
 
 export const useFeedbackInbox = () =>
   useQuery({
@@ -61,34 +66,23 @@ export const useFeedbackInbox = () =>
         .order("created_at", { ascending: false })
         .limit(200);
       if (error) throw error;
-      return z.array(FeedbackRow).parse(data ?? []);
-    },
-  });
-
-/** What members see about their own messages (no sender card, no private staff note). */
-const MineRow = z.object({
-  id: z.string(),
-  kind: z.enum(["feedback", "request", "idea", "complaint"]),
-  subject: z.string(),
-  message: z.string(),
-  status: z.enum(["new", "seen", "resolved"]),
-  created_at: z.string(),
-});
-export type MyFeedback = z.infer<typeof MineRow>;
-
-export const useMyFeedback = (userId: string | undefined) =>
-  useQuery({
-    queryKey: ["feedback", "mine", userId],
-    enabled: !!userId,
-    queryFn: async (): Promise<MyFeedback[]> => {
-      const { data, error } = await supabase
-        .from("feedback")
-        .select("id, kind, subject, message, status, created_at")
-        .eq("user_id", userId as string)
-        .order("created_at", { ascending: false })
-        .limit(20);
-      if (error) throw error;
-      return z.array(MineRow).parse(data ?? []);
+      return z
+        .array(FeedbackRow)
+        .parse(data ?? [])
+        .map((row) => ({
+          ...row,
+          // Visitors have no profile, so use the contact details they typed in.
+          sender:
+            row.sender ??
+            (row.sender_name
+              ? {
+                  full_name: row.sender_name,
+                  member_number: "",
+                  phone: row.sender_phone,
+                  email: row.sender_email,
+                }
+              : null),
+        }));
     },
   });
 
@@ -96,12 +90,14 @@ export type FeedbackValues = {
   kind: FeedbackKind;
   subject: string;
   message: string;
+  sender_name: string;
+  sender_phone: string | null;
+  sender_email: string | null;
 };
 
-export async function sendFeedback(values: FeedbackValues, userId: string) {
-  const { error } = await supabase
-    .from("feedback")
-    .insert({ ...values, user_id: userId });
+/** Anyone can send feedback. No account needed. */
+export async function sendFeedback(values: FeedbackValues) {
+  const { error } = await supabase.from("feedback").insert(values);
   if (error) throw error;
 }
 

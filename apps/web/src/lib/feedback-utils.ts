@@ -17,3 +17,26 @@ export function validateFeedback(v: {
     return "The message is too long (2000 characters at most).";
   return null;
 }
+
+/** Name plus at least one way to reply. Visitors have no account, so this is how staff reach them. */
+export function validateContact(v: {
+  name: string;
+  phone: string;
+  email: string;
+}): string | null {
+  if (v.name.trim().length < 2) return "Please tell us your name.";
+  if (v.name.trim().length > 80)
+    return "The name is too long (80 letters at most).";
+  const phone = v.phone.trim();
+  const email = v.email.trim();
+  if (!phone && !email)
+    return "Please add a phone number or an email so we can reply.";
+  if (phone) {
+    const digits = phone.replace(/\D/g, "");
+    if (digits.length < 8 || digits.length > 15)
+      return "That phone number does not look right. Please check it.";
+  }
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+    return "That email does not look right. Please check it.";
+  return null;
+}

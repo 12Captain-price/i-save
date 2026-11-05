@@ -66,7 +66,7 @@ function FeedbackInbox() {
     <div>
       <PageHeading
         title="Feedback inbox"
-        lead="Messages members send from the Send us feedback page. Each one shows who sent it, with a button to reply on WhatsApp. This list refreshes by itself."
+        lead="Messages visitors and clients send from the Send us feedback page. Each one shows who sent it, with a button to reply on WhatsApp. This list refreshes by itself."
       />
       <div
         className="mt-6 flex flex-wrap gap-2"
@@ -132,7 +132,7 @@ function FeedbackCard({ item }: { item: FeedbackItem }) {
   const [noteOpen, setNoteOpen] = useState(Boolean(item.staff_note));
 
   const who = item.sender;
-  const name = who?.full_name || "Unknown member";
+  const name = who?.full_name || "Unknown sender";
   const link = who?.phone
     ? whatsappLink(
         who.phone,
@@ -303,11 +303,11 @@ function FeedbackCard({ item }: { item: FeedbackItem }) {
           </span>
           <div className="min-w-0">
             <p className="truncate font-semibold">{name}</p>
-            {who?.member_number && (
-              <p className="text-xs text-muted-foreground">
-                Member {who.member_number}
-              </p>
-            )}
+            <p className="text-xs text-muted-foreground">
+              {who?.member_number
+                ? `Member ${who.member_number}`
+                : "Website visitor"}
+            </p>
           </div>
         </div>
         <dl className="mt-3 grid gap-1.5 text-sm">
@@ -345,8 +345,7 @@ function FeedbackCard({ item }: { item: FeedbackItem }) {
           </a>
         ) : (
           <p className="mt-4 rounded-md border border-border px-3 py-2 text-xs text-muted-foreground">
-            No usable phone number on this member’s profile, so WhatsApp cannot
-            be opened.
+            No usable phone number was given, so WhatsApp cannot be opened.
             {who?.email && " Use their email instead."}
           </p>
         )}

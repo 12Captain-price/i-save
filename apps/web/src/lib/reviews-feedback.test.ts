@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { validateReview } from "./review-utils";
-import { validateFeedback } from "./feedback-utils";
+import { validateContact, validateFeedback } from "./feedback-utils";
 import { STAFF_TEMPLATES, whatsappLink } from "./whatsapp";
 
 describe("validateReview", () => {
@@ -31,6 +31,26 @@ describe("validateFeedback", () => {
     expect(validateFeedback({ ...ok, subject: "Hi" })).toMatch(/title/i));
   it("needs a message", () =>
     expect(validateFeedback({ ...ok, message: "short" })).toMatch(/more/i));
+});
+
+describe("validateContact", () => {
+  const ok = { name: "Tendai Moyo", phone: "+263 78 663 9536", email: "" };
+  it("accepts a name and a phone", () =>
+    expect(validateContact(ok)).toBeNull());
+  it("accepts a name and an email", () =>
+    expect(
+      validateContact({ name: "Nia", phone: "", email: "nia@example.com" }),
+    ).toBeNull());
+  it("needs a name", () =>
+    expect(validateContact({ ...ok, name: " " })).toMatch(/name/i));
+  it("needs a way to reply", () =>
+    expect(validateContact({ ...ok, phone: "" })).toMatch(
+      /phone number or an email/i,
+    ));
+  it("rejects a bad phone", () =>
+    expect(validateContact({ ...ok, phone: "12" })).toMatch(/phone/i));
+  it("rejects a bad email", () =>
+    expect(validateContact({ ...ok, email: "nope" })).toMatch(/email/i));
 });
 
 describe("feedback WhatsApp reply", () => {

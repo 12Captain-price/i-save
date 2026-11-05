@@ -1,23 +1,18 @@
 import { useState, type FormEvent } from "react";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2 } from "lucide-react";
 import { PageShell } from "@/components/site/PageShell";
 import { TextAreaField, ErrorLine } from "@/components/staff/FormBits";
-import { StatusPill } from "@/components/staff/StatusPill";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
-import { useAuth } from "@/lib/auth";
 import {
   FEEDBACK_KINDS,
-  STATUS_LABEL,
-  kindLabel,
   sendFeedback,
-  useMyFeedback,
   type FeedbackKind,
 } from "@/lib/feedback";
-import { validateFeedback } from "@/lib/feedback-utils";
-import { formatDate, staffErrorMessage } from "@/lib/staff-utils";
+import { validateContact, validateFeedback } from "@/lib/feedback-utils";
+import { staffErrorMessage } from "@/lib/staff-utils";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/feedback")({
@@ -37,10 +32,11 @@ function FeedbackPage() {
 }
 
 function FeedbackForm() {
-  const { session, profile, loading } = useAuth();
   const queryClient = useQueryClient();
-  const userId = session?.user.id;
-  const mine = useMyFeedback(userId);
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [trap, setTrap] = useState("");
   const [kind, setKind] = useState<FeedbackKind>("feedback");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
@@ -48,31 +44,28 @@ function FeedbackForm() {
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
 
-  if (loading) return null;
-  if (!session) {
-    return (
-      <div className="rounded-2xl border border-border bg-muted/50 p-6">
-        <p className="text-sm text-muted-foreground">
-          Please sign in so we know who to reply to.
-        </p>
-        <Link to="/login" className={buttonVariants({ className: "mt-4" })}>
-          Sign in
-        </Link>
-      </div>
-    );
-  }
-
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    const problem = validateFeedback({ subject, message });
+    const problem =
+      validateContact({ name, phone, email }) ??
+      validateFeedback({ subject, message });
     if (problem) return setError(problem);
     setError(null);
+    // Bots fill in the hidden field. Pretend it worked and send nothing.
+    if (trap) {
+      setSent(true);
+      return;
+    }
     setBusy(true);
     try {
-      await sendFeedback(
-        { kind, subject: subject.trim(), message: message.trim() },
-        userId as string,
-      );
+      await sendFeedback({
+        kind,
+        subject: subject.trim(),
+        message: message.trim(),
+        sender_name: name.trim(),
+        sender_phone: phone.trim() || null,
+        sender_email: email.trim() || null,
+      });
       await queryClient.invalidateQueries({ queryKey: ["feedback"] });
       setSent(true);
       setSubject("");
@@ -94,9 +87,7 @@ function FeedbackForm() {
           />
           <div>
             <p className="text-lg font-semibold">
-              Thank you
-              {profile?.fullName ? `, ${profile.fullName.split(/\s+/)[0]}` : ""}
-              !
+              Thank you{name.trim() ? `, ${name.trim().split(/\s+/)[0]}` : ""}!
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
               Your message has reached the office. We will get back to you,
@@ -116,7 +107,7 @@ function FeedbackForm() {
         <form
           onSubmit={onSubmit}
           noValidate
-          className="grid max-w-xl gap-5 rounded-2xl border border-border bg-muted/50 p-6 md:p-8"
+          className="relative grid max-w-xl gap-5 rounded-2xl border border-border bg-muted/50 p-6 md:p-8"
         >
           <fieldset>
             <legend className="mb-2 text-sm font-medium">
@@ -150,6 +141,35 @@ function FeedbackForm() {
             </p>
           </fieldset>
           <Field
+            id="fb-name"
+            label="Your name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            maxLength={80}
+            autoComplete="name"
+          />
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Field
+              id="fb-phone"
+              label="Phone or WhatsApp"
+              hint="Add a phone number or an email, so we can reply."
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              maxLength={30}
+              autoComplete="tel"
+            />
+            <Field
+              id="fb-email"
+              label="Email (optional)"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              maxLength={120}
+              autoComplete="email"
+            />
+          </div>
+          <Field
             id="fb-subject"
             label="Title"
             value={subject}
@@ -165,6 +185,17 @@ function FeedbackForm() {
             maxLength={2000}
             hint={`${message.trim().length} of 2000 characters`}
           />
+          <div aria-hidden="true" className="absolute -left-[9999px]">
+            <label htmlFor="fb-website">Leave this empty</label>
+            <input
+              id="fb-website"
+              name="website"
+              tabIndex={-1}
+              autoComplete="off"
+              value={trap}
+              onChange={(e) => setTrap(e.target.value)}
+            />
+          </div>
           <ErrorLine message={error} />
           <div>
             <Button type="submit" disabled={busy}>
@@ -172,33 +203,6 @@ function FeedbackForm() {
             </Button>
           </div>
         </form>
-      )}
-
-      {mine.data && mine.data.length > 0 && (
-        <section aria-labelledby="my-messages">
-          <h2 id="my-messages" className="text-xl font-semibold">
-            Your earlier messages
-          </h2>
-          <ul className="mt-4 grid gap-3">
-            {mine.data.map((m) => (
-              <li
-                key={m.id}
-                className="rounded-md border border-border bg-card p-4"
-              >
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="font-semibold">{m.subject}</p>
-                  <StatusPill
-                    status={m.status === "resolved" ? "active" : "open"}
-                    label={STATUS_LABEL[m.status]}
-                  />
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {kindLabel(m.kind)} · {formatDate(m.created_at)}
-                </p>
-              </li>
-            ))}
-          </ul>
-        </section>
       )}
     </div>
   );
