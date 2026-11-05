@@ -640,3 +640,190 @@
     transform: none;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Hero heading: "Saving today for a better tomorrow"                  */
+/* ------------------------------------------------------------------ */
+.home-page h1.hero-title {
+  max-width: 11em;
+  font-family: var(--font-display);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  text-wrap: initial;
+}
+.home-page h1.hero-title .hero-line {
+  display: block;
+  color: var(--foreground);
+}
+.home-page h1.hero-title .hero-line-top {
+  font-size: 1em;
+}
+.home-page h1.hero-title .hero-line-top .hero-word {
+  margin-right: 0.22em;
+  color: var(--foreground);
+  text-shadow: 0 0 40px color-mix(in oklab, var(--primary) 35%, transparent);
+}
+.home-page h1.hero-title .hero-line-mid {
+  margin-top: 0.12em;
+  font-size: 0.46em;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.home-page h1.hero-title .hero-small {
+  margin-right: 0.45em;
+  color: var(--muted-foreground);
+}
+.home-page h1.hero-title .hero-accent {
+  display: inline-block;
+  margin-top: 0.02em;
+  padding-bottom: 0.14em;
+}
+.home-page h1.hero-title .hero-script {
+  position: relative;
+  font-family: "Fraunces", Georgia, serif;
+  font-style: italic;
+  font-weight: 800;
+  font-size: 1.22em;
+  letter-spacing: -0.02em;
+  padding-right: 0.1em;
+  background: linear-gradient(
+    100deg,
+    var(--primary) 0%,
+    var(--portal-warm) 35%,
+    #fff4c2 50%,
+    var(--portal-warm) 65%,
+    var(--primary) 100%
+  );
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  filter: drop-shadow(0 6px 22px color-mix(in oklab, var(--portal-warm) 35%, transparent));
+  animation:
+    rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) backwards,
+    hero-shimmer 5s ease-in-out 1.6s infinite;
+  animation-delay: calc(var(--i, 0) * 110ms + 100ms), 1.6s;
+}
+.home-page h1.hero-title .hero-accent::after {
+  height: 0.05em;
+  bottom: 0.04em;
+  background: linear-gradient(90deg, var(--primary), var(--portal-warm));
+}
+.home-page h1.hero-title .hero-coin {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 1.7em;
+  height: 1.7em;
+  border-radius: 50%;
+  font-family: var(--font-display);
+  font-style: normal;
+  font-size: 0.17em;
+  font-weight: 800;
+  color: #6b4a00;
+  -webkit-text-fill-color: #6b4a00;
+  background: radial-gradient(circle at 30% 30%, #fff4c2, var(--portal-warm) 60%, #b8860b);
+  box-shadow: 0 0 0 0.03em #b8860b inset, 0 4px 12px rgb(0 0 0 / 0.3);
+  animation: coin-float 3.6s ease-in-out infinite;
+}
+.home-page h1.hero-title .hero-coin-a { top: -0.1em; right: -0.25em; }
+.home-page h1.hero-title .hero-coin-b { top: 0.6em; right: -0.45em; font-size: 0.12em; animation-delay: -1.2s; }
+.home-page h1.hero-title .hero-coin-c { top: -0.1em; left: 66%; font-size: 0.1em; animation-delay: -2.2s; }
+@keyframes hero-shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+@keyframes coin-float {
+  0%, 100% { transform: translateY(0) rotateY(0deg); }
+  50% { transform: translateY(-0.25em) rotateY(180deg); }
+}
+@media (max-width: 639px) {
+  .home-page h1.hero-title { font-size: clamp(2.4rem, 13vw, 3.4rem); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-page h1.hero-title .hero-script,
+  .home-page h1.hero-title .hero-coin {
+    animation: none;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Hero chart: always moving, never claiming real numbers              */
+/* ------------------------------------------------------------------ */
+.home-page .chapter-bar {
+  animation: chapter-breathe 3.4s ease-in-out infinite;
+  animation-delay: calc(var(--b, 0) * 220ms);
+}
+.home-page [data-animate="true"] .chapter-bar {
+  animation: chapter-appear 0.38s ease-out both;
+}
+.home-page .chapter-trend {
+  fill: none;
+  stroke: var(--portal-warm);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  filter: drop-shadow(0 0 6px color-mix(in oklab, var(--portal-warm) 60%, transparent));
+  animation: chapter-trend 6s ease-in-out infinite;
+}
+.home-page .chapter-coin {
+  animation: chapter-coin-fade 6s ease-in-out infinite;
+}
+.home-page .chapter-target {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 2;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: chapter-ping 2.4s ease-out infinite;
+}
+.home-page .chapter-token {
+  animation: chapter-bob 4.5s ease-in-out infinite;
+}
+.home-page .chapter-home { animation-delay: -1.5s; }
+.home-page .chapter-travel { animation-delay: -3s; }
+.home-page .chapter-goal svg {
+  animation: chapter-ping-icon 2.4s ease-in-out infinite;
+}
+@keyframes chapter-breathe {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(1.05); }
+}
+@keyframes chapter-trend {
+  0% { stroke-dashoffset: 1; opacity: 1; }
+  55%, 88% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 0; }
+}
+@keyframes chapter-coin-fade {
+  0%, 88% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes chapter-ping {
+  0% { opacity: 0.8; transform: scale(1); }
+  100% { opacity: 0; transform: scale(3); }
+}
+@keyframes chapter-ping-icon {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+@keyframes chapter-bob {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -7px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-page .chapter-bar,
+  .home-page .chapter-trend,
+  .home-page .chapter-coin,
+  .home-page .chapter-target,
+  .home-page .chapter-token,
+  .home-page .chapter-goal svg {
+    animation: none;
+  }
+  .home-page .chapter-trend { stroke-dashoffset: 0; }
+  .home-page .chapter-coin { display: none; }
+}

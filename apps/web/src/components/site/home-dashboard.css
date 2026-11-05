@@ -89,10 +89,10 @@
   transition: opacity 0.2s ease;
 }
 .dash-past .dash-fill {
-  fill: var(--primary);
+  fill: url(#dash-past);
 }
 .dash-current .dash-fill {
-  fill: var(--portal-warm);
+  fill: url(#dash-now);
 }
 .dash-upcoming .dash-fill {
   fill: url(#dash-hatch);
@@ -124,6 +124,7 @@
 .dash-tip {
   position: absolute;
   top: 0;
+  transition: left 0.5s cubic-bezier(0.3, 0.7, 0.2, 1);
   z-index: 2;
   display: grid;
   gap: 0.1rem;
@@ -270,3 +271,73 @@
 .home-donut-legend button:hover { background: var(--muted); }
 .home-donut-legend i { width: 0.75rem; height: 0.75rem; border-radius: 3px; }
 .home-donut-legend b { margin-left: auto; font-variant-numeric: tabular-nums; }
+
+/* Live feel: trend line that draws itself, glowing "now" dot, gliding highlight. */
+.dash-area {
+  fill: url(#dash-area);
+  pointer-events: none;
+  animation: dash-fade 1s ease-out 0.5s both;
+}
+.dash-line {
+  stroke: var(--primary);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 6px color-mix(in oklab, var(--primary) 55%, transparent));
+  animation: dash-draw 1.4s cubic-bezier(0.4, 0.1, 0.2, 1) 0.2s both;
+}
+.dash-guide line {
+  stroke: color-mix(in oklab, var(--primary) 55%, transparent);
+  stroke-dasharray: 3 4;
+  transition: all 0.5s cubic-bezier(0.3, 0.7, 0.2, 1);
+}
+.dash-guide circle {
+  fill: var(--background);
+  stroke: var(--primary);
+  stroke-width: 2.5;
+  transition: all 0.5s cubic-bezier(0.3, 0.7, 0.2, 1);
+}
+.dash-now-dot {
+  fill: var(--portal-warm);
+  stroke: var(--background);
+  stroke-width: 2;
+}
+.dash-pulse {
+  fill: var(--portal-warm);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: dash-pulse 2s ease-out infinite;
+}
+@keyframes dash-draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes dash-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes dash-pulse {
+  0% { opacity: 0.6; transform: scale(1); }
+  100% { opacity: 0; transform: scale(3.2); }
+}
+.home-dash-subhead {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dash-line, .dash-area, .dash-pulse, .dash-tip { animation: none; transition: none; }
+}
+
+.home-donut-slice {
+  animation: donut-in 0.7s ease-out both;
+}
+@keyframes donut-in {
+  from { opacity: 0; stroke-width: 0; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-donut-slice { animation: none; }
+}

@@ -1,7 +1,13 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { GraduationCap, House, Plane, Target } from "lucide-react";
 
-/** Decorative, one-shot sequence. SSR/no-JS and reduced motion show all bars. */
+const BARS = [48, 66, 87, 108, 131, 150, 174, 196];
+const TREND = BARS.map((h, i) => [40 + i * 49 + 14.5, 271 - h - 10] as const);
+const TREND_PATH = TREND.map(([x, y], i) => (i ? "L" : "M") + x + "," + y).join(
+  " ",
+);
+
+/** Decorative: bars grow once, then the chart keeps moving with a savings line and a coin. SSR/no-JS and reduced motion show all bars. */
 export function NextChapter() {
   const figure = useRef<HTMLElement>(null),
     started = useRef(false),
@@ -111,7 +117,7 @@ export function NextChapter() {
             strokeDasharray="3 7"
           />
           <line x1="30" y1="271" x2="448" y2="271" stroke="var(--border)" />
-          {[48, 66, 87, 108, 131, 150, 174, 196].map((height, index) => (
+          {BARS.map((height, index) => (
             <rect
               key={index}
               data-sequence-bar=""
@@ -124,9 +130,50 @@ export function NextChapter() {
               fill={"url(#" + id + "-bar)"}
               stroke="var(--primary)"
               strokeOpacity="0.32"
-              style={{ animationDelay: index * 170 + "ms" }}
+              style={{
+                animationDelay: index * 170 + "ms",
+                ["--b" as string]: index,
+              }}
             />
           ))}
+          <path
+            id={id + "-trend"}
+            d={TREND_PATH}
+            pathLength={1}
+            className="chapter-trend"
+          />
+          <g className="chapter-coin">
+            <circle
+              r="9"
+              fill="var(--portal-warm)"
+              stroke="#b8860b"
+              strokeWidth="2"
+            />
+            <text
+              y="3.5"
+              textAnchor="middle"
+              fontSize="10"
+              fontWeight="800"
+              fill="#6b4a00"
+            >
+              $
+            </text>
+            <animateMotion
+              dur="6s"
+              repeatCount="indefinite"
+              calcMode="linear"
+              keyPoints="0;1;1"
+              keyTimes="0;0.55;1"
+            >
+              <mpath href={"#" + id + "-trend"} />
+            </animateMotion>
+          </g>
+          <circle
+            className="chapter-target"
+            cx={TREND[7]![0]}
+            cy={TREND[7]![1]}
+            r="6"
+          />
         </svg>
         <div className="chapter-goal">
           <Target size={22} />

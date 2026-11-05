@@ -83,32 +83,50 @@ function HomePage() {
               <Sparkles aria-hidden="true" />
               Welcome to i-Save
             </p>
-            <h1 id="home-title">
-              {["Save", "for", "what"].map((w, i) => (
-                <span
-                  key={w}
-                  className="hero-word"
-                  style={{ ["--i" as string]: i }}
-                >
-                  {w}{" "}
-                </span>
-              ))}
-              <span className="hero-accent">
-                {["matters", "to", "you."].map((w, i) => (
+            <h1 id="home-title" className="hero-title">
+              <span className="hero-line hero-line-top">
+                {["Saving", "today"].map((w, i) => (
                   <span
                     key={w}
                     className="hero-word"
-                    style={{ ["--i" as string]: i + 3 }}
+                    style={{ ["--i" as string]: i }}
                   >
                     {w}
-                    {i < 2 ? " " : ""}
                   </span>
                 ))}
+              </span>
+              <span className="hero-line hero-line-mid">
+                {["for", "a", "better"].map((w, i) => (
+                  <span
+                    key={w}
+                    className="hero-word hero-small"
+                    style={{ ["--i" as string]: i + 2 }}
+                  >
+                    {w}
+                  </span>
+                ))}
+              </span>
+              <span className="hero-line hero-accent">
+                <span
+                  className="hero-word hero-script"
+                  style={{ ["--i" as string]: 5 }}
+                >
+                  tomorrow
+                  <span className="hero-coin hero-coin-a" aria-hidden="true">
+                    $
+                  </span>
+                  <span className="hero-coin hero-coin-b" aria-hidden="true">
+                    $
+                  </span>
+                  <span className="hero-coin hero-coin-c" aria-hidden="true">
+                    $
+                  </span>
+                </span>
               </span>
             </h1>
             <p
               className="home-lead stagger-in"
-              style={{ ["--i" as string]: 7 }}
+              style={{ ["--i" as string]: 8 }}
             >
               Join i-Save and start with a goal. From education to life’s
               unexpected moments, pick what you are saving for, apply for
@@ -116,7 +134,7 @@ function HomePage() {
             </p>
             <div
               className="home-actions stagger-in"
-              style={{ ["--i" as string]: 9 }}
+              style={{ ["--i" as string]: 10 }}
             >
               <a
                 href="#goals"

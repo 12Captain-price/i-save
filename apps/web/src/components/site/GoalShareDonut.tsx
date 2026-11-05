@@ -42,6 +42,7 @@ export function GoalShareDonut() {
               strokeDashoffset={-s.start * 100}
               transform="rotate(-90 21 21)"
               className="home-donut-slice"
+              style={{ animationDelay: `${i * 140}ms` }}
               onMouseEnter={() => setActive(i)}
               onMouseLeave={() => setActive(null)}
               onClick={() => setActive(i)}
