@@ -1,4 +1,5 @@
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, PenLine, Star } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
 import { EventCard } from "@/components/site/EventCard";
 import { Reveal } from "@/components/site/Reveal";
 import { ReviewCard } from "@/components/site/ReviewCard";
@@ -98,23 +99,48 @@ export function HomeSections() {
         </section>
       )}
 
-      {reviews.length > 0 && (
-        <section aria-label="Reviews" className="home-width py-12">
-          <Heading
-            eyebrow="In their words"
-            title="What members say"
-            href="/reviews"
-            linkText="All reviews"
-          />
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
+      <section aria-label="Reviews" className="home-width py-12">
+        <Heading
+          eyebrow="In their words"
+          title="What members say"
+          href="/reviews"
+          linkText={reviews.length > 0 ? "All reviews" : "Reviews page"}
+        />
+        {reviews.length > 0 ? (
+          <div className="mt-6 grid gap-5 md:grid-cols-3">
             {reviews.map((r, i) => (
               <Reveal key={r.id} index={i} className="h-full">
                 <ReviewCard review={r} />
               </Reveal>
             ))}
           </div>
-        </section>
-      )}
+        ) : (
+          <Reveal className="mt-6">
+            <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border bg-card px-6 py-10 text-center">
+              <span
+                aria-hidden="true"
+                className="flex size-12 items-center justify-center rounded-full bg-primary/15 text-primary"
+              >
+                <Star className="size-6" />
+              </span>
+              <p className="text-lg font-semibold">Be the first to review us</p>
+              <p className="max-w-md text-sm text-muted-foreground">
+                Saving with i-Save? Tell others what it is like. It takes a
+                minute.
+              </p>
+            </div>
+          </Reveal>
+        )}
+        <div className="mt-6 flex justify-center">
+          <a
+            href="/reviews#write-review"
+            className={buttonVariants({ variant: "default", size: "lg" })}
+          >
+            <PenLine aria-hidden="true" />
+            Write a review
+          </a>
+        </div>
+      </section>
 
       {leaders.length > 0 && (
         <section aria-label="Our team" className="home-width py-12">

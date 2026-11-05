@@ -42,7 +42,7 @@ function ReviewsPage() {
           There are no reviews yet. Be the first to share yours below.
         </p>
       )}
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-5 sm:grid-cols-2">
         {data?.map((r) => (
           <ReviewCard key={r.id} review={r} />
         ))}
