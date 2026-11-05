@@ -3,7 +3,8 @@ import { Layers, Target, Users, type LucideIcon } from "lucide-react";
 import { Reveal } from "@/components/site/Reveal";
 import { prefersReducedMotion } from "@/components/ui/motion";
 import { useAgents } from "@/lib/agents";
-import { HOME_MEMBER_COUNT, countAt, formatCount } from "@/lib/home-stats";
+import { useDashboardFigures } from "@/lib/dashboard-figures";
+import { countAt, formatCount } from "@/lib/home-stats";
 
 /** Number of savings categories shown on this page. Keep in step with GOALS in routes/index.tsx. */
 export const SAVINGS_GOAL_COUNT = 5;
@@ -80,13 +81,16 @@ type Tile = {
 /** Three bold tiles under the hero. Facts only: no amounts, returns or promises. */
 export function StatTiles() {
   const agents = useAgents();
-  const agentCount = agents.data?.length ?? 0;
+  const figures = useDashboardFigures();
+  if (!figures) return null;
+  const memberCount = figures.memberCount;
+  const agentCount = figures.agentCount ?? agents.data?.length ?? 0;
 
   const tiles: Tile[] = [];
-  if (HOME_MEMBER_COUNT !== null) {
+  if (memberCount !== null) {
     tiles.push({
       key: "members",
-      value: HOME_MEMBER_COUNT,
+      value: memberCount,
       suffix: "+",
       label: "Members",
       note: "People saving towards their goals with i-Save.",
@@ -111,7 +115,10 @@ export function StatTiles() {
   }
 
   return (
-    <section aria-label="i-Save at a glance" className="home-width home-stats-wrap">
+    <section
+      aria-label="i-Save at a glance"
+      className="home-width home-stats-wrap"
+    >
       <ul className="home-stats">
         {tiles.map(({ key, value, suffix, label, note, Icon }, i) => (
           <Reveal as="li" index={i} key={key} className="home-stat">

@@ -2,8 +2,6 @@ import { useMemo, useState } from "react";
 import { GoalShareDonut } from "@/components/site/GoalShareDonut";
 import { Reveal } from "@/components/site/Reveal";
 import {
-  DASHBOARD_IS_DEMO,
-  DEMO_KPIS,
   PHASE_LABEL,
   RANGE_LABEL,
   buildSeries,
@@ -15,6 +13,11 @@ import {
   type MonthPoint,
   type RangeKey,
 } from "@/lib/home-dashboard";
+import {
+  kpisFrom,
+  useDashboardFigures,
+  withOverrides,
+} from "@/lib/dashboard-figures";
 import { formatCount } from "@/lib/home-stats";
 import { todayInHarare } from "@/lib/traffic-utils";
 import { cn } from "@/lib/utils";
@@ -51,6 +54,16 @@ function show(value: number, money: boolean): string {
  * Hover or tab to a bar for its details.
  */
 export function HomeDashboard() {
+  const figures = useDashboardFigures();
+  if (!figures) return null;
+  return <Dashboard figures={figures} />;
+}
+
+function Dashboard({
+  figures,
+}: {
+  figures: NonNullable<ReturnType<typeof useDashboardFigures>>;
+}) {
   const [metric, setMetric] = useState<Metric>("savings");
   const [range, setRange] = useState<RangeKey>("12m");
   const [active, setActive] = useState<number | null>(null);
@@ -58,8 +71,12 @@ export function HomeDashboard() {
   const current = todayInHarare().slice(0, 7);
   const meta = METRICS.find((m) => m.key === metric)!;
   const points = useMemo(
-    () => sliceRange(buildSeries(metric, current), range),
-    [metric, range, current],
+    () =>
+      sliceRange(
+        withOverrides(buildSeries(metric, current), figures.monthly, metric),
+        range,
+      ),
+    [metric, range, current, figures.monthly],
   );
   const summary = summarise(points);
   const top = niceMax(Math.max(...points.map((p) => p.value)));
@@ -84,7 +101,7 @@ export function HomeDashboard() {
 
       <Reveal className="home-dash">
         <dl className="home-kpis">
-          {DEMO_KPIS.map((k) => (
+          {kpisFrom(figures).map((k) => (
             <div key={k.label}>
               <dd>{show(k.value, k.money)}</dd>
               <dt>{k.label}</dt>
@@ -263,7 +280,11 @@ export function HomeDashboard() {
           </li>
         </ul>
         <p className="home-dash-note">
-          {DASHBOARD_IS_DEMO && <strong>Illustrative demo figures. </strong>}
+          <strong>
+            {figures.illustrative
+              ? "Illustrative demo figures. "
+              : "Figures supplied by the office. "}
+          </strong>
           Monthly totals only, with nothing about any individual member. Months
           ahead are scheduled targets, not returns, and no returns are promised.
         </p>

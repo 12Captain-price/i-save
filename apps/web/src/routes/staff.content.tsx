@@ -8,6 +8,7 @@ import {
   PageHeading,
   TextAreaField,
 } from "@/components/staff/FormBits";
+import { DashboardFiguresAdmin } from "@/components/staff/DashboardFiguresAdmin";
 import { OfficeContactAdmin } from "@/components/staff/OfficeContactAdmin";
 import { useContentAction } from "@/components/staff/useContentAction";
 import { Button } from "@/components/ui/button";
@@ -32,15 +33,17 @@ export const Route = createFileRoute("/staff/content")({
 });
 
 function ContentAdmin() {
-  const [tab, setTab] = useState<"pages" | "faqs" | "contact">("pages");
+  const [tab, setTab] = useState<"pages" | "faqs" | "contact" | "dashboard">(
+    "pages",
+  );
   return (
     <div>
       <PageHeading
         title="Pages, FAQs and contact details"
-        lead="Edit the Terms, Privacy notice, Risk disclosure, the FAQs and the office contact details. Changes show on the website as soon as you save."
+        lead="Edit the Terms, Privacy notice, Risk disclosure, the FAQs, the office contact details and the home page dashboard figures. Changes show on the website as soon as you save."
       />
       <div role="tablist" className="mt-6 mb-8 flex gap-2">
-        {(["pages", "faqs", "contact"] as const).map((t) => (
+        {(["pages", "faqs", "contact", "dashboard"] as const).map((t) => (
           <button
             key={t}
             role="tab"
@@ -57,7 +60,9 @@ function ContentAdmin() {
               ? "Pages"
               : t === "faqs"
                 ? "FAQs"
-                : "Contact details"}
+                : t === "contact"
+                  ? "Contact details"
+                  : "Dashboard figures"}
           </button>
         ))}
       </div>
@@ -65,8 +70,10 @@ function ContentAdmin() {
         <PagesEditor />
       ) : tab === "faqs" ? (
         <FaqsEditor />
-      ) : (
+      ) : tab === "contact" ? (
         <OfficeContactAdmin />
+      ) : (
+        <DashboardFiguresAdmin />
       )}
     </div>
   );
