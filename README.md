@@ -15,7 +15,7 @@ The site explains the savings goals, plans and fees, shares news and events, and
 | What this site does        | Informs and hands off. It does not register members, take payments or show personal accounts.                                                                                                                          |
 | Joining                    | The Apply page lists the registration agents. Each button opens that agent's own registration page in a new tab.                                                                                                       |
 | Counting handoffs          | A click on an agent's button is the count. The two systems are deliberately not linked, so finished registrations are not counted here.                                                                                |
-| Savings plans              | The five categories: Asset, Holiday, Emergency, Retrenchment, Education, plus one featured goal-based plan. Plans stay as drafts until the owner approves amounts and terms. No amount is ever invented or hard-coded. |
+| Savings plans              | The five categories: Asset, Holiday, Emergency, Retrenchment, Education, plus combo plans that bundle several goals. Plans stay as drafts until the owner approves amounts and terms. No amount is ever invented or hard-coded. |
 | Interest, bonuses, returns | Not offered, calculated or advertised. Figures for coming months are scheduled targets, never projected returns.                                                                                                       |
 | Currency                   | USD.                                                                                                                                                                                                                   |
 | Hosting                    | Git repository, deployed to Cloudflare as one Worker that serves the website and the API. Supabase for the database and sign-in.                                                                                       |
@@ -67,7 +67,7 @@ Cloudflare Worker  (serves the website and these endpoints)
 **Public:** Home, How it works, Savings plans, Fees, FAQs, Contact, Terms, Privacy, Risk and withdrawal disclosure, Apply, Announcements, Events, Team, Login.
 
 - **Home** has the welcome hero (ribbons play once on load), count-up stat tiles and an interactive month-by-month dashboard.
-- **Plans** shows each approved plan with its short description, a full "About this plan" description and its terms. The goal-based plan is shown large at the top with a goal planner (goal amount divided by weeks, rounded up to the next cent; no interest or returns).
+- **Plans** shows each approved plan with its short description, a full "About this plan" description and its terms. Every plan is a card with a themed click animation. A plan can carry a gold "Combo" ribbon and goal chips. Goals on the home page open a panel with sample content (see `lib/goal-content.ts`).
 - **Apply** shows one "Register with ..." button per published agent.
 
 **Staff area (`/staff`)**, admin tabs:
@@ -76,7 +76,7 @@ Cloudflare Worker  (serves the website and these endpoints)
 | --------------------------- | ------------------------------------------------------------------------------------------------ |
 | Announcements, Events, Team | Content shown on the public site                                                                 |
 | Pages, FAQs, contact        | Public pages, the FAQ list and office contact details                                            |
-| Plans                       | Add plans, short and full descriptions, versions, approve and activate, mark the goal-based plan |
+| Plans                       | Add plans, short and full descriptions, versions, approve and activate, pick the animation theme, show the Combo ribbon and goal chips |
 | Agents                      | The registration agents on the Apply page: name, https link, note, order, show or hide           |
 | Traffic                     | Page views, visitors, Apply clicks and agent handoffs with date filters                          |
 
@@ -96,7 +96,7 @@ Migrations are in `supabase/migrations`, run in order in the Supabase SQL Editor
 | 011 to 016 | Withdrawals, receipt checks, support contacts, office contact                                     |
 | 017        | `agents` table (registration agents)                                                              |
 | 018        | `traffic_events`, `record_traffic()`, `traffic_summary()`                                         |
-| 019        | `long_description` and `is_goal_based` on `savings_plans` (one goal-based plan at a time)         |
+| 019        | `long_description` and `is_goal_based` on `savings_plans` (now the Combo ribbon flag)         |
 
 The ledger, payment and member tables from the earlier build are **left in place** and unused by this site, so nothing is lost if the other application needs the data. Only the screens were removed.
 

@@ -4,7 +4,7 @@
  * PLACEHOLDER. This is an illustrative figure, not a real count. Replace it with the member
  * number the owner approves before launch, or set it to null to hide the Members tile.
  */
-export const HOME_MEMBER_COUNT: number | null = 1250;
+export const HOME_MEMBER_COUNT: number | null = 3200;
 
 /** Eases out: fast at the start, slow at the end. */
 export function easeOutCubic(t: number): number {

@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  DEMO_GOAL_SHARES,
   addMonths,
   buildSeries,
   compactNumber,
+  donutSegments,
   niceMax,
   sliceRange,
   summarise,
@@ -32,7 +34,9 @@ describe("buildSeries", () => {
     expect(series.every((p) => p.value >= 0)).toBe(true);
   });
   it("labels months in full", () => {
-    expect(series.find((p) => p.phase === "current")!.fullLabel).toBe("November 2026");
+    expect(series.find((p) => p.phase === "current")!.fullLabel).toBe(
+      "November 2026",
+    );
   });
 });
 
@@ -40,7 +44,10 @@ describe("sliceRange", () => {
   const series = buildSeries("members", "2026-11");
   it("keeps this month in every range", () => {
     for (const r of ["6m", "12m", "all"] as const) {
-      expect(sliceRange(series, r).some((p) => p.phase === "current"), r).toBe(true);
+      expect(
+        sliceRange(series, r).some((p) => p.phase === "current"),
+        r,
+      ).toBe(true);
     }
   });
   it("shows 6, 12 or all months", () => {
@@ -70,5 +77,22 @@ describe("summarise, niceMax and compactNumber", () => {
     expect(compactNumber(950)).toBe("950");
     expect(compactNumber(12500)).toBe("12.5k");
     expect(compactNumber(2_400_000)).toBe("2.4m");
+  });
+});
+
+describe("donutSegments", () => {
+  it("fills the whole circle, one slice after another", () => {
+    const segs = donutSegments(DEMO_GOAL_SHARES);
+    expect(segs).toHaveLength(DEMO_GOAL_SHARES.length);
+    expect(segs[0]!.start).toBe(0);
+    const last = segs.at(-1)!;
+    expect(last.start + last.length).toBeCloseTo(1, 10);
+  });
+  it("has shares that add up to 100", () => {
+    expect(DEMO_GOAL_SHARES.reduce((n, s) => n + s.percent, 0)).toBe(100);
+  });
+  it("returns nothing when there is nothing to show", () => {
+    expect(donutSegments([])).toEqual([]);
+    expect(donutSegments([{ label: "A", percent: 0 }])).toEqual([]);
   });
 });

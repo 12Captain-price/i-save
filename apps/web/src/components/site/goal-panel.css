@@ -1,0 +1,134 @@
+.goal-panel {
+  width: min(46rem, calc(100vw - 1.5rem));
+  max-height: calc(100dvh - 2rem);
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--card);
+  color: var(--card-foreground);
+  overflow: auto;
+}
+.goal-panel::backdrop {
+  background: rgb(0 0 0 / 0.55);
+}
+.goal-panel[open] {
+  animation: goal-panel-in 0.25s ease-out;
+}
+@keyframes goal-panel-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+.goal-panel-body {
+  position: relative;
+  padding: 1.5rem;
+}
+.goal-panel-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+}
+.goal-panel h2 {
+  padding-right: 3rem;
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+.goal-panel h3 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.goal-panel-lead {
+  margin-top: 0.5rem;
+  color: var(--muted-foreground);
+}
+.goal-panel-sample {
+  display: inline-block;
+  margin-top: 0.75rem;
+  padding: 0.2rem 0.6rem;
+  border: 1px dashed var(--border);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+.goal-panel-steps {
+  padding-left: 1.25rem;
+  list-style: decimal;
+}
+.goal-panel ul:not(.x) {
+  padding-left: 1.1rem;
+  list-style: disc;
+}
+.goal-panel li {
+  margin-top: 0.25rem;
+  font-size: 0.9375rem;
+}
+.goal-panel-columns {
+  display: grid;
+  gap: 0 1.5rem;
+}
+@media (min-width: 40rem) {
+  .goal-panel-columns {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.goal-panel-quotes {
+  display: grid;
+  gap: 0.75rem;
+}
+@media (min-width: 40rem) {
+  .goal-panel-quotes {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.goal-panel-quotes figure {
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--muted);
+}
+.goal-panel-quotes blockquote {
+  font-size: 0.9375rem;
+}
+.goal-panel-quotes figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+.goal-panel-note {
+  margin-top: 1.5rem;
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+.goal-panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+.goal-panel-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-weight: 600;
+}
+.goal-panel-primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+}
+@media (prefers-reduced-motion: reduce) {
+  .goal-panel[open] {
+    animation: none;
+  }
+}

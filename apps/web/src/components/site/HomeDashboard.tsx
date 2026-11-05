@@ -1,7 +1,9 @@
 import { useMemo, useState } from "react";
+import { GoalShareDonut } from "@/components/site/GoalShareDonut";
 import { Reveal } from "@/components/site/Reveal";
 import {
   DASHBOARD_IS_DEMO,
+  DEMO_KPIS,
   PHASE_LABEL,
   RANGE_LABEL,
   buildSeries,
@@ -18,10 +20,21 @@ import { todayInHarare } from "@/lib/traffic-utils";
 import { cn } from "@/lib/utils";
 import "@/components/site/home-dashboard.css";
 
-const METRICS: { key: Metric; label: string; unit: string; money: boolean }[] = [
-  { key: "savings", label: "Savings recorded", unit: "per month", money: true },
-  { key: "members", label: "Members registered", unit: "per month", money: false },
-];
+const METRICS: { key: Metric; label: string; unit: string; money: boolean }[] =
+  [
+    {
+      key: "savings",
+      label: "Savings recorded",
+      unit: "per month",
+      money: true,
+    },
+    {
+      key: "members",
+      label: "Members registered",
+      unit: "per month",
+      money: false,
+    },
+  ];
 const RANGES: RangeKey[] = ["6m", "12m", "all"];
 
 const W = 640;
@@ -56,7 +69,8 @@ export function HomeDashboard() {
   const barW = Math.min(34, slot * 0.62);
   const y = (v: number) => PAD.top + plotH - (v / top) * plotH;
   const ticks = [0, 0.25, 0.5, 0.75, 1].map((f) => top * f);
-  const tip: MonthPoint | null = active === null ? null : (points[active] ?? null);
+  const tip: MonthPoint | null =
+    active === null ? null : (points[active] ?? null);
 
   return (
     <section
@@ -69,6 +83,15 @@ export function HomeDashboard() {
       </Reveal>
 
       <Reveal className="home-dash">
+        <dl className="home-kpis">
+          {DEMO_KPIS.map((k) => (
+            <div key={k.label}>
+              <dd>{show(k.value, k.money)}</dd>
+              <dt>{k.label}</dt>
+            </div>
+          ))}
+        </dl>
+
         <div className="home-dash-controls">
           <div role="group" aria-label="What to show" className="home-seg">
             {METRICS.map((m) => (
@@ -134,7 +157,12 @@ export function HomeDashboard() {
                 patternTransform="rotate(45)"
               >
                 <rect width="6" height="6" fill="transparent" />
-                <rect width="2.5" height="6" fill="var(--primary)" opacity="0.35" />
+                <rect
+                  width="2.5"
+                  height="6"
+                  fill="var(--primary)"
+                  opacity="0.35"
+                />
               </pattern>
             </defs>
             {ticks.map((t) => (
@@ -146,7 +174,12 @@ export function HomeDashboard() {
                   y2={y(t)}
                   className="dash-grid"
                 />
-                <text x={PAD.left - 8} y={y(t) + 4} textAnchor="end" className="dash-axis">
+                <text
+                  x={PAD.left - 8}
+                  y={y(t) + 4}
+                  textAnchor="end"
+                  className="dash-axis"
+                >
                   {meta.money ? "$" : ""}
                   {compactNumber(t)}
                 </text>
@@ -161,7 +194,11 @@ export function HomeDashboard() {
                   tabIndex={0}
                   role="img"
                   aria-label={`${p.fullLabel}: ${show(p.value, meta.money)}. ${PHASE_LABEL[p.phase]}.`}
-                  className={cn("dash-bar", `dash-${p.phase}`, active === i && "is-active")}
+                  className={cn(
+                    "dash-bar",
+                    `dash-${p.phase}`,
+                    active === i && "is-active",
+                  )}
                   onMouseEnter={() => setActive(i)}
                   onFocus={() => setActive(i)}
                   onBlur={() => setActive(null)}
@@ -203,21 +240,32 @@ export function HomeDashboard() {
               }}
             >
               <strong>{tip.fullLabel}</strong>
-              <span className="dash-tip-value">{show(tip.value, meta.money)}</span>
+              <span className="dash-tip-value">
+                {show(tip.value, meta.money)}
+              </span>
               <span className="dash-tip-phase">{PHASE_LABEL[tip.phase]}</span>
             </div>
           )}
         </div>
 
+        <h3 className="home-dash-subhead">Savers by goal</h3>
+        <GoalShareDonut />
+
         <ul className="home-dash-legend" aria-label="Key">
-          <li><i className="k-past" /> Recorded</li>
-          <li><i className="k-current" /> This month so far</li>
-          <li><i className="k-upcoming" /> Scheduled target</li>
+          <li>
+            <i className="k-past" /> Recorded
+          </li>
+          <li>
+            <i className="k-current" /> This month so far
+          </li>
+          <li>
+            <i className="k-upcoming" /> Scheduled target
+          </li>
         </ul>
         <p className="home-dash-note">
           {DASHBOARD_IS_DEMO && <strong>Illustrative demo figures. </strong>}
-          Monthly totals only, with nothing about any individual member. Months ahead are
-          scheduled targets, not returns, and no returns are promised.
+          Monthly totals only, with nothing about any individual member. Months
+          ahead are scheduled targets, not returns, and no returns are promised.
         </p>
       </Reveal>
     </section>

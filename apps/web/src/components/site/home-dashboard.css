@@ -192,3 +192,81 @@
     animation: none;
   }
 }
+
+/* Headline figures and the goal share donut. */
+.home-kpis {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+@media (min-width: 48rem) {
+  .home-kpis { grid-template-columns: repeat(4, 1fr); }
+}
+.home-kpis > div {
+  display: flex;
+  flex-direction: column-reverse;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--background);
+}
+.home-kpis dd {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  color: var(--primary);
+}
+.home-kpis dt {
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+.home-dash-subhead {
+  margin-top: 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.home-donut {
+  display: grid;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 0.75rem;
+}
+@media (min-width: 40rem) {
+  .home-donut { grid-template-columns: 14rem 1fr; }
+}
+.home-donut-chart {
+  position: relative;
+  width: 12rem;
+  max-width: 100%;
+  margin-inline: auto;
+}
+.home-donut-track { stroke: var(--border); }
+.home-donut-slice { cursor: pointer; transition: stroke-width 0.15s ease; }
+.home-donut-centre {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  pointer-events: none;
+}
+.home-donut-centre strong { font-size: 1.5rem; font-weight: 700; }
+.home-donut-centre span { font-size: 0.75rem; color: var(--muted-foreground); }
+.home-donut-legend { display: grid; gap: 0.25rem; }
+.home-donut-legend button {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.9375rem;
+  text-align: left;
+}
+.home-donut-legend button.is-active,
+.home-donut-legend button:hover { background: var(--muted); }
+.home-donut-legend i { width: 0.75rem; height: 0.75rem; border-radius: 3px; }
+.home-donut-legend b { margin-left: auto; font-variant-numeric: tabular-nums; }

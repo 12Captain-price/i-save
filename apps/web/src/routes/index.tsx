@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   ArrowRight,
@@ -7,15 +8,18 @@ import {
   Plane,
   Shield,
   Sparkles,
+  type LucideIcon,
 } from "lucide-react";
 import { PublicLayout } from "@/components/site/PublicLayout";
 import { HeroRibbons } from "@/components/site/HeroRibbons";
+import { GoalPanel } from "@/components/site/GoalPanel";
 import { HomeDashboard } from "@/components/site/HomeDashboard";
 import { HomeSections } from "@/components/site/HomeSections";
 import { Reveal } from "@/components/site/Reveal";
 import { NextChapter } from "@/components/site/NextChapter";
 import { StatTiles } from "@/components/site/StatTiles";
 import { buttonVariants } from "@/components/ui/button";
+import { GOAL_CONTENT, type GoalKey } from "@/lib/goal-content";
 import { cn } from "@/lib/utils";
 import "@/components/site/homepage.css";
 import "@/components/site/home-marketing.css";
@@ -24,67 +28,48 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
-// Interest categories only. No amounts, terms or returns are shown until the owner approves them.
-const GOALS = [
-  {
-    label: "Asset",
-    purpose: "Save towards an asset or a significant purchase.",
-    Icon: Building2,
-  },
-  {
-    label: "Holiday",
-    purpose: "Save towards a future holiday or travel goal.",
-    Icon: Plane,
-  },
-  {
-    label: "Emergency",
-    purpose: "Set money aside for unexpected needs.",
-    Icon: Shield,
-  },
-  {
-    label: "Retrenchment",
-    purpose: "Prepare a savings cushion for a possible loss of employment.",
-    Icon: Briefcase,
-  },
-  {
-    label: "Education",
-    purpose: "Save towards future education costs.",
-    Icon: GraduationCap,
-  },
-];
+// Icons for the goal tiles. The wording and sample figures live in lib/goal-content.ts.
+const GOAL_ICONS: Record<GoalKey, LucideIcon> = {
+  asset: Building2,
+  holiday: Plane,
+  emergency: Shield,
+  retrenchment: Briefcase,
+  education: GraduationCap,
+};
 
 const STEPS = [
   ["Apply for membership.", "Apply online, or ask the office to register you."],
   [
-    "Pay the registration fee at the office.",
-    "Staff record your payment and give you a numbered receipt. A confirmed registration fee activates your account.",
+    "Register with your agent.",
+    "The agent's registration form opens in a new tab. Fill it in and the agent takes you from there.",
   ],
   [
     "Choose a savings goal.",
-    "Once your account is active, pick a plan and save week by week. Every payment is recorded in your history.",
+    "Pick the goal and plan that suit you, and save week by week.",
   ],
 ];
 
 const EXPECT = [
   [
-    "Payments are made in the office.",
-    "There is no online payment yet. Keep your receipt.",
+    "Registration goes through an agent.",
+    "Choose your agent on the Apply page. Each agent has their own registration form.",
   ],
   [
     "Fees are separate from savings.",
     "Registration and subscription fees never add to your savings balance.",
   ],
   [
-    "Plan terms are still being confirmed.",
-    "Plans are not approved offers until the organisation publishes them.",
+    "Plan terms are confirmed before you join.",
+    "Plans are not offers until the organisation publishes them.",
   ],
   [
-    "Withdrawals are not open yet.",
-    "The withdrawal policy is pending approval.",
+    "No returns are promised.",
+    "Savings goals and targets show direction, not guaranteed outcomes.",
   ],
 ];
 
 function HomePage() {
+  const [openGoal, setOpenGoal] = useState<GoalKey | null>(null);
   return (
     <PublicLayout>
       <div className="home-page">
@@ -171,29 +156,34 @@ function HomePage() {
               <h2 id="home-goals-title">What are you saving for?</h2>
             </Reveal>
             <ul className="home-goals">
-              {GOALS.map(({ label, purpose, Icon }, i) => (
-                <Reveal as="li" index={i} key={label}>
-                  <a
-                    href="/plans"
-                    aria-label={label + ": explore this category"}
-                    className="home-goal"
-                  >
-                    <Icon className="home-goal-icon" aria-hidden="true" />
-                    <div>
-                      <h3>{label}</h3>
-                      <p>{purpose}</p>
-                    </div>
-                    <ArrowRight
-                      className="home-goal-arrow"
-                      aria-hidden="true"
-                    />
-                  </a>
-                </Reveal>
-              ))}
+              {GOAL_CONTENT.map((g, i) => {
+                const Icon = GOAL_ICONS[g.key];
+                return (
+                  <Reveal as="li" index={i} key={g.key}>
+                    <button
+                      type="button"
+                      aria-haspopup="dialog"
+                      aria-label={g.label + ": open details"}
+                      onClick={() => setOpenGoal(g.key)}
+                      className="home-goal w-full text-left"
+                    >
+                      <Icon className="home-goal-icon" aria-hidden="true" />
+                      <div>
+                        <h3>{g.label}</h3>
+                        <p>{g.purpose}</p>
+                      </div>
+                      <ArrowRight
+                        className="home-goal-arrow"
+                        aria-hidden="true"
+                      />
+                    </button>
+                  </Reveal>
+                );
+              })}
             </ul>
             <p className="home-interest-note">
-              Choosing a category only shows your interest. Plan amounts and
-              terms are shown here once the organisation approves them.
+              Open a goal to see how it works. Plan amounts and terms are shown
+              on the Plans page once the organisation approves them.
             </p>
           </div>
         </section>
@@ -281,6 +271,10 @@ function HomePage() {
           </Reveal>
         </section>
       </div>
+      <GoalPanel
+        goal={GOAL_CONTENT.find((g) => g.key === openGoal) ?? null}
+        onClose={() => setOpenGoal(null)}
+      />
     </PublicLayout>
   );
 }

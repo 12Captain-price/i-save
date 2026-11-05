@@ -30,8 +30,18 @@ export const RANGE_LABEL: Record<RangeKey, string> = {
 };
 
 const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
 /** Same numbers every time (no randomness), so the demo does not flicker between visits. */
@@ -53,7 +63,10 @@ export const MONTHS_BACK = 11;
 export const MONTHS_AHEAD = 5;
 
 /** Demo series: 11 months back, this month, 5 months ahead. `currentMonth` is YYYY-MM. */
-export function buildSeries(metric: Metric, currentMonth: string): MonthPoint[] {
+export function buildSeries(
+  metric: Metric,
+  currentMonth: string,
+): MonthPoint[] {
   const points: MonthPoint[] = [];
   for (let offset = -MONTHS_BACK; offset <= MONTHS_AHEAD; offset++) {
     const key = addMonths(currentMonth, offset);
@@ -61,9 +74,13 @@ export function buildSeries(metric: Metric, currentMonth: string): MonthPoint[] 
     const wave = (unit(offset + (metric === "savings" ? 3 : 41)) - 0.5) * 2;
     const raw =
       metric === "savings"
-        ? 9000 + (offset + MONTHS_BACK) * 640 + wave * 900
-        : 38 + (offset + MONTHS_BACK) * 2.6 + wave * 6;
-    const value = Math.max(0, Math.round(raw / (metric === "savings" ? 50 : 1)) * (metric === "savings" ? 50 : 1));
+        ? 84000 + (offset + MONTHS_BACK) * 7400 + wave * 9000
+        : 96 + (offset + MONTHS_BACK) * 6.2 + wave * 14;
+    const value = Math.max(
+      0,
+      Math.round(raw / (metric === "savings" ? 500 : 1)) *
+        (metric === "savings" ? 500 : 1),
+    );
     points.push({
       key,
       label: MONTHS[monthIndex]!.slice(0, 3),
@@ -76,11 +93,15 @@ export function buildSeries(metric: Metric, currentMonth: string): MonthPoint[] 
 }
 
 /** The months to show for a range. "6m" is the last 3 months, this month and 2 ahead. */
-export function sliceRange(points: MonthPoint[], range: RangeKey): MonthPoint[] {
+export function sliceRange(
+  points: MonthPoint[],
+  range: RangeKey,
+): MonthPoint[] {
   if (range === "all") return points;
   const current = points.findIndex((p) => p.phase === "current");
   if (current < 0) return points;
-  if (range === "12m") return points.slice(Math.max(0, current - 8), current + 4);
+  if (range === "12m")
+    return points.slice(Math.max(0, current - 8), current + 4);
   return points.slice(Math.max(0, current - 3), current + 3);
 }
 
@@ -100,7 +121,11 @@ export function compactNumber(n: number): string {
   return String(Math.round(n));
 }
 
-export type Summary = { recorded: number; thisMonth: number; scheduled: number };
+export type Summary = {
+  recorded: number;
+  thisMonth: number;
+  scheduled: number;
+};
 
 /** Totals for the months on screen: what is recorded, this month so far, and what is scheduled. */
 export function summarise(points: MonthPoint[]): Summary {
@@ -120,3 +145,44 @@ export const PHASE_LABEL: Record<Phase, string> = {
   current: "This month so far",
   upcoming: "Scheduled target",
 };
+
+/** Demo headline figures. PLACEHOLDER: replace with owner-approved numbers (see DASHBOARD_IS_DEMO). */
+export const DEMO_KPIS = [
+  { label: "Active savers", value: 2460, money: false },
+  { label: "Goals reached", value: 479, money: false },
+  { label: "Towns reached", value: 18, money: false },
+  { label: "Average saved per member", value: 142, money: true },
+] as const;
+
+/** Demo split of savers by goal, in percent. PLACEHOLDER, adds up to 100. */
+export const DEMO_GOAL_SHARES = [
+  { label: "Asset", percent: 28 },
+  { label: "Holiday", percent: 17 },
+  { label: "Emergency", percent: 27 },
+  { label: "Retrenchment", percent: 10 },
+  { label: "Education", percent: 18 },
+] as const;
+
+export type DonutSegment = {
+  label: string;
+  percent: number;
+  /** Where the slice starts, as a fraction of the circle (0 to 1). */
+  start: number;
+  /** How much of the circle it covers (0 to 1). */
+  length: number;
+};
+
+/** Turns shares into donut slices. The shares are scaled so the slices always fill the circle. */
+export function donutSegments(
+  shares: readonly { label: string; percent: number }[],
+): DonutSegment[] {
+  const total = shares.reduce((sum, s) => sum + Math.max(0, s.percent), 0);
+  if (total <= 0) return [];
+  let start = 0;
+  return shares.map((s) => {
+    const length = Math.max(0, s.percent) / total;
+    const seg = { label: s.label, percent: s.percent, start, length };
+    start += length;
+    return seg;
+  });
+}
