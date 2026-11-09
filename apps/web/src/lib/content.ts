@@ -2,6 +2,12 @@ import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { supabase } from "@/lib/supabase";
 import { MEDIA_BUCKET, newImagePath, shrinkImage } from "@/lib/images";
+import {
+  checkEventFile,
+  mediaExtension,
+  mediaKindOf,
+  type MediaKind,
+} from "@/lib/event-media";
 
 // Public site content (pages, FAQs, announcements, team, events). Visitors can read only what
 // is published; admins can read and write everything. The database enforces both rules.
@@ -56,13 +62,17 @@ const TeamRow = z.object({
 });
 export type TeamMember = z.infer<typeof TeamRow>;
 
+// One picture, video or PDF attached to an event (table: event_images).
 const ImageRow = z.object({
   id: z.string(),
   path: z.string(),
   caption: z.string().nullable(),
   sort_order: z.number(),
+  media_type: z.enum(["image", "video", "pdf"]).default("image"),
+  file_name: z.string().nullable().default(null),
 });
 export type EventImage = z.infer<typeof ImageRow>;
+export type EventMedia = EventImage;
 
 const EventRow = z.object({
   id: z.string(),
@@ -84,12 +94,27 @@ const ANNOUNCEMENT_COLUMNS =
 const TEAM_COLUMNS =
   "id, full_name, role_title, bio, photo_path, level, sort_order, published";
 const EVENT_COLUMNS =
-  "id, title, event_date, location, summary, details, published, event_images(id, path, caption, sort_order)";
+  "id, title, event_date, location, summary, details, published, event_images(id, path, caption, sort_order, media_type, file_name)";
 
-/** Public address of an uploaded picture. */
-export function mediaUrl(path: string | null | undefined): string | null {
+/**
+ * Public address of an uploaded file. With `download`, the address makes the browser save the
+ * file under that name instead of showing it (this works across sites, unlike the HTML
+ * download attribute).
+ */
+export function mediaUrl(
+  path: string | null | undefined,
+  opts?: { download?: string },
+): string | null {
   if (!path) return null;
-  return supabase.storage.from(MEDIA_BUCKET).getPublicUrl(path).data.publicUrl;
+  return supabase.storage
+    .from(MEDIA_BUCKET)
+    .getPublicUrl(path, opts?.download ? { download: opts.download } : undefined)
+    .data.publicUrl;
+}
+
+/** The picture to show as an event's cover: the first picture (videos and PDFs have no cover). */
+export function eventCoverPath(event: SiteEvent): string | null {
+  return event.images.find((m) => m.media_type === "image")?.path ?? null;
 }
 
 /* ------------------------------------------------------------------ */
@@ -410,19 +435,39 @@ export async function deleteEvent(event: SiteEvent) {
   check((await supabase.from("events").delete().eq("id", event.id)).error);
   await removePictures(event.images.map((i) => i.path));
 }
-export async function addEventPictures(
+/** Pictures are shrunk first; videos and PDFs go up exactly as they are. */
+async function uploadEventFile(
+  eventId: string,
+  file: File,
+): Promise<{ path: string; media_type: MediaKind; file_name: string | null }> {
+  const problem = checkEventFile(file);
+  if (problem) throw new Error(problem);
+  const kind = mediaKindOf(file);
+  if (!kind) throw new Error("That file type is not supported.");
+  if (kind === "image") {
+    const path = await uploadPicture(`events/${eventId}`, file);
+    return { path, media_type: "image", file_name: null };
+  }
+  const path = newImagePath(`events/${eventId}`, mediaExtension(file));
+  const { error } = await supabase.storage
+    .from(MEDIA_BUCKET)
+    .upload(path, file, { contentType: file.type, cacheControl: "31536000" });
+  check(error);
+  return { path, media_type: kind, file_name: file.name };
+}
+export async function addEventMedia(
   eventId: string,
   files: File[],
   startOrder: number,
 ) {
   let order = startOrder;
   for (const file of files) {
-    const path = await uploadPicture(`events/${eventId}`, file);
+    const uploaded = await uploadEventFile(eventId, file);
     const { error } = await supabase
       .from("event_images")
-      .insert({ event_id: eventId, path, sort_order: (order += 10) });
+      .insert({ event_id: eventId, ...uploaded, sort_order: (order += 10) });
     if (error) {
-      await removePictures([path]);
+      await removePictures([uploaded.path]);
       throw error;
     }
   }

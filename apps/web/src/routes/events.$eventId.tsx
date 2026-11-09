@@ -1,15 +1,21 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { PageShell } from "@/components/site/PageShell";
 import { RichText } from "@/components/site/RichText";
-import { mediaUrl, useEvent } from "@/lib/content";
+import { EventGallery } from "@/components/site/EventGallery";
+import { useEvent } from "@/lib/content";
 import { formatDate } from "@/lib/staff-utils";
 
 export const Route = createFileRoute("/events/$eventId")({
+  // ?m=<id> opens one picture, video or flier straight away (this is what a shared link uses).
+  validateSearch: (search: Record<string, unknown>): { m?: string } => ({
+    m: typeof search.m === "string" && search.m ? search.m : undefined,
+  }),
   component: EventPage,
 });
 
 function EventPage() {
   const { eventId } = Route.useParams();
+  const { m } = Route.useSearch();
   const { data, isPending, isError } = useEvent(eventId);
 
   if (isPending || isError || !data) {
@@ -47,31 +53,7 @@ function EventPage() {
     >
       {data.summary && <p className="mb-6 text-base">{data.summary}</p>}
       {data.details && <RichText text={data.details} />}
-      {data.images.length > 0 && (
-        <ul className="mt-10 grid gap-4 sm:grid-cols-2">
-          {data.images.map((img) => (
-            <li key={img.id}>
-              <a
-                href={mediaUrl(img.path) ?? undefined}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <img
-                  src={mediaUrl(img.path) ?? undefined}
-                  alt={img.caption ?? data.title}
-                  loading="lazy"
-                  className="h-auto w-full rounded-md border border-border bg-muted object-contain"
-                />
-              </a>
-              {img.caption && (
-                <p className="mt-2 text-xs text-muted-foreground">
-                  {img.caption}
-                </p>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
+      <EventGallery event={data} initialOpenId={m} />
       <p className="mt-10 text-sm">
         <Link to="/events" className="underline underline-offset-4">
           ← All events

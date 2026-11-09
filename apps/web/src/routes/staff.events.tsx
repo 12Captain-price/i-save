@@ -10,18 +10,20 @@ import {
   TextAreaField,
 } from "@/components/staff/FormBits";
 import { useContentAction } from "@/components/staff/useContentAction";
+import { MediaThumb } from "@/components/site/MediaThumb";
 import { Photo } from "@/components/site/Photo";
 import { Button } from "@/components/ui/button";
 import { CheckField, Field } from "@/components/ui/field";
 import {
-  addEventPictures,
+  addEventMedia,
   deleteEvent,
   deleteEventPicture,
+  eventCoverPath,
   saveEvent,
   useEvents,
   type SiteEvent,
 } from "@/lib/content";
-import { checkImageFile } from "@/lib/images";
+import { EVENT_MEDIA_ACCEPT, MEDIA_LABEL, checkEventFile } from "@/lib/event-media";
 import { formatDate } from "@/lib/staff-utils";
 
 export const Route = createFileRoute("/staff/events")({
@@ -68,14 +70,14 @@ function EventsAdmin() {
               className="flex flex-wrap items-center gap-4 rounded-md border border-border p-4"
             >
               <Photo
-                path={ev.images[0]?.path ?? null}
+                path={eventCoverPath(ev)}
                 alt=""
                 className="h-16 w-24 rounded"
               />
               <div className="min-w-0 flex-1">
                 <p className="font-medium">{ev.title}</p>
                 <p className="text-xs text-muted-foreground">
-                  {formatDate(ev.event_date)} · {ev.images.length} picture
+                  {formatDate(ev.event_date)} · {ev.images.length} file
                   {ev.images.length === 1 ? "" : "s"} ·{" "}
                   {ev.published ? "Showing" : "Draft"}
                 </p>
@@ -95,7 +97,7 @@ function EventsAdmin() {
                     void ask({
                       title: `Delete "${ev.title}"?`,
                       message:
-                        "The event and all of its pictures will be removed. This cannot be undone.",
+                        "The event and all of its pictures, videos and PDFs will be removed. This cannot be undone.",
                       confirmLabel: "Yes, delete",
                       tone: "danger",
                     }).then((ok) => {
@@ -135,7 +137,7 @@ function EventForm({
 
   function pick(list: FileList | null) {
     const chosen = Array.from(list ?? []);
-    const bad = chosen.map(checkImageFile).find(Boolean);
+    const bad = chosen.map(checkEventFile).find(Boolean);
     if (bad) {
       setError(bad);
       return;
@@ -164,7 +166,7 @@ function EventForm({
       );
       if (files.length) {
         const last = initial?.images.at(-1)?.sort_order ?? 0;
-        await addEventPictures(id, files, last);
+        await addEventMedia(id, files, last);
       }
     });
     if (ok) onDone();
@@ -215,13 +217,12 @@ function EventForm({
 
       {initial && initial.images.length > 0 && (
         <div>
-          <p className="mb-2 text-sm font-medium">Pictures</p>
+          <p className="mb-2 text-sm font-medium">Pictures, videos and PDFs</p>
           <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {initial.images.map((img) => (
               <li key={img.id} className="text-center">
-                <Photo
-                  path={img.path}
-                  alt=""
+                <MediaThumb
+                  item={img}
                   className="aspect-[4/3] w-full rounded"
                 />
                 <button
@@ -229,7 +230,7 @@ function EventForm({
                   className="mt-1 text-xs text-destructive underline"
                   onClick={() => {
                     void ask({
-                      title: "Delete this picture?",
+                      title: `Delete this ${MEDIA_LABEL[img.media_type].toLowerCase()}?`,
                       message: "It will be removed from the event.",
                       confirmLabel: "Yes, delete",
                       tone: "danger",
@@ -247,20 +248,20 @@ function EventForm({
       )}
       <div>
         <label htmlFor="ev-files" className="mb-1.5 block text-sm font-medium">
-          Add pictures
+          Add pictures, videos or PDFs
         </label>
         <input
           id="ev-files"
           type="file"
           multiple
-          accept="image/jpeg,image/png,image/webp"
+          accept={EVENT_MEDIA_ACCEPT}
           onChange={(e) => pick(e.target.files)}
           className="text-sm"
         />
         <p className="mt-1 text-xs text-muted-foreground">
           {files.length
             ? `${files.length} selected. They upload when you press Save.`
-            : "You can choose several at once. Large photos are shrunk automatically."}
+            : "You can choose several at once. Photos are shrunk automatically. Videos (MP4 or WebM) can be up to 50 MB and PDFs up to 10 MB."}
         </p>
       </div>
       <CheckField id="ev-pub" checked={published} onChange={setPublished}>
