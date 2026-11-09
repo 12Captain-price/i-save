@@ -1,6 +1,8 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { PageShell } from "@/components/site/PageShell";
 import { RichText } from "@/components/site/RichText";
+import { DateBadge } from "@/components/site/DateBadge";
+import { EventActions } from "@/components/site/EventActions";
 import { EventGallery } from "@/components/site/EventGallery";
 import { ShareButton } from "@/components/site/ShareButton";
 import { Tag } from "@/components/site/Tags";
@@ -52,20 +54,32 @@ function EventPage() {
     <PageShell
       eyebrow={`Events · ${formatDate(data.event_date)}`}
       title={data.title}
-      lead={data.location ?? undefined}
     >
-      <div className="mb-6 flex flex-wrap items-center gap-3">
-        {timingLabel(data.event_date) && (
-          <Tag tone="soon">{timingLabel(data.event_date)}</Tag>
-        )}
-        <ShareButton
-          title={data.title}
-          url={`${window.location.origin}/events/${data.id}`}
-        />
+      <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-3 rounded-md border border-border bg-card p-4">
+        <DateBadge day={data.event_date} />
+        <div className="min-w-0 flex-1 basis-40">
+          <p className="font-semibold">{formatDate(data.event_date)}</p>
+          {data.location && (
+            <p className="text-sm text-muted-foreground">{data.location}</p>
+          )}
+          {timingLabel(data.event_date) && (
+            <Tag tone="soon" className="mt-1.5">
+              {timingLabel(data.event_date)}
+            </Tag>
+          )}
+        </div>
+        <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
+          <EventActions event={data} />
+          <ShareButton
+            title={data.title}
+            url={`${window.location.origin}/events/${data.id}`}
+          />
+        </div>
       </div>
-      {data.summary && <p className="mb-6 text-base">{data.summary}</p>}
-      {data.details && <RichText text={data.details} />}
-      <EventGallery event={data} initialOpenId={m} />
+      <EventGallery event={data} initialOpenId={m}>
+        {data.summary && <p className="mb-6 text-base">{data.summary}</p>}
+        {data.details && <RichText text={data.details} />}
+      </EventGallery>
       <p className="mt-10 text-sm">
         <Link to="/events" className="underline underline-offset-4">
           ← All events

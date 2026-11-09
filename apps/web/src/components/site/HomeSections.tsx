@@ -2,6 +2,7 @@ import { ArrowRight, Paperclip, PenLine, Star } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { Tag } from "@/components/site/Tags";
 import { buttonVariants } from "@/components/ui/button";
+import { DateBadge } from "@/components/site/DateBadge";
 import { EventCard } from "@/components/site/EventCard";
 import { Reveal } from "@/components/site/Reveal";
 import { ReviewCard } from "@/components/site/ReviewCard";
@@ -11,7 +12,7 @@ import { useAnnouncements, useEvents, useTeam } from "@/lib/content";
 import { useApprovedReviews } from "@/lib/reviews";
 import { formatDate } from "@/lib/staff-utils";
 import { groupByLevel } from "@/lib/team-utils";
-import { isRecent, shorten, splitEvents } from "@/lib/updates";
+import { isRecent, shorten, splitEvents, timingLabel } from "@/lib/updates";
 
 function Heading({
   eyebrow,
@@ -49,8 +50,41 @@ export function HomeSections() {
   const team = useTeam().data ?? [];
   const leaders = groupByLevel(team)[0] ?? [];
 
+  const soon = upcoming.slice(0, 3);
+
   return (
     <>
+      {soon.length > 0 && (
+        <section aria-label="Coming up" className="home-width pt-10">
+          <Reveal>
+            <p className="home-eyebrow">Coming up</p>
+          </Reveal>
+          <ul className="mt-3 flex snap-x gap-3 overflow-x-auto pb-2 md:grid md:grid-cols-3 md:overflow-visible">
+            {soon.map((e) => (
+              <li key={e.id} className="w-[82%] shrink-0 snap-start md:w-auto">
+                <Link
+                  to="/events/$eventId"
+                  params={{ eventId: e.id }}
+                  className="lift-card flex h-full items-center gap-4 rounded-md border border-border bg-card p-3"
+                >
+                  <DateBadge day={e.event_date} />
+                  <span className="min-w-0">
+                    <span className="block truncate font-semibold">
+                      {e.title}
+                    </span>
+                    <span className="block truncate text-xs text-muted-foreground">
+                      {[timingLabel(e.event_date), e.location]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {announcements.length > 0 && (
         <section aria-label="Announcements" className="home-width py-12">
           <Heading
@@ -59,48 +93,58 @@ export function HomeSections() {
             href="/announcements"
             linkText="All announcements"
           />
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
-            {announcements.map((a, i) => (
-              <Reveal
-                as="article"
-                index={i}
-                key={a.id}
-                className="lift-card rounded-md border border-border bg-card p-5"
-              >
-                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                  {a.published_at && <span>{formatDate(a.published_at)}</span>}
-                  {isRecent(a.published_at) && <Tag tone="new">New</Tag>}
-                </div>
-                <h3 className="mt-1 font-semibold">
-                  <Link
-                    to="/announcements/$announcementId"
-                    params={{ announcementId: a.id }}
-                    className="hover:underline"
+          <div className="mt-6 grid gap-4 lg:grid-cols-5">
+            {announcements.map((a, i) => {
+              const lead = i === 0;
+              const preview = shorten(a.body, lead ? 260 : 120);
+              return (
+                <Reveal
+                  as="article"
+                  index={i}
+                  key={a.id}
+                  className={`lift-card rounded-md border p-5 ${
+                    lead
+                      ? "border-primary/40 bg-primary/5 lg:col-span-3 lg:row-span-2 lg:p-7"
+                      : "border-border bg-card lg:col-span-2"
+                  }`}
+                >
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                    {a.published_at && <span>{formatDate(a.published_at)}</span>}
+                    {isRecent(a.published_at) && <Tag tone="new">New</Tag>}
+                  </div>
+                  <h3
+                    className={`mt-1 font-semibold ${lead ? "text-xl lg:text-2xl" : ""}`}
                   >
-                    {a.title}
-                  </Link>
-                </h3>
-                <RichText
-                  text={shorten(a.body, 160).text}
-                  className="mt-2 space-y-2 text-sm text-muted-foreground"
-                />
-                <div className="mt-3 flex items-center justify-between gap-2 text-xs font-semibold">
-                  <Link
-                    to="/announcements/$announcementId"
-                    params={{ announcementId: a.id }}
-                    className="text-primary hover:underline"
-                  >
-                    {shorten(a.body, 160).cut ? "Read more →" : "Open →"}
-                  </Link>
-                  {a.files.length > 0 && (
-                    <span className="inline-flex items-center gap-1 text-muted-foreground">
-                      <Paperclip className="size-3.5" aria-hidden="true" />
-                      {a.files.length} {a.files.length === 1 ? "file" : "files"}
-                    </span>
-                  )}
-                </div>
-              </Reveal>
-            ))}
+                    <Link
+                      to="/announcements/$announcementId"
+                      params={{ announcementId: a.id }}
+                      className="hover:underline"
+                    >
+                      {a.title}
+                    </Link>
+                  </h3>
+                  <RichText
+                    text={preview.text}
+                    className="mt-2 space-y-2 text-sm text-muted-foreground"
+                  />
+                  <div className="mt-3 flex items-center justify-between gap-2 text-xs font-semibold">
+                    <Link
+                      to="/announcements/$announcementId"
+                      params={{ announcementId: a.id }}
+                      className="text-primary hover:underline"
+                    >
+                      {preview.cut ? "Read more →" : "Open →"}
+                    </Link>
+                    {a.files.length > 0 && (
+                      <span className="inline-flex items-center gap-1 text-muted-foreground">
+                        <Paperclip className="size-3.5" aria-hidden="true" />
+                        {a.files.length} {a.files.length === 1 ? "file" : "files"}
+                      </span>
+                    )}
+                  </div>
+                </Reveal>
+              );
+            })}
           </div>
         </section>
       )}
@@ -114,11 +158,19 @@ export function HomeSections() {
             linkText="All events"
           />
           <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {events.map((e, i) => (
-              <Reveal key={e.id} index={i} className="h-full">
-                <EventCard event={e} />
-              </Reveal>
-            ))}
+            {events.map((e, i) => {
+              // With three events, the first is wide and the other two stack beside it.
+              const wide = events.length === 3 && i === 0;
+              return (
+                <Reveal
+                  key={e.id}
+                  index={i}
+                  className={`h-full ${wide ? "sm:col-span-2 lg:row-span-2" : ""}`}
+                >
+                  <EventCard event={e} featured={wide} />
+                </Reveal>
+              );
+            })}
           </div>
         </section>
       )}

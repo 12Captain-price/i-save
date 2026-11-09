@@ -1,11 +1,13 @@
 import { useEffect } from "react";
-import { LoadingSkeleton } from "@/components/ui/motion";
+import { Megaphone } from "lucide-react";
 import {
   Outlet,
   createFileRoute,
   useChildMatches,
 } from "@tanstack/react-router";
 import { AnnouncementCard } from "@/components/site/AnnouncementCard";
+import { EmptyState } from "@/components/site/EmptyState";
+import { AnnouncementListSkeleton } from "@/components/site/Skeletons";
 import { PageShell } from "@/components/site/PageShell";
 import { useAnnouncements } from "@/lib/content";
 import { markSeen } from "@/lib/updates";
@@ -32,20 +34,21 @@ function AnnouncementsPage() {
       title="News from the office."
       lead="Notices for members. Members who opt in also receive these by email and WhatsApp."
     >
-      {isPending && <LoadingSkeleton />}
+      {isPending && <AnnouncementListSkeleton />}
       {isError && (
         <p role="alert" className="text-sm text-destructive">
           Announcements could not be loaded. Please try again in a moment.
         </p>
       )}
       {data?.length === 0 && (
-        <p className="text-sm text-muted-foreground">
-          There are no announcements right now.
-        </p>
+        <EmptyState icon={<Megaphone />} title="Nothing new right now">
+          When the office has a notice for members, it will appear here. Check
+          back soon.
+        </EmptyState>
       )}
       <div className="grid gap-5">
-        {data?.map((a) => (
-          <AnnouncementCard key={a.id} announcement={a} />
+        {data?.map((a, i) => (
+          <AnnouncementCard key={a.id} announcement={a} featured={i === 0} />
         ))}
       </div>
     </PageShell>

@@ -77,6 +77,14 @@ const TeamRow = z.object({
 });
 export type TeamMember = z.infer<typeof TeamRow>;
 
+const TeamContactRow = z.object({
+  member_id: z.string(),
+  phone: z.string().nullable(),
+  email: z.string().nullable(),
+  show_on_contact: z.boolean(),
+});
+export type TeamContact = z.infer<typeof TeamContactRow>;
+
 export type EventImage = z.infer<typeof MediaRow>;
 export type EventMedia = EventImage;
 
@@ -264,6 +272,27 @@ export const useTeam = (all = false) =>
   useQuery({
     queryKey: ["content", "team", all],
     queryFn: () => fetchTeam(all),
+  });
+
+/**
+ * Phone and email of team members. Visitors only ever receive the ones staff ticked "Show on
+ * the Contact page" for (the database enforces this); staff (all = true) receive every row.
+ * If migration 030 has not been run yet, the public Contact page simply shows no team.
+ */
+async function fetchTeamContacts(all: boolean): Promise<TeamContact[]> {
+  const { data, error } = await supabase
+    .from("team_contact_details")
+    .select("member_id, phone, email, show_on_contact");
+  if (error) {
+    if (all) throw error;
+    return [];
+  }
+  return z.array(TeamContactRow).parse(data);
+}
+export const useTeamContacts = (all = false) =>
+  useQuery({
+    queryKey: ["content", "team-contacts", all],
+    queryFn: () => fetchTeamContacts(all),
   });
 
 function toEvent(row: z.infer<typeof EventRow>): SiteEvent {
@@ -512,22 +541,58 @@ export type TeamValues = {
   sort_order: number;
   published: boolean;
 };
+export type TeamContactValues = {
+  phone: string | null;
+  email: string | null;
+  show_on_contact: boolean;
+};
 export async function saveTeamMember(
   values: TeamValues,
-  opts: { id?: string; photo?: File | null; oldPhotoPath?: string | null },
+  opts: {
+    id?: string;
+    photo?: File | null;
+    oldPhotoPath?: string | null;
+    contact?: TeamContactValues;
+    /** True when this person already has a contact row, so clearing it is saved too. */
+    hadContact?: boolean;
+  },
 ) {
   const photo_path = opts.photo
     ? await uploadPicture("team", opts.photo)
     : undefined;
   const row = photo_path ? { ...values, photo_path } : values;
-  const { error } = opts.id
-    ? await supabase.from("team_members").update(row).eq("id", opts.id)
-    : await supabase.from("team_members").insert(row);
+  let memberId = opts.id;
+  let error;
+  if (opts.id) {
+    ({ error } = await supabase
+      .from("team_members")
+      .update(row)
+      .eq("id", opts.id));
+  } else {
+    const res = await supabase
+      .from("team_members")
+      .insert(row)
+      .select("id")
+      .single();
+    error = res.error;
+    memberId = res.data?.id;
+  }
   if (error) {
     await removePictures([photo_path]);
     throw error;
   }
   if (photo_path) await removePictures([opts.oldPhotoPath]);
+
+  const c = opts.contact;
+  if (c && memberId && (opts.hadContact || c.phone || c.email || c.show_on_contact)) {
+    check(
+      (
+        await supabase
+          .from("team_contact_details")
+          .upsert({ member_id: memberId, ...c }, { onConflict: "member_id" })
+      ).error,
+    );
+  }
 }
 export async function deleteTeamMember(member: TeamMember) {
   check(

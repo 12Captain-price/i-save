@@ -1,11 +1,13 @@
 import { useEffect } from "react";
-import { LoadingSkeleton } from "@/components/ui/motion";
+import { CalendarDays } from "lucide-react";
 import {
   Outlet,
   createFileRoute,
   useChildMatches,
 } from "@tanstack/react-router";
 import { EventCard } from "@/components/site/EventCard";
+import { EmptyState } from "@/components/site/EmptyState";
+import { EventGridSkeleton } from "@/components/site/Skeletons";
 import { PageShell } from "@/components/site/PageShell";
 import { useEvents, type SiteEvent } from "@/lib/content";
 import { markSeen, splitEvents } from "@/lib/updates";
@@ -43,14 +45,17 @@ function EventsPage() {
       title="Events."
       lead="What is coming up, and pictures and details from what the organisation has been doing."
     >
-      {isPending && <LoadingSkeleton />}
+      {isPending && <EventGridSkeleton />}
       {isError && (
         <p role="alert" className="text-sm text-destructive">
           Events could not be loaded. Please try again in a moment.
         </p>
       )}
       {data?.length === 0 && (
-        <p className="text-sm text-muted-foreground">No events to show yet.</p>
+        <EmptyState icon={<CalendarDays />} title="No events yet">
+          Upcoming events and pictures from what we have been doing will show up
+          here.
+        </EmptyState>
       )}
       {upcoming.length > 0 && (
         <section aria-labelledby="upcoming-events">

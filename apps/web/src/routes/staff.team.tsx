@@ -17,8 +17,11 @@ import {
   deleteTeamMember,
   saveTeamMember,
   useTeam,
+  useTeamContacts,
+  type TeamContact,
   type TeamMember,
 } from "@/lib/content";
+import { normalizePhone } from "@/lib/phone";
 import { checkImageFile } from "@/lib/images";
 import { groupByLevel } from "@/lib/team-utils";
 
@@ -41,6 +44,9 @@ const LEVELS = [
 
 function TeamAdmin() {
   const { data, isPending, isError } = useTeam(true);
+  const contacts = useTeamContacts(true).data ?? [];
+  const contactOf = (id: string): TeamContact | null =>
+    contacts.find((c) => c.member_id === id) ?? null;
   const [editing, setEditing] = useState<TeamMember | "new" | null>(null);
   const ask = useConfirm();
   const { run, error } = useContentAction();
@@ -58,7 +64,11 @@ function TeamAdmin() {
       </div>
       {editing === "new" && (
         <div className="mt-4">
-          <TeamForm initial={null} onDone={() => setEditing(null)} />
+          <TeamForm
+            initial={null}
+            contact={null}
+            onDone={() => setEditing(null)}
+          />
         </div>
       )}
       {isPending && <LoadingSkeleton />}
@@ -76,6 +86,7 @@ function TeamAdmin() {
                     <TeamForm
                       key={m.id}
                       initial={m}
+                      contact={contactOf(m.id)}
                       onDone={() => setEditing(null)}
                     />
                   ) : (
@@ -94,6 +105,8 @@ function TeamAdmin() {
                         <p className="text-sm text-muted-foreground">
                           {m.role_title}
                           {!m.published && " · Hidden"}
+                          {contactOf(m.id)?.show_on_contact &&
+                            " · On Contact page"}
                         </p>
                       </div>
                       <div className="flex gap-2">
@@ -136,9 +149,11 @@ function TeamAdmin() {
 
 function TeamForm({
   initial,
+  contact,
   onDone,
 }: {
   initial: TeamMember | null;
+  contact: TeamContact | null;
   onDone: () => void;
 }) {
   const { run, busy, error, setError } = useContentAction();
@@ -148,6 +163,9 @@ function TeamForm({
   const [level, setLevel] = useState(String(initial?.level ?? 1));
   const [order, setOrder] = useState(String(initial?.sort_order ?? 100));
   const [published, setPublished] = useState(initial?.published ?? true);
+  const [phone, setPhone] = useState(contact?.phone ?? "");
+  const [email, setEmail] = useState(contact?.email ?? "");
+  const [onContact, setOnContact] = useState(contact?.show_on_contact ?? false);
   const [photo, setPhoto] = useState<File | null>(null);
 
   function pick(file: File | null) {
@@ -168,6 +186,26 @@ function TeamForm({
       setError("Enter a name and a role.");
       return;
     }
+    let phoneValue: string | null = null;
+    if (phone.trim()) {
+      const result = normalizePhone(phone);
+      if (!result.ok) {
+        setError(result.message);
+        return;
+      }
+      phoneValue = result.value;
+    }
+    const emailValue = email.trim() || null;
+    if (emailValue && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(emailValue)) {
+      setError("That email address does not look right.");
+      return;
+    }
+    if (onContact && !phoneValue && !emailValue) {
+      setError(
+        "To show this person on the Contact page, add a phone number or an email address.",
+      );
+      return;
+    }
     const ok = await run(() =>
       saveTeamMember(
         {
@@ -178,7 +216,17 @@ function TeamForm({
           sort_order: Number(order) || 100,
           published,
         },
-        { id: initial?.id, photo, oldPhotoPath: initial?.photo_path },
+        {
+          id: initial?.id,
+          photo,
+          oldPhotoPath: initial?.photo_path,
+          contact: {
+            phone: phoneValue,
+            email: emailValue,
+            show_on_contact: onContact,
+          },
+          hadContact: contact !== null,
+        },
       ),
     );
     if (ok) onDone();
@@ -269,6 +317,34 @@ function TeamForm({
       <CheckField id="tm-pub" checked={published} onChange={setPublished}>
         Show on the website
       </CheckField>
+      <fieldset className="grid gap-4 rounded-md border border-border p-4">
+        <legend className="px-1 text-sm font-medium">Contact details</legend>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field
+            id="tm-phone"
+            label="Phone (optional)"
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            hint="For example 0771234567."
+          />
+          <Field
+            id="tm-email"
+            label="Email (optional)"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
+        <CheckField id="tm-contact" checked={onContact} onChange={setOnContact}>
+          Show these details on the Contact page
+        </CheckField>
+        <p className="text-xs text-muted-foreground">
+          Leave this unticked to keep the details private. They are only shown
+          publicly while this box is ticked and the person is shown on the
+          website.
+        </p>
+      </fieldset>
       <ErrorLine message={error} />
       <div className="flex gap-2">
         <Button type="submit" disabled={busy}>

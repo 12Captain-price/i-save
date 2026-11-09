@@ -17,6 +17,7 @@ import {
   Share2,
   X,
 } from "lucide-react";
+import { MediaThumb } from "@/components/site/MediaThumb";
 import { WhatsAppIcon } from "@/components/whatsapp/WhatsAppIcon";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { mediaUrl, type EventMedia } from "@/lib/content";
@@ -49,11 +50,19 @@ export function MediaViewer({
   const swipeStart = useRef<number | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  // A short "swipe" hint on phones the first time a set with several files opens.
+  const [hint, setHint] = useState(items.length > 1);
+  useEffect(() => {
+    if (!hint) return;
+    const t = window.setTimeout(() => setHint(false), 3500);
+    return () => window.clearTimeout(t);
+  }, [hint]);
 
   const go = useCallback(
     (delta: number) => {
       const next = index + delta;
       if (next < 0 || next >= items.length) return;
+      setHint(false);
       setShareOpen(false);
       setCopied(false);
       onIndexChange(next);
@@ -290,6 +299,42 @@ export function MediaViewer({
         data-backdrop="true"
         className="px-4 py-3 text-center text-xs text-white/80"
       >
+        {hint && (
+          <p
+            aria-hidden="true"
+            className="mb-2 text-white/70 sm:hidden"
+          >
+            ← Swipe to see more →
+          </p>
+        )}
+        {items.length > 1 && (
+          <ul
+            aria-label="All files"
+            className="mx-auto mb-3 flex max-w-full justify-start gap-2 overflow-x-auto pb-1 sm:justify-center"
+          >
+            {items.map((m, i) => (
+              <li key={m.id} className="shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShareOpen(false);
+                    setCopied(false);
+                    onIndexChange(i);
+                  }}
+                  aria-label={`Show ${MEDIA_LABEL[m.media_type].toLowerCase()} ${i + 1} of ${items.length}`}
+                  aria-current={i === index ? "true" : undefined}
+                  className={`block overflow-hidden rounded-md ring-2 transition-opacity focus-visible:outline-none focus-visible:ring-white ${
+                    i === index
+                      ? "opacity-100 ring-white"
+                      : "opacity-60 ring-transparent hover:opacity-100"
+                  }`}
+                >
+                  <MediaThumb item={m} className="h-14 w-14 sm:h-16 sm:w-16" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
         {item.caption && <p className="mb-1 text-sm text-white">{item.caption}</p>}
         {item.media_type === "pdf" && (
           <p>

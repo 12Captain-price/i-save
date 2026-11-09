@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Megaphone, Paperclip } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { MediaGallery } from "@/components/site/MediaGallery";
 import { RichText } from "@/components/site/RichText";
@@ -7,6 +8,7 @@ import { Tag } from "@/components/site/Tags";
 import type { Announcement } from "@/lib/content";
 import { formatDate } from "@/lib/staff-utils";
 import { isRecent, shorten } from "@/lib/updates";
+import { cn } from "@/lib/utils";
 
 /**
  * One announcement: date and "New" tag, title, text with "Read more" when it is long, any
@@ -16,10 +18,13 @@ import { isRecent, shorten } from "@/lib/updates";
 export function AnnouncementCard({
   announcement: a,
   single = false,
+  featured = false,
   initialOpenId,
 }: {
   announcement: Announcement;
   single?: boolean;
+  /** The newest notice, shown larger and tinted at the top of the list. */
+  featured?: boolean;
   initialOpenId?: string;
 }) {
   const [expanded, setExpanded] = useState(single);
@@ -27,9 +32,24 @@ export function AnnouncementCard({
   const pageUrl = `/announcements/${a.id}`;
 
   return (
-    <article className="rounded-md border border-border bg-card p-6">
+    <article
+      className={cn(
+        "rounded-md border border-border bg-card p-6",
+        featured && "border-primary/40 bg-primary/5 p-6 md:p-8",
+      )}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          <span
+            aria-hidden="true"
+            className="flex size-7 items-center justify-center rounded-full bg-primary/15 text-primary"
+          >
+            {a.files.length > 0 ? (
+              <Paperclip className="size-3.5" />
+            ) : (
+              <Megaphone className="size-3.5" />
+            )}
+          </span>
           {a.published_at && <span>{formatDate(a.published_at)}</span>}
           {isRecent(a.published_at) && <Tag tone="new">New</Tag>}
         </div>
@@ -41,7 +61,12 @@ export function AnnouncementCard({
 
       {/* On the announcement's own page the page heading already shows the title. */}
       {!single && (
-        <h2 className="mt-1 text-xl font-semibold">
+        <h2
+          className={cn(
+            "mt-2 font-semibold",
+            featured ? "text-2xl" : "text-xl",
+          )}
+        >
           <Link
             to="/announcements/$announcementId"
             params={{ announcementId: a.id }}
