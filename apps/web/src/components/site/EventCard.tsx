@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Photo } from "@/components/site/Photo";
-import type { SiteEvent } from "@/lib/content";
+import { eventCoverPath, type SiteEvent } from "@/lib/content";
 import { formatDate } from "@/lib/staff-utils";
 
 export function EventCard({ event }: { event: SiteEvent }) {
@@ -11,7 +11,7 @@ export function EventCard({ event }: { event: SiteEvent }) {
       className="group zoom-photo block h-full overflow-hidden rounded-md border border-border bg-card"
     >
       <Photo
-        path={event.images[0]?.path ?? null}
+        path={eventCoverPath(event)}
         alt=""
         className="aspect-[16/10] w-full"
       />
