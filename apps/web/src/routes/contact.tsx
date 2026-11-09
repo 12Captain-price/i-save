@@ -35,6 +35,13 @@ function Row({
   );
 }
 
+/** +263785521029 shows as +263 785 521 029; other numbers are left as they are. */
+function formatPhone(e164: string): string {
+  return /^\+263\d{9}$/.test(e164)
+    ? `+263 ${e164.slice(4, 7)} ${e164.slice(7, 10)} ${e164.slice(10)}`
+    : e164;
+}
+
 const link = "inline-block py-2 text-primary underline underline-offset-4";
 
 function ContactPage() {
@@ -117,36 +124,58 @@ function ContactPage() {
             {people.map(({ member, phone, email }) => (
               <div
                 key={member.id}
-                className="flex items-start gap-4 rounded-md border border-border bg-card p-5"
+                className="rounded-md border border-border bg-card p-5"
               >
-                <Photo
-                  path={member.photo_path}
-                  alt={member.full_name}
-                  fallbackName={member.full_name}
-                  className="h-14 w-14 shrink-0 rounded-full object-cover"
-                />
-                <div className="min-w-0">
-                  <p className="font-semibold">{member.full_name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {member.role_title}
-                  </p>
+                <div className="flex items-center gap-4">
+                  <Photo
+                    path={member.photo_path}
+                    alt={member.full_name}
+                    fallbackName={member.full_name}
+                    className="h-16 w-16 shrink-0 rounded-full border border-border object-cover object-top"
+                  />
+                  <div className="min-w-0">
+                    <p className="font-semibold">{member.full_name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {member.role_title}
+                    </p>
+                  </div>
+                </div>
+                <ul className="mt-4 grid gap-2">
                   {phone && (
-                    <a
-                      className={link + " block text-sm"}
-                      href={"tel:" + phone}
-                    >
-                      {phone}
-                    </a>
+                    <li>
+                      <a
+                        href={"tel:" + phone}
+                        className="flex min-h-11 items-center gap-3 rounded-md border border-border px-3 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                      >
+                        <span
+                          aria-hidden="true"
+                          className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary"
+                        >
+                          <Phone className="size-4" />
+                        </span>
+                        <span className="sr-only">Call </span>
+                        {formatPhone(phone)}
+                      </a>
+                    </li>
                   )}
                   {email && (
-                    <a
-                      className={link + " block text-sm break-all"}
-                      href={"mailto:" + email}
-                    >
-                      {email}
-                    </a>
+                    <li>
+                      <a
+                        href={"mailto:" + email}
+                        className="flex min-h-11 items-center gap-3 rounded-md border border-border px-3 text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                      >
+                        <span
+                          aria-hidden="true"
+                          className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary"
+                        >
+                          <Mail className="size-4" />
+                        </span>
+                        <span className="sr-only">Email </span>
+                        <span className="min-w-0 break-all">{email}</span>
+                      </a>
+                    </li>
                   )}
-                </div>
+                </ul>
               </div>
             ))}
           </div>
