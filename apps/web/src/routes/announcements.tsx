@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Megaphone } from "lucide-react";
 import {
   Outlet,
@@ -8,8 +8,10 @@ import {
 import { AnnouncementCard } from "@/components/site/AnnouncementCard";
 import { EmptyState } from "@/components/site/EmptyState";
 import { AnnouncementListSkeleton } from "@/components/site/Skeletons";
+import { SearchBox } from "@/components/site/SearchBox";
 import { PageShell } from "@/components/site/PageShell";
 import { useAnnouncements } from "@/lib/content";
+import { matchesQuery } from "@/lib/list-filter";
 import { markSeen } from "@/lib/updates";
 
 export const Route = createFileRoute("/announcements")({
@@ -21,6 +23,7 @@ function AnnouncementsPage() {
   // The page of a single announcement (/announcements/<id>) is a child of this route. When
   // one is open, show it instead of the list.
   const showingOne = useChildMatches().length > 0;
+  const [query, setQuery] = useState("");
 
   // Opening the list clears the "new" badge in the header.
   useEffect(() => {
@@ -28,6 +31,10 @@ function AnnouncementsPage() {
   }, [showingOne]);
 
   if (showingOne) return <Outlet />;
+  const searching = query.trim() !== "";
+  const shown = (data ?? []).filter((a) =>
+    matchesQuery([a.title, a.body], query),
+  );
   return (
     <PageShell
       eyebrow="Announcements"
@@ -46,9 +53,27 @@ function AnnouncementsPage() {
           back soon.
         </EmptyState>
       )}
+      {(data?.length ?? 0) > 3 && (
+        <SearchBox
+          id="announcement-search"
+          label="Search announcements"
+          value={query}
+          onChange={setQuery}
+          className="mb-6 max-w-md"
+        />
+      )}
+      {searching && data && data.length > 0 && shown.length === 0 && (
+        <EmptyState icon={<Megaphone />} title="No announcements match">
+          Try a different word.
+        </EmptyState>
+      )}
       <div className="grid gap-5">
-        {data?.map((a, i) => (
-          <AnnouncementCard key={a.id} announcement={a} featured={i === 0} />
+        {shown.map((a, i) => (
+          <AnnouncementCard
+            key={a.id}
+            announcement={a}
+            featured={i === 0 && !searching}
+          />
         ))}
       </div>
     </PageShell>

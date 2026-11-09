@@ -1,3 +1,4 @@
+import { ClipboardList, CreditCard, UserCheck } from "lucide-react";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageShell } from "@/components/site/PageShell";
 import { Photo } from "@/components/site/Photo";
@@ -26,6 +27,39 @@ function ApplyPage() {
       title="Apply for membership."
       lead="Choose your registration agent below. The button opens that agent's registration form."
     >
+      <ol className="mb-10 grid gap-4 sm:grid-cols-3" aria-label="What happens next">
+        {[
+          {
+            icon: <ClipboardList className="size-5" />,
+            title: "1. Register",
+            text: "Choose your agent below and fill in the registration form.",
+          },
+          {
+            icon: <UserCheck className="size-5" />,
+            title: "2. Visit the office",
+            text: "Bring your ID so the office can check it and confirm your plan.",
+          },
+          {
+            icon: <CreditCard className="size-5" />,
+            title: "3. Start saving",
+            text: "Pay your contributions at the office and follow them on your account.",
+          },
+        ].map((step) => (
+          <li
+            key={step.title}
+            className="rounded-xl border border-border bg-card p-5"
+          >
+            <span
+              aria-hidden="true"
+              className="flex size-10 items-center justify-center rounded-full bg-primary/15 text-primary"
+            >
+              {step.icon}
+            </span>
+            <p className="mt-3 font-semibold">{step.title}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{step.text}</p>
+          </li>
+        ))}
+      </ol>
       {isPending && <LoadingSkeleton />}
       {isError && (
         <p role="alert" className="text-sm text-destructive">

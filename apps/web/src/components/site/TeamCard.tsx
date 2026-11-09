@@ -22,7 +22,7 @@ export function TeamCard({
       path={member.photo_path}
       alt={member.full_name}
       fallbackName={member.full_name}
-      className={`mx-auto ${size} rounded-full border border-border object-cover object-top`}
+      className={`mx-auto ${size} rounded-full bg-muted object-cover object-top ring-2 ring-primary/40 ring-offset-2 ring-offset-background`}
     />
   );
   const item: EventMedia | null = member.photo_path

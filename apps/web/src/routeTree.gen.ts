@@ -19,6 +19,7 @@ import { Route as FaqsRouteImport } from './routes/faqs'
 import { Route as FeedbackRouteImport } from './routes/feedback'
 import { Route as FeesRouteImport } from './routes/fees'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PlansRouteImport } from './routes/plans'
 import { Route as PrivacyRouteImport } from './routes/privacy'
@@ -88,6 +89,11 @@ const FeesRoute = FeesRouteImport.update({
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GalleryRoute = GalleryRouteImport.update({
+  id: '/gallery',
+  path: '/gallery',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -203,6 +209,7 @@ export interface FileRoutesByFullPath {
   '/feedback': typeof FeedbackRoute
   '/fees': typeof FeesRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/gallery': typeof GalleryRoute
   '/login': typeof LoginRoute
   '/plans': typeof PlansRoute
   '/privacy': typeof PrivacyRoute
@@ -235,6 +242,7 @@ export interface FileRoutesByTo {
   '/feedback': typeof FeedbackRoute
   '/fees': typeof FeesRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/gallery': typeof GalleryRoute
   '/login': typeof LoginRoute
   '/plans': typeof PlansRoute
   '/privacy': typeof PrivacyRoute
@@ -267,6 +275,7 @@ export interface FileRoutesById {
   '/feedback': typeof FeedbackRoute
   '/fees': typeof FeesRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/gallery': typeof GalleryRoute
   '/login': typeof LoginRoute
   '/plans': typeof PlansRoute
   '/privacy': typeof PrivacyRoute
@@ -301,6 +310,7 @@ export interface FileRouteTypes {
     | '/feedback'
     | '/fees'
     | '/forgot-password'
+    | '/gallery'
     | '/login'
     | '/plans'
     | '/privacy'
@@ -333,6 +343,7 @@ export interface FileRouteTypes {
     | '/feedback'
     | '/fees'
     | '/forgot-password'
+    | '/gallery'
     | '/login'
     | '/plans'
     | '/privacy'
@@ -364,6 +375,7 @@ export interface FileRouteTypes {
     | '/feedback'
     | '/fees'
     | '/forgot-password'
+    | '/gallery'
     | '/login'
     | '/plans'
     | '/privacy'
@@ -397,6 +409,7 @@ export interface RootRouteChildren {
   FeedbackRoute: typeof FeedbackRoute
   FeesRoute: typeof FeesRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
+  GalleryRoute: typeof GalleryRoute
   LoginRoute: typeof LoginRoute
   PlansRoute: typeof PlansRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -477,6 +490,13 @@ declare module '@tanstack/react-router' {
       path: '/forgot-password'
       fullPath: '/forgot-password'
       preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gallery': {
+      id: '/gallery'
+      path: '/gallery'
+      fullPath: '/gallery'
+      preLoaderRoute: typeof GalleryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -684,6 +704,7 @@ const rootRouteChildren: RootRouteChildren = {
   FeedbackRoute: FeedbackRoute,
   FeesRoute: FeesRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
+  GalleryRoute: GalleryRoute,
   LoginRoute: LoginRoute,
   PlansRoute: PlansRoute,
   PrivacyRoute: PrivacyRoute,

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { SiteHeader } from "./SiteHeader";
 import { SiteFooter } from "./SiteFooter";
+import { BackToTop } from "./BackToTop";
 
 export function PublicLayout({ children }: { children: ReactNode }) {
   return (
@@ -13,6 +14,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
         {children}
       </main>
       <SiteFooter />
+      <BackToTop />
     </div>
   );
 }

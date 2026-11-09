@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { CalendarDays } from "lucide-react";
 import {
   Outlet,
@@ -8,9 +8,12 @@ import {
 import { EventCard } from "@/components/site/EventCard";
 import { EmptyState } from "@/components/site/EmptyState";
 import { EventGridSkeleton } from "@/components/site/Skeletons";
+import { SearchBox } from "@/components/site/SearchBox";
 import { PageShell } from "@/components/site/PageShell";
 import { useEvents, type SiteEvent } from "@/lib/content";
+import { matchesQuery, yearOf, yearsOf } from "@/lib/list-filter";
 import { markSeen, splitEvents } from "@/lib/updates";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/events")({
   component: EventsPage,
@@ -31,6 +34,8 @@ function EventsPage() {
   // The page of a single event (/events/<id>) is a child of this route. When one is open,
   // show it instead of the list; without this the address changes but the list stays on screen.
   const showingOneEvent = useChildMatches().length > 0;
+  const [query, setQuery] = useState("");
+  const [year, setYear] = useState("all");
 
   // Opening the list clears the "new" badge in the header.
   useEffect(() => {
@@ -38,7 +43,15 @@ function EventsPage() {
   }, [showingOneEvent]);
 
   if (showingOneEvent) return <Outlet />;
-  const { upcoming, past } = splitEvents(data ?? []);
+  const years = yearsOf((data ?? []).map((e) => e.event_date));
+  const activeYear = years.includes(year) ? year : "all";
+  const visible = (data ?? []).filter(
+    (e) =>
+      (activeYear === "all" || yearOf(e.event_date) === activeYear) &&
+      matchesQuery([e.title, e.location, e.summary], query),
+  );
+  const filtering = query.trim() !== "" || activeYear !== "all";
+  const { upcoming, past } = splitEvents(visible);
   return (
     <PageShell
       eyebrow="Events"
@@ -55,6 +68,46 @@ function EventsPage() {
         <EmptyState icon={<CalendarDays />} title="No events yet">
           Upcoming events and pictures from what we have been doing will show up
           here.
+        </EmptyState>
+      )}
+      {(data?.length ?? 0) > 3 && (
+        <div className="mb-8 grid gap-3">
+          <SearchBox
+            id="event-search"
+            label="Search events"
+            value={query}
+            onChange={setQuery}
+            className="max-w-md"
+          />
+          {years.length > 1 && (
+            <div
+              className="flex flex-wrap gap-2"
+              role="group"
+              aria-label="Filter events by year"
+            >
+              {["all", ...years].map((y) => (
+                <button
+                  key={y}
+                  type="button"
+                  aria-pressed={activeYear === y}
+                  onClick={() => setYear(y)}
+                  className={cn(
+                    "min-h-11 rounded-full border px-4 text-sm font-semibold transition-colors",
+                    activeYear === y
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-card hover:border-primary hover:text-primary",
+                  )}
+                >
+                  {y === "all" ? "All years" : y}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+      {filtering && data && data.length > 0 && visible.length === 0 && (
+        <EmptyState icon={<CalendarDays />} title="No events match">
+          Try a different word, or choose another year.
         </EmptyState>
       )}
       {upcoming.length > 0 && (

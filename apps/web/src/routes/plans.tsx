@@ -1,5 +1,7 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowRight } from "lucide-react";
+import { useState } from "react";
+import { ArrowRight, LayoutGrid, Table2 } from "lucide-react";
+import { PlansCompare } from "@/components/site/PlansCompare";
 import { PlanCard } from "@/components/site/PlanCard";
 import { PublicLayout } from "@/components/site/PublicLayout";
 import { buttonVariants } from "@/components/ui/button";
@@ -32,6 +34,7 @@ function PlansPage() {
   const plans = useAvailablePlans();
   const { goal } = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
+  const [view, setView] = useState<"cards" | "table">("cards");
   const { goals } = useGoals();
   const filters: { value: Filter; label: string }[] = [
     { value: "all", label: "All plans" },
@@ -130,15 +133,52 @@ function PlansPage() {
 
           {shown.length > 0 && (
             <>
-              <p className="mb-4 text-sm text-muted-foreground" aria-live="polite">
-                Showing {shown.length} {filter === "all" ? "" : activeLabel + " "}
-                {shown.length === 1 ? "plan" : "plans"}
-              </p>
-              <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {shown.map((p) => (
-                  <PlanCard key={p.versionId} plan={p} />
-                ))}
-              </ul>
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <p className="text-sm text-muted-foreground" aria-live="polite">
+                  Showing {shown.length}{" "}
+                  {filter === "all" ? "" : activeLabel + " "}
+                  {shown.length === 1 ? "plan" : "plans"}
+                </p>
+                {shown.length > 1 && (
+                  <div
+                    className="inline-flex overflow-hidden rounded-md border border-border"
+                    role="group"
+                    aria-label="How to show the plans"
+                  >
+                    {(
+                      [
+                        ["cards", "Cards", LayoutGrid],
+                        ["table", "Compare", Table2],
+                      ] as const
+                    ).map(([value, label, Icon]) => (
+                      <button
+                        key={value}
+                        type="button"
+                        aria-pressed={view === value}
+                        onClick={() => setView(value)}
+                        className={cn(
+                          "inline-flex min-h-11 items-center gap-2 px-4 text-sm font-semibold",
+                          view === value
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-card hover:text-primary",
+                        )}
+                      >
+                        <Icon aria-hidden="true" className="size-4" />
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {view === "table" && shown.length > 1 ? (
+                <PlansCompare plans={shown} />
+              ) : (
+                <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {shown.map((p) => (
+                    <PlanCard key={p.versionId} plan={p} />
+                  ))}
+                </ul>
+              )}
             </>
           )}
         </div>

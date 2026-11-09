@@ -6,6 +6,7 @@ export const NAV = [
   { label: "Fees", href: "/fees" },
   { label: "Announcements", href: "/announcements" },
   { label: "Events", href: "/events" },
+  { label: "Gallery", href: "/gallery" },
   { label: "Our team", href: "/team" },
   { label: "Reviews", href: "/reviews" },
   { label: "Feedback", href: "/feedback" },
