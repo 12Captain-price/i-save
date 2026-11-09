@@ -1,4 +1,6 @@
-import { ArrowRight, PenLine, Star } from "lucide-react";
+import { ArrowRight, Paperclip, PenLine, Star } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { Tag } from "@/components/site/Tags";
 import { buttonVariants } from "@/components/ui/button";
 import { EventCard } from "@/components/site/EventCard";
 import { Reveal } from "@/components/site/Reveal";
@@ -9,6 +11,7 @@ import { useAnnouncements, useEvents, useTeam } from "@/lib/content";
 import { useApprovedReviews } from "@/lib/reviews";
 import { formatDate } from "@/lib/staff-utils";
 import { groupByLevel } from "@/lib/team-utils";
+import { isRecent, shorten, splitEvents } from "@/lib/updates";
 
 function Heading({
   eyebrow,
@@ -38,7 +41,10 @@ function Heading({
 /** Latest announcements, events and the leadership team. Each section hides itself when empty. */
 export function HomeSections() {
   const announcements = useAnnouncements(false, 3).data ?? [];
-  const events = useEvents(false, 3).data ?? [];
+  // What is coming up goes first, then the latest past events.
+  const allEvents = useEvents(false, 12).data ?? [];
+  const { upcoming, past } = splitEvents(allEvents);
+  const events = [...upcoming, ...past].slice(0, 3);
   const reviews = useApprovedReviews(3).data ?? [];
   const team = useTeam().data ?? [];
   const leaders = groupByLevel(team)[0] ?? [];
@@ -61,20 +67,38 @@ export function HomeSections() {
                 key={a.id}
                 className="lift-card rounded-md border border-border bg-card p-5"
               >
-                {a.published_at && (
-                  <p className="text-xs text-muted-foreground">
-                    {formatDate(a.published_at)}
-                  </p>
-                )}
-                <h3 className="mt-1 font-semibold">{a.title}</h3>
+                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                  {a.published_at && <span>{formatDate(a.published_at)}</span>}
+                  {isRecent(a.published_at) && <Tag tone="new">New</Tag>}
+                </div>
+                <h3 className="mt-1 font-semibold">
+                  <Link
+                    to="/announcements/$announcementId"
+                    params={{ announcementId: a.id }}
+                    className="hover:underline"
+                  >
+                    {a.title}
+                  </Link>
+                </h3>
                 <RichText
-                  text={
-                    a.body.length > 160
-                      ? a.body.slice(0, 160).trimEnd() + "…"
-                      : a.body
-                  }
+                  text={shorten(a.body, 160).text}
                   className="mt-2 space-y-2 text-sm text-muted-foreground"
                 />
+                <div className="mt-3 flex items-center justify-between gap-2 text-xs font-semibold">
+                  <Link
+                    to="/announcements/$announcementId"
+                    params={{ announcementId: a.id }}
+                    className="text-primary hover:underline"
+                  >
+                    {shorten(a.body, 160).cut ? "Read more →" : "Open →"}
+                  </Link>
+                  {a.files.length > 0 && (
+                    <span className="inline-flex items-center gap-1 text-muted-foreground">
+                      <Paperclip className="size-3.5" aria-hidden="true" />
+                      {a.files.length} {a.files.length === 1 ? "file" : "files"}
+                    </span>
+                  )}
+                </div>
               </Reveal>
             ))}
           </div>
@@ -84,8 +108,8 @@ export function HomeSections() {
       {events.length > 0 && (
         <section aria-label="Events" className="home-width py-12">
           <Heading
-            eyebrow="What we have been doing"
-            title="Recent events"
+            eyebrow="What is on and what we have been doing"
+            title="Events"
             href="/events"
             linkText="All events"
           />
@@ -125,8 +149,7 @@ export function HomeSections() {
               </span>
               <p className="text-lg font-semibold">Be the first to review us</p>
               <p className="max-w-md text-sm text-muted-foreground">
-                Used i-Save? Tell others what it is like. It takes a
-                minute.
+                Used i-Save? Tell others what it is like. It takes a minute.
               </p>
             </div>
           </Reveal>

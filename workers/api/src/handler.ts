@@ -1,5 +1,6 @@
 import type { Env } from "./env";
 import { assistantChat } from "./assistant";
+import { sharePreviewResponse } from "./share-preview";
 import { registerApplicantSchema } from "@/lib/register-schema";
 import type { RegisterApplicantResult } from "@/lib/register-schema";
 import { createStaffSchema } from "@/lib/staff-account-schema";
@@ -540,6 +541,24 @@ export async function handleRequest(
       );
       return fail(request, env, 500, "Something went wrong. Please try again.");
     }
+  }
+  if (
+    request.method === "GET" &&
+    /^\/(events|announcements)\//.test(url.pathname) &&
+    env.ASSETS
+  ) {
+    // A single event or announcement: the website page, with tags for link previews.
+    try {
+      const preview = await sharePreviewResponse(request, env, doFetch);
+      if (preview) return preview;
+    } catch (error) {
+      console.error(
+        "share preview failed",
+        error instanceof Error ? error.message : "unknown",
+      );
+    }
+    // Anything else (an unknown id, Supabase down): the normal website.
+    return env.ASSETS.fetch(request);
   }
   return fail(request, env, 404, "Not found.");
 }

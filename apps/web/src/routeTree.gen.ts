@@ -27,6 +27,7 @@ import { Route as ReviewsRouteImport } from './routes/reviews'
 import { Route as StaffRouteImport } from './routes/staff'
 import { Route as TeamRouteImport } from './routes/team'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as AnnouncementsAnnouncementIdRouteImport } from './routes/announcements.$announcementId'
 import { Route as EventsEventIdRouteImport } from './routes/events.$eventId'
 import { Route as StaffIndexRouteImport } from './routes/staff.index'
 import { Route as StaffAgentsRouteImport } from './routes/staff.agents'
@@ -129,6 +130,12 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AnnouncementsAnnouncementIdRoute =
+  AnnouncementsAnnouncementIdRouteImport.update({
+    id: '/$announcementId',
+    path: '/$announcementId',
+    getParentRoute: () => AnnouncementsRoute,
+  } as any)
 const EventsEventIdRoute = EventsEventIdRouteImport.update({
   id: '/$eventId',
   path: '/$eventId',
@@ -187,7 +194,7 @@ const StaffTrafficRoute = StaffTrafficRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/announcements': typeof AnnouncementsRoute
+  '/announcements': typeof AnnouncementsRouteWithChildren
   '/apply': typeof ApplyRoute
   '/contact': typeof ContactRoute
   '/disclosures': typeof DisclosuresRoute
@@ -204,6 +211,7 @@ export interface FileRoutesByFullPath {
   '/staff': typeof StaffRouteWithChildren
   '/team': typeof TeamRoute
   '/terms': typeof TermsRoute
+  '/announcements/$announcementId': typeof AnnouncementsAnnouncementIdRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/staff/agents': typeof StaffAgentsRoute
   '/staff/announcements': typeof StaffAnnouncementsRoute
@@ -218,7 +226,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/announcements': typeof AnnouncementsRoute
+  '/announcements': typeof AnnouncementsRouteWithChildren
   '/apply': typeof ApplyRoute
   '/contact': typeof ContactRoute
   '/disclosures': typeof DisclosuresRoute
@@ -234,6 +242,7 @@ export interface FileRoutesByTo {
   '/reviews': typeof ReviewsRoute
   '/team': typeof TeamRoute
   '/terms': typeof TermsRoute
+  '/announcements/$announcementId': typeof AnnouncementsAnnouncementIdRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/staff/agents': typeof StaffAgentsRoute
   '/staff/announcements': typeof StaffAnnouncementsRoute
@@ -249,7 +258,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/announcements': typeof AnnouncementsRoute
+  '/announcements': typeof AnnouncementsRouteWithChildren
   '/apply': typeof ApplyRoute
   '/contact': typeof ContactRoute
   '/disclosures': typeof DisclosuresRoute
@@ -266,6 +275,7 @@ export interface FileRoutesById {
   '/staff': typeof StaffRouteWithChildren
   '/team': typeof TeamRoute
   '/terms': typeof TermsRoute
+  '/announcements/$announcementId': typeof AnnouncementsAnnouncementIdRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/staff/agents': typeof StaffAgentsRoute
   '/staff/announcements': typeof StaffAnnouncementsRoute
@@ -299,6 +309,7 @@ export interface FileRouteTypes {
     | '/staff'
     | '/team'
     | '/terms'
+    | '/announcements/$announcementId'
     | '/events/$eventId'
     | '/staff/agents'
     | '/staff/announcements'
@@ -329,6 +340,7 @@ export interface FileRouteTypes {
     | '/reviews'
     | '/team'
     | '/terms'
+    | '/announcements/$announcementId'
     | '/events/$eventId'
     | '/staff/agents'
     | '/staff/announcements'
@@ -360,6 +372,7 @@ export interface FileRouteTypes {
     | '/staff'
     | '/team'
     | '/terms'
+    | '/announcements/$announcementId'
     | '/events/$eventId'
     | '/staff/agents'
     | '/staff/announcements'
@@ -375,7 +388,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AnnouncementsRoute: typeof AnnouncementsRoute
+  AnnouncementsRoute: typeof AnnouncementsRouteWithChildren
   ApplyRoute: typeof ApplyRoute
   ContactRoute: typeof ContactRoute
   DisclosuresRoute: typeof DisclosuresRoute
@@ -522,6 +535,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/announcements/$announcementId': {
+      id: '/announcements/$announcementId'
+      path: '/$announcementId'
+      fullPath: '/announcements/$announcementId'
+      preLoaderRoute: typeof AnnouncementsAnnouncementIdRouteImport
+      parentRoute: typeof AnnouncementsRoute
+    }
     '/events/$eventId': {
       id: '/events/$eventId'
       path: '/$eventId'
@@ -602,6 +622,18 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AnnouncementsRouteChildren {
+  AnnouncementsAnnouncementIdRoute: typeof AnnouncementsAnnouncementIdRoute
+}
+
+const AnnouncementsRouteChildren: AnnouncementsRouteChildren = {
+  AnnouncementsAnnouncementIdRoute: AnnouncementsAnnouncementIdRoute,
+}
+
+const AnnouncementsRouteWithChildren = AnnouncementsRoute._addFileChildren(
+  AnnouncementsRouteChildren,
+)
+
 interface EventsRouteChildren {
   EventsEventIdRoute: typeof EventsEventIdRoute
 }
@@ -643,7 +675,7 @@ const StaffRouteWithChildren = StaffRoute._addFileChildren(StaffRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AnnouncementsRoute: AnnouncementsRoute,
+  AnnouncementsRoute: AnnouncementsRouteWithChildren,
   ApplyRoute: ApplyRoute,
   ContactRoute: ContactRoute,
   DisclosuresRoute: DisclosuresRoute,

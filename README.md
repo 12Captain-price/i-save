@@ -97,10 +97,18 @@ Migrations are in `supabase/migrations`, run in order in the Supabase SQL Editor
 | 017        | `agents` table (registration agents)                                                              |
 | 018        | `traffic_events`, `record_traffic()`, `traffic_summary()`                                         |
 | 019        | `long_description` and `is_goal_based` on `savings_plans` (now the Combo ribbon flag)         |
+| 028        | Videos and PDFs on events (`media_type`, `file_name` on `event_images`), bigger upload limit      |
+| 029        | `events.published_at` (for "New" badges) and `announcement_files` (attachments on announcements)  |
 
 The ledger, payment and member tables from the earlier build are **left in place** and unused by this site, so nothing is lost if the other application needs the data. Only the screens were removed.
 
 Tests for the database rules: `supabase/tests/` (run with `run_local.sh` against a throwaway local Postgres, never against Supabase).
+
+### What is new: badges, share previews
+
+- The header shows a red count next to **Announcements** and **Events** for items published since the visitor last opened that page (first-time visitors only see the last 14 days). The mobile menu button shows the total. The "last opened" time is kept in the browser (`localStorage`), so nothing is stored about the visitor.
+- Cards carry a **New** tag for 7 days. Event cards also say how soon it is (Today, In 5 days), what is inside (Video, 3 files), and are split into **Upcoming** and **Past events**.
+- Every event and announcement has a page of its own (`/events/<id>`, `/announcements/<id>`) and a Share button. Those two kinds of address go through the Worker first (`run_worker_first` in `workers/api/wrangler.toml`), which adds the item's title, text and first picture to the page's `og:` tags so a pasted link shows a proper preview in WhatsApp and Facebook. If the item is not found, the plain website is served.
 
 ### Traffic tracking
 

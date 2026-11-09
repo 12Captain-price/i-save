@@ -2,8 +2,11 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { PageShell } from "@/components/site/PageShell";
 import { RichText } from "@/components/site/RichText";
 import { EventGallery } from "@/components/site/EventGallery";
+import { ShareButton } from "@/components/site/ShareButton";
+import { Tag } from "@/components/site/Tags";
 import { useEvent } from "@/lib/content";
 import { formatDate } from "@/lib/staff-utils";
+import { timingLabel } from "@/lib/updates";
 
 export const Route = createFileRoute("/events/$eventId")({
   // ?m=<id> opens one picture, video or flier straight away (this is what a shared link uses).
@@ -51,6 +54,15 @@ function EventPage() {
       title={data.title}
       lead={data.location ?? undefined}
     >
+      <div className="mb-6 flex flex-wrap items-center gap-3">
+        {timingLabel(data.event_date) && (
+          <Tag tone="soon">{timingLabel(data.event_date)}</Tag>
+        )}
+        <ShareButton
+          title={data.title}
+          url={`${window.location.origin}/events/${data.id}`}
+        />
+      </div>
       {data.summary && <p className="mb-6 text-base">{data.summary}</p>}
       {data.details && <RichText text={data.details} />}
       <EventGallery event={data} initialOpenId={m} />

@@ -4,10 +4,13 @@ import { useNavigate } from "@tanstack/react-router";
 import { Logo } from "./Logo";
 import { InstallButton } from "./InstallButton";
 import { NAV } from "./nav";
+import { CountBadge } from "./Tags";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { useSignOutWithGoodbye } from "@/components/site/GoodbyeToast";
 import { Avatar } from "@/components/ui/motion";
 import { useAuth } from "@/lib/auth";
+import { SECTION_OF, useUpdateCounts } from "@/lib/update-counts";
+import { badgeText } from "@/lib/updates";
 import { cn } from "@/lib/utils";
 import { firstNameOf } from "@/lib/welcome";
 
@@ -50,6 +53,13 @@ export function SiteHeader() {
   const { session, profile } = useAuth();
   const signOut = useSignOutWithGoodbye();
   const navigate = useNavigate();
+  const counts = useUpdateCounts();
+
+  /** The number of new items behind a menu link, or 0 for links with no badge. */
+  const newIn = (href: string) => {
+    const section = SECTION_OF[href];
+    return section ? counts[section] : 0;
+  };
 
   async function logOut() {
     setOpen(false);
@@ -79,9 +89,15 @@ export function SiteHeader() {
               <li key={n.href}>
                 <a
                   href={n.href}
-                  className="transition-colors hover:text-foreground"
+                  className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
                 >
                   {n.label}
+                  {newIn(n.href) > 0 && (
+                    <CountBadge
+                      text={badgeText(newIn(n.href))}
+                      label={`${newIn(n.href)} new`}
+                    />
+                  )}
                 </a>
               </li>
             ))}
@@ -138,13 +154,20 @@ export function SiteHeader() {
           <button
             ref={trigger}
             type="button"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-border"
+            className="relative inline-flex h-11 w-11 items-center justify-center rounded-md border border-border"
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
             aria-controls="mobile-nav"
             onClick={() => setOpen(!open)}
           >
             {open ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
+            {!open && counts.total > 0 && (
+              <CountBadge
+                text={badgeText(counts.total)}
+                label={`${counts.total} new updates`}
+                className="absolute -top-1.5 -right-1.5 ring-2 ring-background"
+              />
+            )}
           </button>
         </div>
       </div>
@@ -160,9 +183,15 @@ export function SiteHeader() {
                 <a
                   href={n.href}
                   onClick={() => setOpen(false)}
-                  className="block border-b border-border/50 py-4 font-display text-lg"
+                  className="flex items-center gap-2 border-b border-border/50 py-4 font-display text-lg"
                 >
                   {n.label}
+                  {newIn(n.href) > 0 && (
+                    <CountBadge
+                      text={badgeText(newIn(n.href))}
+                      label={`${newIn(n.href)} new`}
+                    />
+                  )}
                 </a>
               </li>
             ))}

@@ -16,4 +16,6 @@ export interface Env {
   ANTHROPIC_API_KEY?: string;
   /** Optional model override for whichever service answers. */
   ASSISTANT_MODEL?: string;
+  /** The built website (the [assets] binding in wrangler.toml). Used to add share previews. */
+  ASSETS?: { fetch(request: Request): Promise<Response> };
 }

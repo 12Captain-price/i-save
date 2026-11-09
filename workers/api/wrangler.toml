@@ -7,7 +7,17 @@ compatibility_date = "2025-01-01"
 [assets]
 directory = "../../apps/web/dist"
 not_found_handling = "single-page-application"
-run_worker_first = ["/staff/register-member", "/staff/create-staff", "/assistant", "/health"]
+# The Worker is the first stop for the API paths and for single events and announcements,
+# so a link shared on WhatsApp or Facebook can show that item's picture and title.
+binding = "ASSETS"
+run_worker_first = [
+  "/staff/register-member",
+  "/staff/create-staff",
+  "/assistant",
+  "/health",
+  "/events/*",
+  "/announcements/*",
+]
 
 # Public settings. Secrets are NOT kept here: set the service role key in the Cloudflare
 # dashboard (Settings -> Variables and secrets).

@@ -34,6 +34,17 @@ const FaqRow = z.object({
 });
 export type Faq = z.infer<typeof FaqRow>;
 
+// One picture, video or PDF attached to an event (table: event_images) or to an announcement
+// (table: announcement_files). Both tables have the same columns.
+const MediaRow = z.object({
+  id: z.string(),
+  path: z.string(),
+  caption: z.string().nullable(),
+  sort_order: z.number(),
+  media_type: z.enum(["image", "video", "pdf"]).default("image"),
+  file_name: z.string().nullable().default(null),
+});
+
 const AnnouncementRow = z.object({
   id: z.string(),
   title: z.string(),
@@ -47,8 +58,12 @@ const AnnouncementRow = z.object({
   recipients_email: z.number().nullable(),
   recipients_whatsapp: z.number().nullable(),
   created_at: z.string(),
+  announcement_files: z.array(MediaRow).default([]),
 });
-export type Announcement = z.infer<typeof AnnouncementRow>;
+export type Announcement = Omit<
+  z.infer<typeof AnnouncementRow>,
+  "announcement_files"
+> & { files: EventMedia[] };
 
 const TeamRow = z.object({
   id: z.string(),
@@ -62,16 +77,7 @@ const TeamRow = z.object({
 });
 export type TeamMember = z.infer<typeof TeamRow>;
 
-// One picture, video or PDF attached to an event (table: event_images).
-const ImageRow = z.object({
-  id: z.string(),
-  path: z.string(),
-  caption: z.string().nullable(),
-  sort_order: z.number(),
-  media_type: z.enum(["image", "video", "pdf"]).default("image"),
-  file_name: z.string().nullable().default(null),
-});
-export type EventImage = z.infer<typeof ImageRow>;
+export type EventImage = z.infer<typeof MediaRow>;
 export type EventMedia = EventImage;
 
 const EventRow = z.object({
@@ -82,19 +88,38 @@ const EventRow = z.object({
   summary: z.string().nullable(),
   details: z.string().nullable(),
   published: z.boolean(),
-  event_images: z.array(ImageRow),
+  published_at: z.string().nullable().default(null),
+  event_images: z.array(MediaRow),
 });
 export type SiteEvent = Omit<z.infer<typeof EventRow>, "event_images"> & {
   images: EventImage[];
 };
 
 const FAQ_COLUMNS = "id, question, answer, sort_order, published";
-const ANNOUNCEMENT_COLUMNS =
+const MEDIA_FIELDS = "id, path, caption, sort_order, media_type, file_name";
+const ANNOUNCEMENT_BASE =
   "id, title, body, published, published_at, send_email, send_whatsapp, sent_at, recipients_in_app, recipients_email, recipients_whatsapp, created_at";
+const ANNOUNCEMENT_COLUMNS = `${ANNOUNCEMENT_BASE}, announcement_files(${MEDIA_FIELDS})`;
 const TEAM_COLUMNS =
   "id, full_name, role_title, bio, photo_path, level, sort_order, published";
-const EVENT_COLUMNS =
-  "id, title, event_date, location, summary, details, published, event_images(id, path, caption, sort_order, media_type, file_name)";
+const EVENT_BASE =
+  "id, title, event_date, location, summary, details, published";
+const EVENT_COLUMNS = `${EVENT_BASE}, published_at, event_images(${MEDIA_FIELDS})`;
+
+/**
+ * The site is deployed before the database change (migration 029) is always run. If the new
+ * columns or table are missing, ask again for the old columns so the pages keep working.
+ */
+function isMissingNewColumns(error: {
+  code?: string;
+  message?: string;
+}): boolean {
+  const text = `${error.code ?? ""} ${error.message ?? ""}`;
+  return (
+    /42703|PGRST200|PGRST204|PGRST205|42P01/.test(text) ||
+    /published_at|announcement_files/.test(text)
+  );
+}
 
 /**
  * Public address of an uploaded file. With `download`, the address makes the browser save the
@@ -108,8 +133,10 @@ export function mediaUrl(
   if (!path) return null;
   return supabase.storage
     .from(MEDIA_BUCKET)
-    .getPublicUrl(path, opts?.download ? { download: opts.download } : undefined)
-    .data.publicUrl;
+    .getPublicUrl(
+      path,
+      opts?.download ? { download: opts.download } : undefined,
+    ).data.publicUrl;
 }
 
 /** The picture to show as an event's cover: the first picture (videos and PDFs have no cover). */
@@ -165,25 +192,60 @@ export const useFaqs = (all = false) =>
     queryFn: () => fetchFaqs(all),
   });
 
+function toAnnouncement(row: z.infer<typeof AnnouncementRow>): Announcement {
+  const { announcement_files, ...rest } = row;
+  return {
+    ...rest,
+    files: [...announcement_files].sort((a, b) => a.sort_order - b.sort_order),
+  };
+}
+
 async function fetchAnnouncements(
   all: boolean,
   limit?: number,
 ): Promise<Announcement[]> {
-  let q = supabase
-    .from("announcements")
-    .select(ANNOUNCEMENT_COLUMNS)
-    .order("published_at", { ascending: false, nullsFirst: true })
-    .order("created_at", { ascending: false });
-  if (!all) q = q.eq("published", true);
-  if (limit) q = q.limit(limit);
-  const { data, error } = await q;
+  const run = async (columns: string) => {
+    let q = supabase
+      .from("announcements")
+      .select(columns)
+      .order("published_at", { ascending: false, nullsFirst: true })
+      .order("created_at", { ascending: false });
+    if (!all) q = q.eq("published", true);
+    if (limit) q = q.limit(limit);
+    return q;
+  };
+  let { data, error } = await run(ANNOUNCEMENT_COLUMNS);
+  if (error && isMissingNewColumns(error)) {
+    ({ data, error } = await run(ANNOUNCEMENT_BASE));
+  }
   if (error) throw error;
-  return z.array(AnnouncementRow).parse(data);
+  return z.array(AnnouncementRow).parse(data).map(toAnnouncement);
 }
 export const useAnnouncements = (all = false, limit?: number) =>
   useQuery({
     queryKey: ["content", "announcements", all, limit ?? null],
     queryFn: () => fetchAnnouncements(all, limit),
+  });
+
+async function fetchAnnouncement(id: string): Promise<Announcement | null> {
+  const run = (columns: string) =>
+    supabase
+      .from("announcements")
+      .select(columns)
+      .eq("id", id)
+      .eq("published", true)
+      .maybeSingle();
+  let { data, error } = await run(ANNOUNCEMENT_COLUMNS);
+  if (error && isMissingNewColumns(error)) {
+    ({ data, error } = await run(ANNOUNCEMENT_BASE));
+  }
+  if (error) throw error;
+  return data ? toAnnouncement(AnnouncementRow.parse(data)) : null;
+}
+export const useAnnouncement = (id: string) =>
+  useQuery({
+    queryKey: ["content", "announcement", id],
+    queryFn: () => fetchAnnouncement(id),
   });
 
 async function fetchTeam(all: boolean): Promise<TeamMember[]> {
@@ -213,13 +275,21 @@ function toEvent(row: z.infer<typeof EventRow>): SiteEvent {
 }
 
 async function fetchEvents(all: boolean, limit?: number): Promise<SiteEvent[]> {
-  let q = supabase
-    .from("events")
-    .select(EVENT_COLUMNS)
-    .order("event_date", { ascending: false });
-  if (!all) q = q.eq("published", true);
-  if (limit) q = q.limit(limit);
-  const { data, error } = await q;
+  const run = (columns: string) => {
+    let q = supabase
+      .from("events")
+      .select(columns)
+      .order("event_date", { ascending: false });
+    if (!all) q = q.eq("published", true);
+    if (limit) q = q.limit(limit);
+    return q;
+  };
+  let { data, error } = await run(EVENT_COLUMNS);
+  if (error && isMissingNewColumns(error)) {
+    ({ data, error } = await run(
+      `${EVENT_BASE}, event_images(${MEDIA_FIELDS})`,
+    ));
+  }
   if (error) throw error;
   return z.array(EventRow).parse(data).map(toEvent);
 }
@@ -230,12 +300,19 @@ export const useEvents = (all = false, limit?: number) =>
   });
 
 async function fetchEvent(id: string): Promise<SiteEvent | null> {
-  const { data, error } = await supabase
-    .from("events")
-    .select(EVENT_COLUMNS)
-    .eq("id", id)
-    .eq("published", true)
-    .maybeSingle();
+  const run = (columns: string) =>
+    supabase
+      .from("events")
+      .select(columns)
+      .eq("id", id)
+      .eq("published", true)
+      .maybeSingle();
+  let { data, error } = await run(EVENT_COLUMNS);
+  if (error && isMissingNewColumns(error)) {
+    ({ data, error } = await run(
+      `${EVENT_BASE}, event_images(${MEDIA_FIELDS})`,
+    ));
+  }
   if (error) throw error;
   return data ? toEvent(EventRow.parse(data)) : null;
 }
@@ -243,6 +320,41 @@ export const useEvent = (id: string) =>
   useQuery({
     queryKey: ["content", "event", id],
     queryFn: () => fetchEvent(id),
+  });
+
+/**
+ * Just the dates, for the header badges. Cheap on purpose: no text, no files.
+ * Returns nothing (rather than an error) if the publish dates are not in the database yet.
+ */
+async function fetchFeedDates(): Promise<{
+  announcements: Array<{ published_at: string | null }>;
+  events: Array<{ published_at: string | null }>;
+}> {
+  const pick = async (table: "announcements" | "events") => {
+    const { data, error } = await supabase
+      .from(table)
+      .select("published_at")
+      .eq("published", true)
+      .not("published_at", "is", null)
+      .order("published_at", { ascending: false })
+      .limit(30);
+    if (error) return [];
+    return z
+      .array(z.object({ published_at: z.string().nullable() }))
+      .parse(data);
+  };
+  const [announcements, events] = await Promise.all([
+    pick("announcements"),
+    pick("events"),
+  ]);
+  return { announcements, events };
+}
+export const useFeedDates = () =>
+  useQuery({
+    queryKey: ["content", "feed-dates"],
+    queryFn: fetchFeedDates,
+    staleTime: 60_000,
+    refetchInterval: 5 * 60_000,
   });
 
 /* ------------------------------------------------------------------ */
@@ -296,8 +408,23 @@ export async function saveAnnouncement(
     : await supabase.from("announcements").insert(values);
   check(error);
 }
-export async function deleteAnnouncement(id: string) {
-  check((await supabase.from("announcements").delete().eq("id", id)).error);
+/** Returns the announcement id, so files can be added straight after creating it. */
+export async function createAnnouncement(
+  values: AnnouncementValues,
+): Promise<string> {
+  const { data, error } = await supabase
+    .from("announcements")
+    .insert(values)
+    .select("id")
+    .single();
+  check(error);
+  return (data as { id: string }).id;
+}
+export async function deleteAnnouncement(
+  a: Pick<Announcement, "id" | "files">,
+) {
+  check((await supabase.from("announcements").delete().eq("id", a.id)).error);
+  await removePictures(a.files.map((f) => f.path));
 }
 
 export type SendResult = { in_app: number; email: number; whatsapp: number };
@@ -357,7 +484,10 @@ export function whatsappLink(
 
 /* Pictures */
 
-export async function uploadPicture(folder: string, file: File): Promise<string> {
+export async function uploadPicture(
+  folder: string,
+  file: File,
+): Promise<string> {
   const blob = await shrinkImage(file);
   const path = newImagePath(folder);
   const { error } = await supabase.storage
@@ -435,9 +565,24 @@ export async function deleteEvent(event: SiteEvent) {
   check((await supabase.from("events").delete().eq("id", event.id)).error);
   await removePictures(event.images.map((i) => i.path));
 }
+/* Files on events and announcements */
+
+export type MediaTable = "event_images" | "announcement_files";
+const PARENT_COLUMN: Record<MediaTable, string> = {
+  event_images: "event_id",
+  announcement_files: "announcement_id",
+};
+const FOLDER: Record<MediaTable, string> = {
+  event_images: "events",
+  announcement_files: "announcements",
+};
+
+/** A file waiting to be uploaded, with the caption typed for it. */
+export type PendingFile = { file: File; caption: string };
+
 /** Pictures are shrunk first; videos and PDFs go up exactly as they are. */
-async function uploadEventFile(
-  eventId: string,
+async function uploadMediaFile(
+  folder: string,
   file: File,
 ): Promise<{ path: string; media_type: MediaKind; file_name: string | null }> {
   const problem = checkEventFile(file);
@@ -445,36 +590,68 @@ async function uploadEventFile(
   const kind = mediaKindOf(file);
   if (!kind) throw new Error("That file type is not supported.");
   if (kind === "image") {
-    const path = await uploadPicture(`events/${eventId}`, file);
+    const path = await uploadPicture(folder, file);
     return { path, media_type: "image", file_name: null };
   }
-  const path = newImagePath(`events/${eventId}`, mediaExtension(file));
+  const path = newImagePath(folder, mediaExtension(file));
   const { error } = await supabase.storage
     .from(MEDIA_BUCKET)
     .upload(path, file, { contentType: file.type, cacheControl: "31536000" });
   check(error);
   return { path, media_type: kind, file_name: file.name };
 }
-export async function addEventMedia(
-  eventId: string,
-  files: File[],
+
+export async function addMedia(
+  table: MediaTable,
+  parentId: string,
+  files: PendingFile[],
   startOrder: number,
 ) {
   let order = startOrder;
-  for (const file of files) {
-    const uploaded = await uploadEventFile(eventId, file);
-    const { error } = await supabase
-      .from("event_images")
-      .insert({ event_id: eventId, ...uploaded, sort_order: (order += 10) });
+  for (const { file, caption } of files) {
+    const uploaded = await uploadMediaFile(
+      `${FOLDER[table]}/${parentId}`,
+      file,
+    );
+    const { error } = await supabase.from(table).insert({
+      [PARENT_COLUMN[table]]: parentId,
+      ...uploaded,
+      caption: caption.trim() || null,
+      sort_order: (order += 10),
+    });
     if (error) {
       await removePictures([uploaded.path]);
       throw error;
     }
   }
 }
-export async function deleteEventPicture(image: EventImage) {
-  check(
-    (await supabase.from("event_images").delete().eq("id", image.id)).error,
-  );
-  await removePictures([image.path]);
+
+export async function deleteMedia(table: MediaTable, item: EventMedia) {
+  check((await supabase.from(table).delete().eq("id", item.id)).error);
+  await removePictures([item.path]);
 }
+
+/** Saves the captions and the order shown in the admin form (position 1 is first). */
+export async function saveMediaDetails(
+  table: MediaTable,
+  items: Array<{ id: string; caption: string | null }>,
+) {
+  for (const [i, item] of items.entries()) {
+    const { error } = await supabase
+      .from(table)
+      .update({
+        caption: item.caption?.trim() || null,
+        sort_order: (i + 1) * 10,
+      })
+      .eq("id", item.id);
+    check(error);
+  }
+}
+
+export const addEventMedia = (
+  eventId: string,
+  files: PendingFile[],
+  startOrder: number,
+) => addMedia("event_images", eventId, files, startOrder);
+export const deleteEventPicture = (image: EventImage) =>
+  deleteMedia("event_images", image);

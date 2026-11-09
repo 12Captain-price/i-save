@@ -1,9 +1,14 @@
+import { useEffect } from "react";
 import { LoadingSkeleton } from "@/components/ui/motion";
-import { createFileRoute } from "@tanstack/react-router";
+import {
+  Outlet,
+  createFileRoute,
+  useChildMatches,
+} from "@tanstack/react-router";
+import { AnnouncementCard } from "@/components/site/AnnouncementCard";
 import { PageShell } from "@/components/site/PageShell";
-import { RichText } from "@/components/site/RichText";
 import { useAnnouncements } from "@/lib/content";
-import { formatDate } from "@/lib/staff-utils";
+import { markSeen } from "@/lib/updates";
 
 export const Route = createFileRoute("/announcements")({
   component: AnnouncementsPage,
@@ -11,6 +16,16 @@ export const Route = createFileRoute("/announcements")({
 
 function AnnouncementsPage() {
   const { data, isPending, isError } = useAnnouncements();
+  // The page of a single announcement (/announcements/<id>) is a child of this route. When
+  // one is open, show it instead of the list.
+  const showingOne = useChildMatches().length > 0;
+
+  // Opening the list clears the "new" badge in the header.
+  useEffect(() => {
+    if (!showingOne) markSeen("announcements");
+  }, [showingOne]);
+
+  if (showingOne) return <Outlet />;
   return (
     <PageShell
       eyebrow="Announcements"
@@ -30,21 +45,7 @@ function AnnouncementsPage() {
       )}
       <div className="grid gap-5">
         {data?.map((a) => (
-          <article
-            key={a.id}
-            className="rounded-md border border-border bg-card p-6"
-          >
-            {a.published_at && (
-              <p className="text-xs text-muted-foreground">
-                {formatDate(a.published_at)}
-              </p>
-            )}
-            <h2 className="mt-1 text-xl font-semibold">{a.title}</h2>
-            <RichText
-              text={a.body}
-              className="mt-3 space-y-2 text-sm text-muted-foreground"
-            />
-          </article>
+          <AnnouncementCard key={a.id} announcement={a} />
         ))}
       </div>
     </PageShell>

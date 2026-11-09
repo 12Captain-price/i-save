@@ -22,7 +22,9 @@ vi.mock("@/lib/supabase", () => ({
   },
 }));
 vi.mock("@/components/site/PublicLayout", () => ({
-  PublicLayout: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  PublicLayout: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
 }));
 vi.mock("@/components/assistant/AssistantWidget", () => ({
   AssistantWidget: () => null,
@@ -38,18 +40,50 @@ vi.mock("@/components/site/GoodbyeToast", () => ({ GoodbyeToast: () => null }));
 
 const event = {
   id: "e1",
+  published_at: null,
   title: "Marathon day",
-  event_date: "2026-11-06",
+  event_date: "2020-01-01",
   location: null,
   summary: "Run for your dreams",
   details: "All the details",
   published: true,
   images: [],
 };
+const futureEvent = {
+  ...event,
+  id: "e2",
+  title: "Open day",
+  event_date: "2999-01-01",
+};
+const notice = {
+  id: "a1",
+  title: "Office closed Friday",
+  body: "The office is closed on Friday.",
+  published: true,
+  published_at: "2020-01-01T08:00:00Z",
+  send_email: false,
+  send_whatsapp: false,
+  sent_at: null,
+  recipients_in_app: null,
+  recipients_email: null,
+  recipients_whatsapp: null,
+  created_at: "2020-01-01T08:00:00Z",
+  files: [],
+};
 vi.mock("@/lib/content", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/content")>()),
-  useEvents: () => ({ data: [event], isPending: false, isError: false }),
+  useEvents: () => ({
+    data: [event, futureEvent],
+    isPending: false,
+    isError: false,
+  }),
   useEvent: () => ({ data: event, isPending: false, isError: false }),
+  useAnnouncements: () => ({
+    data: [notice],
+    isPending: false,
+    isError: false,
+  }),
+  useAnnouncement: () => ({ data: notice, isPending: false, isError: false }),
 }));
 
 window.scrollTo = vi.fn();
@@ -69,8 +103,20 @@ function renderAt(path: string) {
 describe("events routing", () => {
   it("shows the list at /events", async () => {
     renderAt("/events");
-    expect(await screen.findByText("Recent events.")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /marathon day/i })).toBeInTheDocument();
+    expect(await screen.findByText("Events.")).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /marathon day/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("puts upcoming events above past events", async () => {
+    renderAt("/events");
+    const upcoming = await screen.findByRole("heading", { name: "Upcoming" });
+    const past = screen.getByRole("heading", { name: "Past events" });
+    expect(
+      upcoming.compareDocumentPosition(past) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(screen.getByRole("link", { name: /open day/i })).toBeInTheDocument();
   });
 
   it("shows the single event, not the list, at /events/<id>", async () => {
@@ -78,7 +124,34 @@ describe("events routing", () => {
     expect(
       await screen.findByRole("heading", { level: 1, name: "Marathon day" }),
     ).toBeInTheDocument();
-    expect(screen.queryByText("Recent events.")).not.toBeInTheDocument();
+    expect(screen.queryByText("Events.")).not.toBeInTheDocument();
     expect(screen.getByText("All the details")).toBeInTheDocument();
+  });
+
+  it("shows the announcements list at /announcements", async () => {
+    renderAt("/announcements");
+    expect(
+      await screen.findByText("News from the office."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Office closed Friday" }),
+    ).toBeInTheDocument();
+  });
+
+  it("shows the single announcement, not the list, at /announcements/<id>", async () => {
+    renderAt("/announcements/a1");
+    expect(
+      await screen.findByRole("heading", {
+        level: 1,
+        name: "Office closed Friday",
+      }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("News from the office.")).not.toBeInTheDocument();
+    expect(
+      screen.getByText("The office is closed on Friday."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /share: office closed friday/i }),
+    ).toBeInTheDocument();
   });
 });

@@ -8,11 +8,18 @@ import {
   TextAreaField,
 } from "@/components/staff/FormBits";
 import { useContentAction } from "@/components/staff/useContentAction";
+import { MediaEditor } from "@/components/staff/MediaEditor";
 import { Button } from "@/components/ui/button";
 import { useConfirm } from "@/components/ui/confirm";
 import { CheckField, Field } from "@/components/ui/field";
 import {
+  addMedia,
+  createAnnouncement,
   deleteAnnouncement,
+  deleteMedia,
+  saveMediaDetails,
+  type EventMedia,
+  type PendingFile,
   discardWhatsappOutbox,
   markWhatsappSent,
   saveAnnouncement,
@@ -22,6 +29,7 @@ import {
   whatsappLink,
   type Announcement,
 } from "@/lib/content";
+import { MEDIA_LABEL } from "@/lib/event-media";
 import { formatDateTime } from "@/lib/staff-utils";
 
 export const Route = createFileRoute("/staff/announcements")({
@@ -111,6 +119,12 @@ function AnnouncementsAdmin() {
                   <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
                     {a.body}
                   </p>
+                  {a.files.length > 0 && (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {a.files.length} attached file
+                      {a.files.length === 1 ? "" : "s"}
+                    </p>
+                  )}
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {!a.sent_at && (
@@ -167,7 +181,7 @@ function AnnouncementsAdmin() {
                         confirmLabel: "Yes, delete",
                         tone: "danger",
                       }).then((ok) => {
-                        if (ok) void run(() => deleteAnnouncement(a.id));
+                        if (ok) void run(() => deleteAnnouncement(a));
                       });
                     }}
                   >
@@ -192,28 +206,37 @@ function AnnouncementForm({
   initial: Announcement | null;
   onDone: () => void;
 }) {
-  const { run, busy, error } = useContentAction();
+  const { run, busy, error, setError } = useContentAction();
   const [title, setTitle] = useState(initial?.title ?? "");
   const [body, setBody] = useState(initial?.body ?? "");
   const [published, setPublished] = useState(initial?.published ?? true);
   const [email, setEmail] = useState(initial?.send_email ?? true);
   const [whatsapp, setWhatsapp] = useState(initial?.send_whatsapp ?? true);
+  const ask = useConfirm();
+  const [existing, setExisting] = useState<EventMedia[]>(initial?.files ?? []);
+  const [pending, setPending] = useState<PendingFile[]>([]);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
     if (!title.trim() || !body.trim()) return;
-    const ok = await run(() =>
-      saveAnnouncement(
-        {
-          title: title.trim(),
-          body,
-          published,
-          send_email: email,
-          send_whatsapp: whatsapp,
-        },
-        initial?.id,
-      ),
-    );
+    const ok = await run(async () => {
+      const values = {
+        title: title.trim(),
+        body,
+        published,
+        send_email: email,
+        send_whatsapp: whatsapp,
+      };
+      let id = initial?.id;
+      if (id) await saveAnnouncement(values, id);
+      else id = await createAnnouncement(values);
+      if (initial && existing.length) {
+        await saveMediaDetails("announcement_files", existing);
+      }
+      if (pending.length) {
+        await addMedia("announcement_files", id, pending, existing.length * 10);
+      }
+    });
     if (ok) onDone();
   }
   return (
@@ -235,6 +258,35 @@ function AnnouncementForm({
         onChange={(e) => setBody(e.target.value)}
         hint="Keep it short and plain. The same text goes on the website, in members’ messages, by email and on WhatsApp."
       />
+      <MediaEditor
+        idPrefix="an"
+        noun="announcement"
+        existing={existing}
+        onExistingChange={setExisting}
+        pending={pending}
+        onPendingChange={setPending}
+        onProblem={setError}
+        onDelete={(file) => {
+          void ask({
+            title: `Delete this ${MEDIA_LABEL[file.media_type].toLowerCase()}?`,
+            message: "It will be removed from the announcement.",
+            confirmLabel: "Yes, delete",
+            tone: "danger",
+          }).then((ok) => {
+            if (!ok) return;
+            void run(() => deleteMedia("announcement_files", file)).then(
+              (done) => {
+                if (done)
+                  setExisting((list) => list.filter((m) => m.id !== file.id));
+              },
+            );
+          });
+        }}
+      />
+      <p className="-mt-2 text-xs text-muted-foreground">
+        Attachments appear on the website only. Email and WhatsApp carry the
+        text.
+      </p>
       <CheckField id="an-pub" checked={published} onChange={setPublished}>
         Show on the website (required before you can send it)
       </CheckField>

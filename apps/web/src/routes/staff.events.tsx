@@ -10,7 +10,7 @@ import {
   TextAreaField,
 } from "@/components/staff/FormBits";
 import { useContentAction } from "@/components/staff/useContentAction";
-import { MediaThumb } from "@/components/site/MediaThumb";
+import { MediaEditor } from "@/components/staff/MediaEditor";
 import { Photo } from "@/components/site/Photo";
 import { Button } from "@/components/ui/button";
 import { CheckField, Field } from "@/components/ui/field";
@@ -20,10 +20,13 @@ import {
   deleteEventPicture,
   eventCoverPath,
   saveEvent,
+  saveMediaDetails,
   useEvents,
+  type EventMedia,
+  type PendingFile,
   type SiteEvent,
 } from "@/lib/content";
-import { EVENT_MEDIA_ACCEPT, MEDIA_LABEL, checkEventFile } from "@/lib/event-media";
+import { MEDIA_LABEL } from "@/lib/event-media";
 import { formatDate } from "@/lib/staff-utils";
 
 export const Route = createFileRoute("/staff/events")({
@@ -133,18 +136,9 @@ function EventForm({
   const [summary, setSummary] = useState(initial?.summary ?? "");
   const [details, setDetails] = useState(initial?.details ?? "");
   const [published, setPublished] = useState(initial?.published ?? false);
-  const [files, setFiles] = useState<File[]>([]);
-
-  function pick(list: FileList | null) {
-    const chosen = Array.from(list ?? []);
-    const bad = chosen.map(checkEventFile).find(Boolean);
-    if (bad) {
-      setError(bad);
-      return;
-    }
-    setError(null);
-    setFiles(chosen);
-  }
+  // The files already on the event (with captions and order being edited) and new ones waiting.
+  const [existing, setExisting] = useState<EventMedia[]>(initial?.images ?? []);
+  const [pending, setPending] = useState<PendingFile[]>([]);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -164,9 +158,11 @@ function EventForm({
         },
         initial?.id,
       );
-      if (files.length) {
-        const last = initial?.images.at(-1)?.sort_order ?? 0;
-        await addEventMedia(id, files, last);
+      if (initial && existing.length) {
+        await saveMediaDetails("event_images", existing);
+      }
+      if (pending.length) {
+        await addEventMedia(id, pending, existing.length * 10);
       }
     });
     if (ok) onDone();
@@ -215,55 +211,29 @@ function EventForm({
         hint={FORMAT_HINT}
       />
 
-      {initial && initial.images.length > 0 && (
-        <div>
-          <p className="mb-2 text-sm font-medium">Pictures, videos and PDFs</p>
-          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {initial.images.map((img) => (
-              <li key={img.id} className="text-center">
-                <MediaThumb
-                  item={img}
-                  className="aspect-[4/3] w-full rounded"
-                />
-                <button
-                  type="button"
-                  className="mt-1 text-xs text-destructive underline"
-                  onClick={() => {
-                    void ask({
-                      title: `Delete this ${MEDIA_LABEL[img.media_type].toLowerCase()}?`,
-                      message: "It will be removed from the event.",
-                      confirmLabel: "Yes, delete",
-                      tone: "danger",
-                    }).then((ok) => {
-                      if (ok) void run(() => deleteEventPicture(img));
-                    });
-                  }}
-                >
-                  Delete
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-      <div>
-        <label htmlFor="ev-files" className="mb-1.5 block text-sm font-medium">
-          Add pictures, videos or PDFs
-        </label>
-        <input
-          id="ev-files"
-          type="file"
-          multiple
-          accept={EVENT_MEDIA_ACCEPT}
-          onChange={(e) => pick(e.target.files)}
-          className="text-sm"
-        />
-        <p className="mt-1 text-xs text-muted-foreground">
-          {files.length
-            ? `${files.length} selected. They upload when you press Save.`
-            : "You can choose several at once. Photos are shrunk automatically. Videos (MP4 or WebM) can be up to 50 MB and PDFs up to 10 MB."}
-        </p>
-      </div>
+      <MediaEditor
+        idPrefix="ev"
+        noun="event"
+        existing={existing}
+        onExistingChange={setExisting}
+        pending={pending}
+        onPendingChange={setPending}
+        onProblem={setError}
+        onDelete={(img) => {
+          void ask({
+            title: `Delete this ${MEDIA_LABEL[img.media_type].toLowerCase()}?`,
+            message: "It will be removed from the event.",
+            confirmLabel: "Yes, delete",
+            tone: "danger",
+          }).then((ok) => {
+            if (!ok) return;
+            void run(() => deleteEventPicture(img)).then((done) => {
+              if (done)
+                setExisting((list) => list.filter((m) => m.id !== img.id));
+            });
+          });
+        }}
+      />
       <CheckField id="ev-pub" checked={published} onChange={setPublished}>
         Show on the website
       </CheckField>
