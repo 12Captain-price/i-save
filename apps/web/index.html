@@ -4,6 +4,27 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0b1c24" />
+    <script>
+      // Sets the light or dark theme before the first paint so the page never flashes the
+      // wrong colours. Keep in step with src/lib/theme.ts.
+      (function () {
+        try {
+          var t = localStorage.getItem("isave-theme");
+          if (t !== "light" && t !== "dark") {
+            t =
+              window.matchMedia &&
+              window.matchMedia("(prefers-color-scheme: light)").matches
+                ? "light"
+                : "dark";
+          }
+          var root = document.documentElement;
+          if (t === "light") root.classList.add("light");
+          root.style.colorScheme = t;
+          var bar = document.querySelector('meta[name="theme-color"]');
+          if (bar) bar.setAttribute("content", t === "light" ? "#f7fafa" : "#0b1c24");
+        } catch (e) {}
+      })();
+    </script>
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />

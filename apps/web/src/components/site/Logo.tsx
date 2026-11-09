@@ -12,7 +12,7 @@ export function Logo({ className = "" }: { className?: string }) {
         alt="i-Save: Saving today for a better tomorrow"
         width={600}
         height={240}
-        className="h-10 w-auto max-w-[155px] object-contain"
+        className="h-10 w-auto max-w-[155px] rounded-md object-contain light:shadow-sm light:ring-1 light:ring-border"
       />
     </Link>
   );

@@ -6,7 +6,7 @@ const COLOURS = [
   "oklch(0.82 0.12 80)", // gold
   "oklch(0.78 0.14 25)", // coral
   "oklch(0.82 0.1 230)", // sky
-  "oklch(0.97 0.02 100)", // cream
+  "var(--confetti-cream)", // cream
 ];
 
 /** Same pieces every time (no randomness while rendering), each with its own path. */

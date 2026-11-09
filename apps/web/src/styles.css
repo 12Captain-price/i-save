@@ -2,6 +2,14 @@
 @import "tw-animate-css";
 
 /*
+ * Theme variants. Dark is the default look; light is switched on by the class "light"
+ * on <html> (see lib/theme.ts). Use dark: and light: on a class only when a colour
+ * cannot come from a token below.
+ */
+@custom-variant dark (&:where(:root:not(.light) *));
+@custom-variant light (&:where(.light *));
+
+/*
  * i-Save design system, ported from the old project.
  * Colours are oklch. To add a semantic colour: define it in :root, then
  * register it in @theme inline as --color-<name>: var(--<name>).
@@ -65,6 +73,50 @@
   --primary-soft: color-mix(in oklab, var(--primary) 12%, transparent);
   --portal-accent: var(--primary);
   --portal-warm: oklch(0.82 0.12 80);
+  /* Things that were hard-coded colours, now one value per theme. */
+  --shadow-color: oklch(0 0 0 / 0.6);
+  --skeleton-hi: white;
+  --gold-hi: #fff4c2;
+  --confetti-cream: oklch(0.97 0.02 100);
+  --goal-ink-strength: 100%;
+  color-scheme: dark;
+}
+
+/*
+ * Light theme. Same design, second set of values. Rules of thumb used here:
+ *  - text is always the deep teal of the dark theme's background (strong contrast),
+ *  - the green gets darker so it still reads as text and as a button with white text,
+ *  - cards are white on a very light tinted page, separated by a thin border.
+ */
+:root.light {
+  --background: oklch(0.982 0.004 200);
+  --foreground: oklch(0.2 0.03 220);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.2 0.03 220);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.2 0.03 220);
+  --primary: oklch(0.48 0.12 160);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.95 0.008 215);
+  --secondary-foreground: oklch(0.2 0.03 220);
+  --muted: oklch(0.955 0.008 215);
+  --muted-foreground: oklch(0.45 0.03 225);
+  --accent: oklch(0.93 0.035 170);
+  --accent-foreground: oklch(0.2 0.03 220);
+  --destructive: oklch(0.55 0.21 27);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.9 0.01 215);
+  --input: oklch(0.84 0.012 215);
+  --ring: oklch(0.48 0.12 160);
+  --surface-deep: oklch(0.955 0.008 215);
+  --portal-warm: oklch(0.62 0.13 75);
+  --shadow-color: oklch(0.25 0.03 220 / 0.18);
+  --skeleton-hi: oklch(0.75 0.02 220);
+  --gold-hi: oklch(0.74 0.14 82);
+  --confetti-cream: oklch(0.7 0.1 100);
+  /* Goal colours are light shades made for a dark page; as text they are darkened. */
+  --goal-ink-strength: 62%;
+  color-scheme: light;
 }
 
 /* Role accents for the signed-in areas (used later). */
@@ -74,6 +126,12 @@
 .portal-finance {
   --portal-accent: oklch(0.81 0.085 198);
 }
+.light .portal-staff {
+  --portal-accent: oklch(0.52 0.14 126);
+}
+.light .portal-finance {
+  --portal-accent: oklch(0.5 0.09 198);
+}
 
 @layer base {
   * {
@@ -82,7 +140,6 @@
   html {
     scroll-behavior: smooth;
     scroll-padding-top: 6rem;
-    color-scheme: dark;
   }
   body {
     background-color: var(--color-background);
@@ -344,7 +401,7 @@
 .lift:hover,
 .lift:focus-visible {
   transform: translateY(-3px);
-  box-shadow: 0 12px 24px -14px rgb(0 0 0 / 0.7);
+  box-shadow: 0 12px 24px -14px var(--shadow-color);
 }
 
 /* Shimmering placeholder instead of plain "Loading…" */
@@ -353,7 +410,7 @@
   background: linear-gradient(
     90deg,
     var(--muted) 25%,
-    color-mix(in oklab, var(--muted) 70%, white 14%) 50%,
+    color-mix(in oklab, var(--muted) 70%, var(--skeleton-hi) 14%) 50%,
     var(--muted) 75%
   );
   background-size: 200% 100%;

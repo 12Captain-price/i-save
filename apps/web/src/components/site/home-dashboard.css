@@ -133,7 +133,7 @@
   border: 1px solid color-mix(in oklab, var(--primary) 50%, var(--border));
   border-radius: 0.6rem;
   background: var(--popover);
-  box-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
+  box-shadow: 0 8px 24px var(--shadow-color);
   font-size: 0.8125rem;
   transform: translateX(-50%);
   pointer-events: none;

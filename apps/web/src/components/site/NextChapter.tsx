@@ -143,12 +143,7 @@ export function NextChapter() {
             className="chapter-trend"
           />
           <g className="chapter-coin">
-            <circle
-              r="9"
-              fill="var(--portal-warm)"
-              stroke="#b8860b"
-              strokeWidth="2"
-            />
+            <circle r="9" fill="#e0a526" stroke="#b8860b" strokeWidth="2" />
             <text
               y="3.5"
               textAnchor="middle"

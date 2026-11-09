@@ -10,7 +10,7 @@
   overflow: auto;
 }
 .goal-panel::backdrop {
-  background: rgb(0 0 0 / 0.55);
+  background: rgb(0 0 0 / 0.5);
 }
 .goal-panel[open] {
   animation: goal-panel-in 0.25s ease-out;
@@ -158,7 +158,7 @@
   height: 3.25rem;
   border-radius: 1rem;
   background: color-mix(in oklab, var(--goal) 22%, transparent);
-  color: var(--goal);
+  color: color-mix(in oklab, var(--goal) var(--goal-ink-strength), black);
 }
 .goal-panel-head h2 { padding-right: 0; }
 
@@ -238,11 +238,11 @@
   font-size: 1.6rem;
   line-height: 1;
   font-weight: 700;
-  color: var(--goal);
+  color: color-mix(in oklab, var(--goal) var(--goal-ink-strength), black);
 }
 .goal-panel-stats span { font-size: 0.875rem; color: var(--muted-foreground); }
 .goal-panel-targets li { display: flex; gap: 0.55rem; align-items: flex-start; }
-.goal-panel-targets svg { flex-shrink: 0; margin-top: 0.2rem; color: var(--goal); }
+.goal-panel-targets svg { flex-shrink: 0; margin-top: 0.2rem; color: color-mix(in oklab, var(--goal) var(--goal-ink-strength), black); }
 
 .goal-panel-quotes figure { border-left: 3px solid var(--goal); }
 .goal-panel-primary { background: var(--goal); border-color: var(--goal); color: #111; gap: 0.5rem; }

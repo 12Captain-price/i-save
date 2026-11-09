@@ -52,9 +52,7 @@ function TrafficReport() {
   }
 
   const report: Report | null =
-    ok && cur.data
-      ? buildReport(cur.data, prev.data ?? null, from, to)
-      : null;
+    ok && cur.data ? buildReport(cur.data, prev.data ?? null, from, to) : null;
 
   return (
     <div className="traffic-report">
@@ -355,9 +353,9 @@ function ChangeBadge({ change }: { change: Change }) {
         : Minus;
   const tone =
     change.direction === "up"
-      ? "text-emerald-500"
+      ? "text-emerald-600 dark:text-emerald-400"
       : change.direction === "down"
-        ? "text-red-400"
+        ? "text-red-600 dark:text-red-400"
         : "text-muted-foreground";
   return (
     <p className={`mt-1 flex items-center gap-1 text-sm font-medium ${tone}`}>
@@ -387,10 +385,7 @@ function Section({
 
 function Bar({ value, max }: { value: number; max: number }) {
   return (
-    <span
-      aria-hidden="true"
-      className="mt-1.5 block h-2 rounded-full bg-muted"
-    >
+    <span aria-hidden="true" className="mt-1.5 block h-2 rounded-full bg-muted">
       <span
         className="block h-2 rounded-full bg-primary/80"
         style={{ width: `${barWidth(value, max)}%` }}

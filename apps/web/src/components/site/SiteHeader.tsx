@@ -3,6 +3,7 @@ import { LogOut, Menu, X } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { Logo } from "./Logo";
 import { InstallButton } from "./InstallButton";
+import { ThemeToggle } from "./ThemeToggle";
 import { NAV } from "./nav";
 import { CountBadge } from "./Tags";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -104,6 +105,7 @@ export function SiteHeader() {
           </ul>
         </nav>
         <div className="hidden shrink-0 items-center gap-3 xl:flex 2xl:gap-4">
+          <ThemeToggle />
           <InstallButton compact />
           {session ? (
             <>
@@ -151,6 +153,7 @@ export function SiteHeader() {
           {session && profile && (
             <GreetingChip name={profile.fullName} compact />
           )}
+          <ThemeToggle />
           <button
             ref={trigger}
             type="button"

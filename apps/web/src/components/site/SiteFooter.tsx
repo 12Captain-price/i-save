@@ -37,7 +37,7 @@ export function SiteFooter() {
               alt="Zimbabwe Progressive Youth Foundation"
               width={300}
               height={200}
-              className="h-16 w-auto rounded-md bg-foreground/95 px-2 py-1 sm:h-20"
+              className="h-16 w-auto rounded-md bg-white px-2 py-1 sm:h-20"
             />
           </span>
         </div>
