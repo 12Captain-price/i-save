@@ -7,11 +7,9 @@ import { EventCard } from "@/components/site/EventCard";
 import { Reveal } from "@/components/site/Reveal";
 import { ReviewCard } from "@/components/site/ReviewCard";
 import { RichText } from "@/components/site/RichText";
-import { TeamCard } from "@/components/site/TeamCard";
-import { useAnnouncements, useEvents, useTeam } from "@/lib/content";
+import { useAnnouncements, useEvents } from "@/lib/content";
 import { useApprovedReviews } from "@/lib/reviews";
 import { formatDate } from "@/lib/staff-utils";
-import { groupByLevel } from "@/lib/team-utils";
 import { isRecent, shorten, splitEvents, timingLabel } from "@/lib/updates";
 
 function Heading({
@@ -39,7 +37,7 @@ function Heading({
   );
 }
 
-/** Latest announcements, events and the leadership team. Each section hides itself when empty. */
+/** Latest announcements, events and reviews. Each section hides itself when empty. */
 export function HomeSections() {
   const announcements = useAnnouncements(false, 3).data ?? [];
   // What is coming up goes first, then the latest past events.
@@ -47,8 +45,6 @@ export function HomeSections() {
   const { upcoming, past } = splitEvents(allEvents);
   const events = [...upcoming, ...past].slice(0, 3);
   const reviews = useApprovedReviews(3).data ?? [];
-  const team = useTeam().data ?? [];
-  const leaders = groupByLevel(team)[0] ?? [];
 
   const soon = upcoming.slice(0, 3);
 
@@ -216,24 +212,6 @@ export function HomeSections() {
           </a>
         </div>
       </section>
-
-      {leaders.length > 0 && (
-        <section aria-label="Our team" className="home-width py-12">
-          <Heading
-            eyebrow="Meet the team"
-            title="The people behind i-Save"
-            href="/team"
-            linkText="Whole team"
-          />
-          <div className="mt-8 flex flex-wrap justify-center gap-x-8 gap-y-10">
-            {leaders.map((m, i) => (
-              <Reveal key={m.id} index={i}>
-                <TeamCard member={m} large />
-              </Reveal>
-            ))}
-          </div>
-        </section>
-      )}
     </>
   );
 }
