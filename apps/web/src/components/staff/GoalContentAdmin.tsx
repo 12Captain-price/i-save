@@ -68,7 +68,7 @@ export function GoalContentAdmin() {
                 <span
                   className="grid h-10 w-10 place-items-center rounded-lg"
                   style={{
-                    color: goalColor(g.accent),
+                    color: `color-mix(in oklab, ${goalColor(g.accent)} var(--goal-ink-strength), black)`,
                     background: `color-mix(in oklab, ${goalColor(g.accent)} 18%, transparent)`,
                   }}
                 >
