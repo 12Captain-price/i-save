@@ -1,5 +1,9 @@
 import { LoadingSkeleton } from "@/components/ui/motion";
-import { createFileRoute } from "@tanstack/react-router";
+import {
+  Outlet,
+  createFileRoute,
+  useChildMatches,
+} from "@tanstack/react-router";
 import { EventCard } from "@/components/site/EventCard";
 import { PageShell } from "@/components/site/PageShell";
 import { useEvents } from "@/lib/content";
@@ -10,6 +14,10 @@ export const Route = createFileRoute("/events")({
 
 function EventsPage() {
   const { data, isPending, isError } = useEvents();
+  // The page of a single event (/events/<id>) is a child of this route. When one is open,
+  // show it instead of the list; without this the address changes but the list stays on screen.
+  const showingOneEvent = useChildMatches().length > 0;
+  if (showingOneEvent) return <Outlet />;
   return (
     <PageShell
       eyebrow="Events"
